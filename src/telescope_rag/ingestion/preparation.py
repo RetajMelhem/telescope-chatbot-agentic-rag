@@ -18,7 +18,7 @@ from telescope_rag.ingestion.models import (
 )
 from telescope_rag.providers.contracts import EmbeddingFormat
 
-PREPARATION_VERSION = "structure-nfc-v3"
+PREPARATION_VERSION = "structure-nfc-v4"
 EMBEDDING_MODEL = "qwen/qwen3-embedding-8b"
 
 
@@ -239,6 +239,10 @@ def prepare_document(
                 section_path=unit.section_path,
                 doctor_id=unit.doctor_id,
                 doctor_name=unit.doctor_name,
+                canonical_doctor_id=unit.canonical_doctor_id,
+                canonical_doctor_name=unit.canonical_doctor_name,
+                source_issue_codes=unit.source_issue_codes,
+                admission_policy_hash=document.admission_policy_hash,
                 source_spans=tuple(span for s in segments for span in (s.source, *s.table_cells)),
                 context_spans=tuple(s.source for s in context),
                 original_text=original,

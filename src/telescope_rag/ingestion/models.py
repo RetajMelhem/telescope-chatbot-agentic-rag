@@ -70,6 +70,9 @@ class ContentUnit(Record):
     segments: tuple[Segment, ...]
     doctor_id: str | None = None
     doctor_name: str | None = None
+    canonical_doctor_id: str | None = None
+    canonical_doctor_name: str | None = None
+    source_issue_codes: tuple[str, ...] = ()
     language: Literal["ar", "en", "und"] = "und"
 
 
@@ -87,6 +90,7 @@ class ExtractedDocument(Record):
     removed: tuple[AuditItem, ...] = ()
     gaps: tuple[AuditItem, ...] = ()
     extractor_version: str = "html-structure-v3"
+    admission_policy_hash: str | None = None
 
 
 class PreparedChunk(Record):
@@ -103,6 +107,10 @@ class PreparedChunk(Record):
     section_path: tuple[str, ...]
     doctor_id: str | None = None
     doctor_name: str | None = None
+    canonical_doctor_id: str | None = None
+    canonical_doctor_name: str | None = None
+    source_issue_codes: tuple[str, ...] = ()
+    admission_policy_hash: str | None = None
     source_spans: tuple[SourceSpan, ...]
     context_spans: tuple[SourceSpan, ...] = ()
     original_text: str = Field(repr=False)
@@ -112,7 +120,7 @@ class PreparedChunk(Record):
     tokenizer_version: str | None = None
     embedding_format_version: str | None = None
     embedding_format_hash: str | None = None
-    preparation_version: str = "structure-nfc-v3"
+    preparation_version: str = "structure-nfc-v4"
     embedding_ready: bool = False
 
 

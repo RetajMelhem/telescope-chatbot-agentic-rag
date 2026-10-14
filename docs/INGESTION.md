@@ -80,6 +80,10 @@ Each chunk records `chunk_id`, `document_id`, `canonical_url`, `page_title`, `la
 
 Use reproducible IDs derived from source identity, content, and chunk configuration. Qdrant point IDs must use a supported UUID or integer representation; keep a human-readable hash in metadata. Retain every original source occurrence when duplicate content appears on different pages.
 
+Reviewed source admission is a separate selection step before embedding. A sealed plan accounts for every original unit, binds the input prepared/collection digests, and retains or excludes actual source segments without medical rewriting. A damaged description may be replaced only by its existing heading as a name-only service record. FAQ pairs and table rows remain atomic; mandatory owner/header/qualifier context cannot be trimmed. Unknown/missing selectors fail closed.
+
+Human-confirmed doctor aliases add `canonical_doctor_id` / `canonical_doctor_name` metadata while `doctor_id`, `doctor_name`, source text and coordinates stay literal. The admission-policy hash and source issue codes travel with chunks. These aliases are not new biographies, specialty assertions or rewritten website names. Derivative directory titles marked non-authoritative cannot establish department membership; use explicit main-directory/profile roles. Source selection does not verify token counts, approve provider dispatch or certify clinical truth. See the [source admission runbook](INGESTION_RUNBOOK.md#apply-reviewed-source-decisions).
+
 ## Embedding contract
 
 Use `qwen/qwen3-embedding-8b` for both documents and queries. The upstream model supports vectors up to 4096 dimensions; configure 4096 initially and verify the actual endpoint response before creating a collection. See the [Qwen model card](https://huggingface.co/Qwen/Qwen3-Embedding-8B).

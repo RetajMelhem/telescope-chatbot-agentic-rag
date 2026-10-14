@@ -18,6 +18,8 @@ from telescope_rag.ingestion.models import (
 class DirectoryEntry(Record):
     doctor_id: str
     name: str
+    canonical_doctor_id: str | None = None
+    canonical_doctor_name: str | None = None
     language: str
     canonical_url: str
     parent_block_id: str
@@ -62,11 +64,33 @@ class ReviewApproval(Record):
     accepted_gap_codes: tuple[str, ...] = ()
 
 
+def prepared_document_json(document: PreparedDocument, *, indent: int | None = None) -> str:
+    """Preserve sealed legacy bytes when optional admission fields were absent.
+
+    Use the same serialization for stored documents and their digest. Explicitly
+    supplied metadata remains covered, including an explicit null/empty value.
+    """
+    unit_fields = {"canonical_doctor_id", "canonical_doctor_name", "source_issue_codes"}
+    chunk_fields = unit_fields | {"admission_policy_hash"}
+    doc_exclusions: dict = {
+        "units": {
+            i: unit_fields - u.model_fields_set for i, u in enumerate(document.document.units)
+        }
+    }
+    if "admission_policy_hash" not in document.document.model_fields_set:
+        doc_exclusions["admission_policy_hash"] = True
+    exclusions = {
+        "document": doc_exclusions,
+        "chunks": {i: chunk_fields - c.model_fields_set for i, c in enumerate(document.chunks)},
+    }
+    return document.model_dump_json(exclude=exclusions, indent=indent)
+
+
 def prepared_digest(documents: tuple[PreparedDocument, ...]) -> str:
     return stable_id(
         "prepared-bundle-v1",
         *(
-            document.model_dump_json()
+            prepared_document_json(document)
             for document in sorted(documents, key=lambda item: item.document.page.document_id)
         ),
     )
@@ -97,6 +121,8 @@ def build_audit(
                     DirectoryEntry(
                         doctor_id=unit.doctor_id,
                         name=unit.doctor_name,
+                        canonical_doctor_id=unit.canonical_doctor_id,
+                        canonical_doctor_name=unit.canonical_doctor_name,
                         language=unit.language,
                         canonical_url=document.document.page.canonical_url,
                         parent_block_id=unit.unit_id,
@@ -169,7 +195,7 @@ def write_bundle(
         # Names come from our digest, never from external paths/HTML identifiers.
         filename = stable_id(document.document.page.document_id)
         (output / f"{filename}.json").write_text(
-            document.model_dump_json(indent=2), encoding="utf-8"
+            prepared_document_json(document, indent=2), encoding="utf-8"
         )
     (output / "audit.json").write_text(audit.model_dump_json(indent=2), encoding="utf-8")
     (output / "review-template.json").write_text(
@@ -243,6 +269,10 @@ def validate_approval(
                 or chunk.page_title != document.document.title
                 or chunk.doctor_id != unit.doctor_id
                 or chunk.doctor_name != unit.doctor_name
+                or chunk.canonical_doctor_id != unit.canonical_doctor_id
+                or chunk.canonical_doctor_name != unit.canonical_doctor_name
+                or chunk.source_issue_codes != unit.source_issue_codes
+                or chunk.admission_policy_hash != document.document.admission_policy_hash
                 or chunk.block_type != unit.kind
                 or chunk.language != unit.language
                 or chunk.section_path != unit.section_path

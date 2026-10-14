@@ -36,6 +36,8 @@ The full-page semantic review found meaningful omissions and relationship errors
 
 The later quality audit also found decorative alt noise, invisible layout marks, unrelated footer-title context and orphaned Elementor comparison values. Follow the current versioned preparation policy. Exact deduplication must retain every occurrence in the draft input plan; numbers, doctor ownership, translations and differing qualifiers cannot be merged by similarity. Informative image labels remain literal. Do not equate clean drafts or a deduplication projection with verified token counts, source approval or retrieval quality.
 
+The user has now resolved the listed source issues. Follow the current sealed admission plan in `PROJECT_STATUS.md`: retain published LASIK Fast/سريع and PRK Slower/أبطأ claims, exclude disputed strabismus cards/damaged skin descriptions, disregard derivative department labels and use explicit main/profile specialties, keep acne and acne-scar claims distinct, and retain the confirmed Lina Hamadneh, Motasim Masalmeh and Mutaz Gharaibeh identity/display mappings. Preserve literal owners/text/spans; canonical alias fields are separately authorized metadata. Do not ask for these confirmations again or overwrite source claims. Admission plans require complete exact source accounting; token/format/provider gates remain independent.
+
 ## Implementation conventions
 
 - Use typed Python, Pydantic validation at external boundaries, and async I/O for provider and database calls.
