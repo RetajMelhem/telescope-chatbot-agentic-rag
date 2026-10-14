@@ -72,7 +72,7 @@ Create separate source-backed structured records for hours and a complete direct
 
 ## Evidence metadata
 
-Each chunk records `chunk_id`, `document_id`, `canonical_url`, `page_title`, `language`, `section_path`, typed `block_type`, `parent_block_id`, ordered `source_block_ids`, source spans for both content and repeated context, `original_text`, `retrieval_text`, `token_count`, `content_hash`, `fetched_at`, `snapshot_id`, `source_type`, optional explicitly established `doctor_id`, and extraction/cleaning/formatting/chunker/tokenizer versions. DOM/source mappings survive normalization; normalized offsets are never presented as raw HTML offsets.
+Each chunk records `chunk_id`, `document_id`, `canonical_url`, `page_title`, `language`, `section_path`, typed `block_type`, `parent_block_id`, source spans for both content and repeated context, `original_text`, `retrieval_text`, `token_count`, `content_hash`, `fetched_at`, `snapshot_id`, optional explicitly established `doctor_id`, and preparation/tokenizer/embedding-format versions. The document retains extractor version and original HTML; ordered source block IDs are present in span records. Explicit image-alt attribute spans preserve informative labels. DOM/source mappings survive normalization; normalized offsets are never presented as raw HTML offsets.
 
 Use reproducible IDs derived from source identity, content, and chunk configuration. Qdrant point IDs must use a supported UUID or integer representation; keep a human-readable hash in metadata. Retain every original source occurrence when duplicate content appears on different pages.
 

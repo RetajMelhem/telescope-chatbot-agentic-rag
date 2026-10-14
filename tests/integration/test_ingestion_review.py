@@ -42,7 +42,7 @@ CONFIG = EmbeddingConfiguration(
     dimensions=32,
     format_version=FORMAT.version,
     format_hash=stable_id("embedding-format-v1", FORMAT.model_dump_json()),
-    preparation_version="structure-nfc-v1",
+    preparation_version="structure-nfc-v2",
     tokenizer_version="synthetic-counter-v1",
 )
 

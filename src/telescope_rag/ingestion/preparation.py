@@ -18,7 +18,7 @@ from telescope_rag.ingestion.models import (
 )
 from telescope_rag.providers.contracts import EmbeddingFormat
 
-PREPARATION_VERSION = "structure-nfc-v1"
+PREPARATION_VERSION = "structure-nfc-v2"
 EMBEDDING_MODEL = "qwen/qwen3-embedding-8b"
 
 
@@ -89,6 +89,8 @@ def _valid_table_mapping(unit: ContentUnit, segment: Segment) -> bool:
     context_sources = {source.model_dump_json() for source in (s.source for s in unit.context)}
     if any(header.model_dump_json() not in context_sources for header in segment.table_headers):
         return False
+    if segment.table_layout == "grid_cells":
+        return segment.source in segment.table_cells
     row = segment.source.original_text[segment.source.start : segment.source.end]
     return normalize_text(
         " ".join(cell.original_text[cell.start : cell.end] for cell in segment.table_cells)
@@ -200,7 +202,9 @@ def prepare_document(
         text = _formatted(unit, segments)
         context = _unique_context(unit)
         original = "\n\n".join(
-            segment.source.original_text[segment.source.start : segment.source.end]
+            " ".join(cell.original_text[cell.start : cell.end] for cell in segment.table_cells)
+            if segment.table_layout == "grid_cells"
+            else segment.source.original_text[segment.source.start : segment.source.end]
             for segment in segments
         )
         version = counter.version if count_available and tokens is not None else None

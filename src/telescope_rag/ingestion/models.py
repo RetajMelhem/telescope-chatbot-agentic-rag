@@ -41,6 +41,7 @@ class SourceSpan(Record):
     start: int = Field(default=0, ge=0)
     end: int = Field(ge=0)
     source_line: int | None = None
+    attribute: Literal["alt"] | None = None
 
     @model_validator(mode="after")
     def valid_offsets(self):
@@ -58,6 +59,7 @@ class Segment(Record):
     source: SourceSpan
     table_cells: tuple[SourceSpan, ...] = ()
     table_headers: tuple[SourceSpan, ...] = ()
+    table_layout: Literal["row", "grid_cells"] = "row"
 
 
 class ContentUnit(Record):
@@ -84,7 +86,7 @@ class ExtractedDocument(Record):
     units: tuple[ContentUnit, ...]
     removed: tuple[AuditItem, ...] = ()
     gaps: tuple[AuditItem, ...] = ()
-    extractor_version: str = "html-structure-v1"
+    extractor_version: str = "html-structure-v2"
 
 
 class PreparedChunk(Record):
@@ -110,7 +112,7 @@ class PreparedChunk(Record):
     tokenizer_version: str | None = None
     embedding_format_version: str | None = None
     embedding_format_hash: str | None = None
-    preparation_version: str = "structure-nfc-v1"
+    preparation_version: str = "structure-nfc-v2"
     embedding_ready: bool = False
 
 

@@ -1,8 +1,8 @@
 # Project status
 
-Last updated: 2026-10-14 (Asia/Amman).
+Last updated: 2026-10-15 (Asia/Amman).
 
-Current milestone: **M3 collection, cleaning/formatting, structural draft chunking, and review/candidate contracts implemented. Source acceptance, verified counting/formatting, paid embedding, and live index publication remain pending.**
+Current milestone: **M3 page-by-page semantic review and confirmed extraction repairs complete. The latest draft uses version 2 extraction/formatting. Clinical source acceptance, verified counting/formatting, paid embedding, and live index publication remain pending.**
 
 This is the continuity entry point for Codex. Read it before substantive work and update it after each completed task. The full roadmap is [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); repository rules are in [AGENTS.md](AGENTS.md).
 
@@ -152,10 +152,24 @@ M3 verification passes **338 offline tests** (all 180 existing regressions plus 
 
 ## Next concrete step
 
-Complete **M3 source acceptance and provider preparation** using raw snapshot `m3-20261014-v2` and prepared bundle `m3-20261014-v4`. Review source gaps, placeholder removals, conflicting template directories, main English/Arabic doctor lists, FAQ pairings, hours ownership/wording, and unsupported layouts. Confirm an admitted source scope and directory manifest; do not treat 128 repeated doctor occurrences as 128 unique doctors.
+Complete **M3 source acceptance and provider preparation** using raw snapshot `m3-page-audit-live`, prepared bundle `m3-page-audit-final`, and semantic ledger `data/manifests/m3-page-by-page-review.json`. Review remaining website copy/identity conflicts, sparse profiles, template/prototype source decisions, and hours ownership/wording. Confirm an admitted source scope and directory manifest; repeated source occurrences are not unique doctors.
 
 Establish verified Qwen-compatible counting, hosted document/query formatting and dimensions, rebuild token-validated chunks, then perform an explicitly authorized bounded embedding/candidate run. Source approval must bind exact collection/preparation digests; the generated template remains unapproved. Live publication and structural-versus-fixed-window retrieval evaluation remain pending. Follow [M3](docs/IMPLEMENTATION_PLAN.md#m3--public-website-ingestion), [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md), and [PROVIDERS.md](docs/PROVIDERS.md). M4 retrieval follows approved knowledge; clinic chat stays unavailable until M5.
 
 ## Latest handoff
 
-2026-10-14: Implemented M3 collection/preparation/review and gated candidate contracts, using subagents for collection, preparation, and independent source/testing review. Final raw traversal: 127 pages; latest preparation: 2,239 draft chunks; independent provenance audit and 338 offline tests passed. M3 remains partially complete until source/count/format/index/evaluation gates pass; a working RAG chatbot and Docker deployment remain later work.
+2026-10-15: Completed the user's full-page comparison and repair task. Three LLM reviewers read complete source/chunk packets for all 127 allowed public pages (43+42+42), with raw DOM inspection for ambiguous layouts. Their original judgments were 90 pages with collection defects, 24 with source-only problems, and 13 initially faithful. A fresh 127-page crawl had the same URL inventory and no meaningful text, heading, image-alt, footer, or description-metadata changes; this ties the semantic review to the refreshed static content. Private/action routes and unsupported external content remain outside collection scope.
+
+Confirmed defects repaired in `html-structure-v2` / `structure-nfc-v2`: missing heading-only services/facilities/qualifications/warnings, qualification degrees mistaken for person identities, unowned founder biography/message, stale sibling section ancestry, comparison-field and recovery-timeline misassociation, detached list qualifiers, missing insurance categories/image labels, footer context leakage, incomplete placeholder/testimonial cleanup, and unsupported explicit CSS grid rows. Public coming-soon status is retained; all-viewport hidden prototypes are excluded without removing animated/responsive public content. Direct text nodes and image-alt source mappings are supported; bilingual title boilerplate no longer determines a unit's language.
+
+Latest retained artifacts:
+
+- Raw snapshot: `data/raw/m3-page-audit-live` (127 pages; no bounded-traversal gaps).
+- Prepared bundle: `data/processed/m3-page-audit-final` (**2,092 draft chunks**; older snapshots/bundles unchanged).
+- Complete semantic ledger: `data/manifests/m3-page-by-page-review.json` (all 127 URL-specific rationales/findings and post-fix checks).
+- Readable report: `artifacts/m3-page-audit/REPORT.md`; original reviewer evidence and fresh-comparison receipts remain alongside it.
+- Final independent retention/mapping receipt: `artifacts/m3-page-audit/final-validation.json`.
+
+Verified all **9,749 source/context spans** against saved raw DOM text/attributes, IDs and offsets, plus raw/decoded/page/manifest/prepared digests. No non-excluded selected heading, paragraph, list item or table cell was unrepresented. Native FAQ answers remained under their own questions; contamination and fake-degree-identity checks found no defects. **389 offline tests passed** with Ruff lint/format; package/lock/document/Git checks passed. These mapping/retention results are separate from clinical/semantic acceptance and are not proof of every hidden/unlinked/JavaScript-only fact or future retrieval quality.
+
+Website-origin limitations remain explicit: name-only profiles, inconsistent literal spellings, derivative dermatologist directory titles over ophthalmology/anesthesia copy, malformed/unequal translations and inconsistent prototype copy. The collection preserves or quarantines these source cases; it does not medically rewrite them or silently merge identities. All chunks remain uncounted, unapproved, and unavailable for embedding. No OpenRouter/embedding/Qdrant call, active-alias change, Docker build or deployment ran; `.env` was preserved. The next task is the source/provider acceptance step above.

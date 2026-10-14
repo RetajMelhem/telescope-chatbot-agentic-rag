@@ -58,6 +58,8 @@ Website collection and document embedding run as a separate ingestion job. They 
 
 Ingestion now collects immutable public snapshots, cleans/formats content, and forms chunks by doctor/FAQ/section/list/table boundaries with source mappings. The draft CLI refuses to claim token validation or embedding readiness without verified counting/format profiles. Token counts are a safety ceiling rather than a fixed chunk target. Run commands and the review/candidate gates are documented in [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md).
 
+A full-page LLM review compared all 127 collected public pages with the original preparation and a fresh crawl. It found omitted heading-only facts and incorrect source relationships, which led to the version 2 extractor/formatter. The latest draft is `data/processed/m3-page-audit-final`; the per-page findings and checks are in `data/manifests/m3-page-by-page-review.json`. Clinical source acceptance and verified token/embedding preparation remain pending.
+
 The project now has a local Git repository on `main` with a baseline checkpoint and a separate chunking-policy revision. Local secrets, tool environments, and generated data are ignored. `.gitattributes` keeps source line endings consistent for Windows development and Linux deployment. Use `git status` and `git diff` to review work; repository setup does not publish the project externally.
 
 ## Project documents

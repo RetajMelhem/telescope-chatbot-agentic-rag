@@ -248,6 +248,7 @@ def validate_approval(
                 if not any(
                     reference.block_id == source.block_id
                     and reference.locator == source.locator
+                    and reference.attribute == source.attribute
                     and reference.original_text == source.original_text
                     and source.start <= reference.start < reference.end <= source.end
                     for source in sources

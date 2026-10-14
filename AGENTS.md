@@ -32,6 +32,8 @@ Read [provider contracts](docs/PROVIDERS.md) before provider or budget changes. 
 
 For M3, follow [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md). Preserve original snapshots and bundles; reruns use new directories. Bind source review to raw-manifest and prepared-document digests. Keep placeholder/conflict/coverage gaps explicit. Candidate writes cannot change an active alias. Do not equate a bounded crawl, source occurrence count, draft chunk, or synthetic token profile with complete approved knowledge.
 
+The full-page semantic review found meaningful omissions and relationship errors despite prior valid provenance. Preserve heading-only facts, literal owner/card/FAQ/table relationships, list qualifiers, and informative image-alt labels; source mapping alone does not prove completeness. Read the current semantic ledger listed in `PROJECT_STATUS.md` before source acceptance. Website spelling/copy conflicts and sparse profiles remain source issues; do not invent corrections or infer a specialty from a derivative directory title.
+
 ## Implementation conventions
 
 - Use typed Python, Pydantic validation at external boundaries, and async I/O for provider and database calls.
