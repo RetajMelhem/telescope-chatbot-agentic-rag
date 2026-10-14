@@ -1,6 +1,6 @@
 # Architecture and folder ownership
 
-Status: M1 API/configuration shell implemented; provider, graph, ingestion, and live retrieval layers remain future work.
+Status: M1 API/configuration shell and M2 offline provider adapters implemented; graph, ingestion, and live retrieval layers remain future work.
 
 ## Stack
 
@@ -96,7 +96,9 @@ The ingestion process can write candidate index versions. The chat process can r
 - Retrieval owns Qdrant reads, source filters, query-to-result mapping, and finite directory reads. It cannot create or switch collections through the public serving interface.
 - Ingestion owns discovery policy, immutable raw snapshots, structural extraction, deterministic cleaning/formatting, variable-length chunk IDs, pre-embedding validation, embedding batches, candidate writes, and index manifests. A size ceiling is applied inside preserved structural/ownership boundaries, rather than flattening pages into fixed windows.
 - Knowledge models preserve evidence ownership and implement pure operations such as comparing a requested time with an evidenced interval.
-- Core owns validated settings and a shared request budget/deadline. Prompt files own model instructions; web content never changes them.
+- Core owns validated settings. `providers/budget.py` implements the shared request budget/deadline; graph stages must use the same instance. Prompt files own model instructions; web content never changes them.
+
+The provider package now contains narrow typed contracts, safe errors, strict JSON/schema/vector validation, request-owned reservations and content-free receipts, and an async HTTPX2 client with no hidden retries. It is independent of the FastAPI factory and makes no initialization/shutdown inference calls. [PROVIDERS.md](PROVIDERS.md) documents the live-use gates and external wire behavior.
 
 Keep this as one Python application plus a separately invoked ingestion command. Additional queues, Redis, a session database, rerankers, and specialized agents are not initial dependencies. Add them only for a measured need.
 

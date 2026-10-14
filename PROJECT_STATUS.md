@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-14 (Asia/Amman).
 
-Current milestone: **M0/M1 audited and verified for starting M2. M2 provider contracts are next.**
+Current milestone: **M2 provider contracts/adapters implemented and verified offline. M3 public website ingestion is next.**
 
 This is the continuity entry point for Codex. Read it before substantive work and update it after each completed task. The full roadmap is [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); repository rules are in [AGENTS.md](AGENTS.md).
 
@@ -31,7 +31,7 @@ FastAPI + LangGraph; GPT-6 Luna through OpenRouter; Qwen3 Embedding 8B; Arabic, 
 | --- | --- |
 | M0 — specification/scaffold | Complete; foundation consistency checks passed |
 | M1 — FastAPI/configuration shell | Complete; offline checks and local server smoke passed |
-| M2 — provider contracts | Not started |
+| M2 — provider contracts | Complete for initial offline implementation; live compatibility remains gated |
 | M3 — public website ingestion | Implementation not started; structural cleaning/chunking policy revised |
 | M4 — retrieval and deterministic operations | Not started |
 | M5 — LangGraph chat flow | Not started |
@@ -88,9 +88,9 @@ Revision verification on 2026-10-14: 60 offline tests passed; Ruff lint/format, 
 
 ## Known gaps and blockers
 
-- No implementation blocker for M2's mocked provider-contract work.
+- No implementation blocker for M3's local extraction/cleaning/chunking fixtures.
 - Friday/clinic opening hours are not verified by the limited website inspection. Never invent them; complete ingestion must establish what is actually published.
-- Provider account access, structured-output behavior, actual vector dimensions, and provider conventions remain unverified.
+- Provider account access, hosted structured-output behavior, returned model IDs/dimensions, token-count compatibility, and Qwen formatting remain unverified. Default counting refuses dispatch; synthetic test profiles are not production profiles.
 - Hosting, widget integration, refresh cadence, and content-review ownership remain decisions for later milestones.
 
 ## Completion audit and M2 readiness
@@ -115,14 +115,28 @@ Verified audit results:
 
 Decision: **no remaining blocker found for M2's offline provider-contract implementation**. M0/M1 and the revised ingestion specification are ready inputs. Provider account compatibility, actual returned embedding dimensions, source coverage, cleaner/chunker quality, Qdrant enforcement, RAG answers, and Docker release remain unverified future milestones; they are not claimed complete by this audit.
 
+## Completed M2 implementation
+
+- [x] Typed chat/embedding interfaces, safe errors, explicit count/format profiles, and content-free attempt receipts.
+- [x] Async OpenRouter HTTP adapters using runtime HTTPX2, injected mock transport, fixed selected models, strict JSON schemas, parameter-support routing, and disabled fallbacks/hidden retries.
+- [x] Strict local JSON/schema/usage validation; refusal/truncation handling without repair; exact embedding batch/index/dimension checks and finite nonzero vectors restored to input order.
+- [x] Shared logical-call/HTTP-attempt/input/output/deadline budget; fresh reservation before every attempt; unknown/partial usage keeps full reservations; reasoning is not double charged; usage overrun blocks further dispatch.
+- [x] At most one eligible retry, no retry for ambiguous read/write timeout, cancellation propagation, response byte limits, and bounded client cleanup.
+- [x] Default unavailable token counter and unverified embedding format prevent dispatch. Production counting/format verification is explicitly deferred to the authorized compatibility screen, not guessed.
+- [x] Provider settings/defaults, dependency lock, architecture/pipeline/ingestion/Codex instructions, and [provider contract documentation](docs/PROVIDERS.md) synchronized.
+
+M2 offline verification on 2026-10-14: **180 tests passed**, including all 74 API/configuration regressions and 106 new provider cases. Ruff lint/format and `uv lock --check` passed; HTTPX2 was promoted from development to runtime without changing the 30-package lock inventory. Synthetic credentials/counts/formats and HTTP fixtures were used; no paid request or user's key was used by tests. The first provider run had two invalid synthetic settings fixtures; those were corrected without relaxing application settings validation.
+
+`uv build --offline` built the source distribution and wheel successfully. The wheel includes provider modules and runtime HTTPX2 metadata, with no local secrets, tests, data, or tools. All 46 local document links/anchors, 14 Markdown files' fences, and two JSON examples validated; all 50 active example settings match defaults, and local configuration validates without disclosure. Git whitespace/exclusion and scoped staged-source checks passed. Existing `.env` was preserved. No remote was configured or used.
+
+The API remains a shell: readiness is unavailable by default and valid chat returns `503`. No complete crawl, cleaner/chunker, Qdrant index, graph, Docker build, or deployment has run. Existing `.env` was preserved. Mock results establish local protocol/budget behavior, not live compatibility, token accuracy, source quality, or chatbot grounding.
+
 ## Next concrete step
 
-The next implementation task is **M2: implement async OpenRouter chat/embedding interfaces and adapters, validated structured-output parsing, embedding batch/index mapping, usage accounting, deadlines, and bounded retries with mocked protocol tests**. Preserve `openai/gpt-6-luna` and `qwen/qwen3-embedding-8b`; do not silently substitute models. Read the [M2 plan](docs/IMPLEMENTATION_PLAN.md), [pipeline](docs/PIPELINE.md), and [API contract](docs/API_CONTRACT.md).
+Implement **M3 public website ingestion**, starting with typed source/block/chunk models and local HTML fixtures. Build the sequence: immutable snapshot -> structural extraction -> cleaning -> normalization/formatting -> variable-length structural chunks -> provenance/ownership/coverage/token validation. Preserve doctor profiles, FAQ pairs, heading context, table labels/footnotes, Arabic text, and source spans. A token ceiling is an overflow guard, not a chunk target.
 
-Start with the typed provider contracts and injected transport boundary, then implement chat/embedding parsing and execution budgets/retries, then run the existing suite plus the mocked protocol cases. The [M2 deliverables and definition of done](docs/IMPLEMENTATION_PLAN.md#next-task-deliverables) specify the exact handoff. Clinic chat stays unavailable until M5; no crawler, index writes, Docker deployment, or paid screen is needed for the initial M2 implementation.
-
-The user can put the OpenRouter key in the ignored local `.env`. A key's presence does not authorize or start inference. M2's initial adapter work can remain offline; live compatibility checks require their own authorized, bounded screen.
+Then implement robots-aware allowlisted public collection and audit manifests, recording failures/gaps. Review extracted/formatted/chunked content before paid embedding or index publication; these need verified provider counting/format/dimensions and explicit authorization. Follow [M3](docs/IMPLEMENTATION_PLAN.md#m3--public-website-ingestion), [INGESTION.md](docs/INGESTION.md), and [PROVIDERS.md](docs/PROVIDERS.md). Clinic chat stays unavailable until M5.
 
 ## Latest handoff
 
-2026-10-14: Completed the requested audit, fixed four concrete API/configuration/lifecycle issues, and verified 74 offline tests, package/server/configuration/document/Git checks. No remaining blocker was found for starting M2. The roadmap now defines M2 deliverables and completion criteria. Cleaner/chunker, source index, working RAG, live compatibility, and Docker deployment remain later work.
+2026-10-14: Implemented M2's initial offline adapters and acceptance cases; 180 tests passed. Provider contracts document exact behavior and remaining live-use gates. M3 extraction/cleaning/structural chunking is the next milestone; a working RAG chatbot, live compatibility, source index, and Docker deployment remain later work.

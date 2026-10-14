@@ -103,6 +103,8 @@ Graph state excludes keys, provider client objects, private records, hidden reas
 | Final evidence | At most 16 chunks and 6,000 tokens |
 | Cumulative Luna input | 16,000 tokens including prompts, history, original question, and evidence |
 | Cumulative output | 2,000 provider output tokens, including reasoning where billed/reported |
+| Embedding input | 16,000 tokens across attempts, separately accounted from Luna input |
+| Embedding batch | One logical batch of at most 32 texts; graph queries remain bounded to four |
 | Overall request deadline | 30 seconds |
 | Provider attempt timeout | At most 15 seconds and never beyond remaining deadline |
 | Transient retries | At most one per provider operation, only within remaining budgets |
@@ -110,5 +112,7 @@ Graph state excludes keys, provider client objects, private records, hidden reas
 `MAX_LLM_CALLS=2` counts logical stages. A transport retry can add a physical request: at most four Luna attempts and two embedding attempts, including retries. Reserve tokens for every attempt; retries do not bypass cumulative limits. Do not retry a potentially billed ambiguous timeout automatically. Schema-invalid output has no extra LLM repair stage in this phase.
 
 Use provider-compatible token accounting and fail conservatively if the tokenizer/count is uncertain. Oversized evidence or history must not displace the current question or silently erase unresolved parts. If sufficient context cannot fit, return clarification or an explicit partial/unknown result. These defaults need evaluation; they are not measured latency or cost guarantees.
+
+M2 implements the provider budget/validation boundary in [PROVIDERS.md](PROVIDERS.md). Share one budget across graph stages; initialization is not permission to infer. Default counting refuses dispatch until a verified compatible profile is supplied, and embedding formatting must be explicitly verified/versioned. Unknown usage retains full attempt reservations; client attempt receipts do not establish hidden upstream activity.
 
 Citation/schema validation does not establish semantic entailment of arbitrary generated prose. See [EVALUATION.md](EVALUATION.md) for the source-grounding review requirement.

@@ -4,9 +4,11 @@ An Arabic and English chatbot project for public information on [Telescope Medic
 
 ## Current status
 
-M0 foundation and M1 API shell are implemented. The repository includes specifications, Codex instructions, a progress file, a locked Python environment, validated settings, health endpoints, safe request/error handling, and a validated chat placeholder.
+M0 foundation, M1 API shell, and M2 provider contracts/adapters are implemented. The repository includes specifications, Codex instructions, a progress file, a locked Python environment, validated settings, health endpoints, safe request/error handling, a validated chat placeholder, and async OpenRouter adapters with offline protocol tests.
 
-Provider calls, ingestion, Qdrant access, LangGraph orchestration, chatbot answers, Docker packaging, and website integration are not implemented yet. The API shell can run locally; it is not a functioning clinic chatbot. No paid model or embedding requests have been made. [PROJECT_STATUS.md](PROJECT_STATUS.md) records actual verification and the next milestone.
+Ingestion, Qdrant access, LangGraph orchestration, chatbot answers, Docker packaging, and website integration are not implemented yet. The API shell can run locally; it is not a functioning clinic chatbot. No paid model or embedding requests have been made. [PROJECT_STATUS.md](PROJECT_STATUS.md) records actual verification and the next milestone.
+
+M2 supports strict structured chat responses, ordered/validated embedding batches, shared token/deadline reservations, bounded retries, safe errors, and usage receipts. Provider adapters are not connected to the API yet. A verified model-compatible token counter must be injected before dispatch; the default refuses requests. Hosted Qwen query/document formatting also needs an explicit verified profile. Synthetic test profiles prove the contract, not live compatibility. See [PROVIDERS.md](docs/PROVIDERS.md).
 
 ## Run the API shell locally
 
@@ -65,6 +67,7 @@ The project now has a local Git repository on `main` with a baseline checkpoint 
 | [PROJECT_SPECIFICATION.md](docs/PROJECT_SPECIFICATION.md) | Product requirements and acceptance criteria |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Folder ownership and service boundaries |
 | [PIPELINE.md](docs/PIPELINE.md) | LangGraph nodes, state, budgets, and answer behavior |
+| [PROVIDERS.md](docs/PROVIDERS.md) | Implemented OpenRouter interfaces, accounting, retries, and live-use gates |
 | [INGESTION.md](docs/INGESTION.md) | Website crawling, chunking, provenance, and index updates |
 | [API_CONTRACT.md](docs/API_CONTRACT.md) | Planned FastAPI request and response contracts |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker design, runtime configuration, and operations |
@@ -79,6 +82,6 @@ The project now has a local Git repository on `main` with a baseline checkpoint 
 
 `.env.example` lists validated settings and design defaults. The local `.env` is for the user to fill in and has been preserved during implementation. Both Git and Docker exclusions protect local environment files. Do not paste the key into documentation or chat. The new body/readiness limits have defaults, so an existing `.env` need not be rewritten to use them.
 
-The model identifiers are `openai/gpt-6-luna` and `qwen/qwen3-embedding-8b`. Actual account access, endpoint behavior, structured-output support, and returned vector dimensions must be verified when the provider integration is implemented.
+The model identifiers are `openai/gpt-6-luna` and `qwen/qwen3-embedding-8b`. Actual account access, endpoint behavior, structured-output support, returned model IDs/dimensions, counting, and embedding formatting remain unverified. New provider settings have defaults; the existing local `.env` was preserved.
 
-The next milestone is M2: implement OpenRouter provider adapters with mocked protocol tests. Live compatibility checks and ingestion come later; see the implementation plan.
+The next milestone is M3: implement public website ingestion, cleaning, formatting, structure-aware chunking, and provenance checks, starting with local HTML fixtures. Paid embedding and index publication require the remaining compatibility and source-review gates; see the implementation plan.

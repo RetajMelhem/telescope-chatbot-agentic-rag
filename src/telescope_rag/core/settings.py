@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     openrouter_embedding_model: Literal["qwen/qwen3-embedding-8b"] = "qwen/qwen3-embedding-8b"
     provider_timeout_seconds: float = Field(default=15, gt=0)
     provider_max_retries: int = Field(default=1, ge=0, le=1)
+    provider_max_request_bytes: int = Field(default=262144, gt=0)
+    provider_max_response_bytes: int = Field(default=2000000, gt=0)
+    provider_retry_delay_seconds: float = Field(default=0.1, ge=0, le=2)
+    max_embedding_calls: int = Field(default=1, ge=1, le=1)
+    max_embedding_input_tokens: int = Field(default=16000, gt=0)
+    max_embedding_batch_size: int = Field(default=32, ge=1, le=32)
 
     qdrant_url: AnyHttpUrl = AnyHttpUrl("http://127.0.0.1:6333")
     qdrant_api_key: SecretStr = Field(default=SecretStr(""), repr=False)

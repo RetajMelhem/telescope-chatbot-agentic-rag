@@ -82,6 +82,8 @@ Use `qwen/qwen3-embedding-8b` for both documents and queries. The upstream model
 
 Pin the embedding model, effective provider configuration, actual dimensions, cleaning/formatting/chunking policy, normalization, and query instruction format in the snapshot manifest. Only validated formatted chunks enter embedding batches. Query instructions follow the verified hosted endpoint's behavior; do not assume it applies the same prefixes as the local model or apply a prefix twice.
 
+M2 supplies the bounded embedding adapter described in [PROVIDERS.md](PROVIDERS.md). Use a new budget for each batch; cap both text count and total formatted tokens before dispatch. The default counter refuses dispatch and the format profile must be explicitly verified. M3 can validate extraction/cleaning/chunking offline before those live prerequisites are resolved; no source or paid-embedding gate is waived by the adapter tests.
+
 Validate response item indexes, count, finite vector values, and dimensions. Preserve batch-to-chunk mapping even if responses arrive reordered. Cache embeddings by content plus embedding configuration. Changing dimensions, model, or effective embedding conventions requires a new compatible index; never mix incompatible vectors in an active collection.
 
 ## Publishing an index

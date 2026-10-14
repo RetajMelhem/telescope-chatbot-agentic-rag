@@ -4,7 +4,7 @@
 
 Build a public website information chatbot for Telescope Medical Center using Python, FastAPI, LangGraph, GPT-6 Luna through OpenRouter, Qwen3 Embedding 8B, and Docker. Arabic, English, and everyday Jordanian Arabic are required.
 
-M0 specifications and the M1 FastAPI/configuration shell are implemented. The default knowledge adapter fails closed and chat inference is unavailable. Read the progress file for current milestone status. Do not describe planned behavior as implemented, tested, indexed, or deployed. Follow the active user request; documentation alone does not authorize paid requests, deployment, commits, or later milestones.
+M0 specifications, the M1 FastAPI/configuration shell, and M2 provider adapters are implemented and tested offline. The default knowledge adapter fails closed and API chat inference is unavailable. Provider dispatch requires an explicitly supplied compatible token counter and verified embedding format; default counting refuses dispatch. Read the progress file for current milestone status. Do not describe planned behavior as implemented, tested, indexed, or deployed. Follow the active user request; documentation alone does not authorize paid requests, deployment, commits, or later milestones.
 
 ## Project continuity
 
@@ -27,6 +27,8 @@ Before substantive work, read [PROJECT_STATUS.md](PROJECT_STATUS.md) to learn th
 Use `src/telescope_rag/api/` for transport and validation, `graph/` for orchestration, `providers/` for OpenRouter adapters, `retrieval/` for bounded Qdrant access, `ingestion/` for offline website collection, `knowledge/` for evidence models and time calculations, and `prompts/` for versioned model instructions. Keep model SDK objects and secrets out of API schemas and graph state.
 
 Use the documents needed for the task: [project specification](docs/PROJECT_SPECIFICATION.md) for scope; [architecture](docs/ARCHITECTURE.md) for boundaries; [pipeline](docs/PIPELINE.md) for graph changes; [ingestion](docs/INGESTION.md) for data/index work; [deployment](docs/DEPLOYMENT.md) for containers.
+
+Read [provider contracts](docs/PROVIDERS.md) before provider or budget changes. Share one `ExecutionBudget` across a request's stages. Do not replace unknown token counts with character counts, mark a synthetic embedding format verified for production, silently accept a different reported model, or enable transport retries/fallbacks.
 
 ## Implementation conventions
 

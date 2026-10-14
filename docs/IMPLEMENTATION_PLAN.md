@@ -1,6 +1,6 @@
 # Implementation plan
 
-Status: roadmap. M0 foundation and M1 API/configuration shell are complete. Track actual verification and next actions in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+Status: roadmap. M0 foundation, M1 API/configuration shell, and the initial offline M2 implementation are complete. M3 is next. Track actual verification and next actions in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## M0 — Specification and scaffold
 
@@ -17,6 +17,8 @@ Validate settings and missing-secret handling with offline checks. `/health/live
 Implemented with injected fake knowledge probes and a default unavailable adapter. Provider interfaces/adapters are the next M2 task. Chat currently validates input and returns a safe unavailable result.
 
 ## M2 — Provider contracts
+
+Implemented and verified offline on 2026-10-14. See [PROVIDERS.md](PROVIDERS.md) for actual behavior and the counter/format/live-compatibility gates. The deliverables below remain the acceptance contract; mocked success does not establish account or hosted-model compatibility.
 
 Implement asynchronous Luna chat and Qwen embedding adapters against OpenRouter, validated structured outputs, batch/index mapping, usage accounting, deadlines, and bounded retry handling. Preserve the chosen models; do not silently switch models when a parameter fails.
 
