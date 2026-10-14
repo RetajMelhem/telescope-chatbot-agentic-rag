@@ -34,6 +34,8 @@ For M3, follow [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md). Preserve origi
 
 The full-page semantic review found meaningful omissions and relationship errors despite prior valid provenance. Preserve heading-only facts, literal owner/card/FAQ/table relationships, list qualifiers, and informative image-alt labels; source mapping alone does not prove completeness. Read the current semantic ledger listed in `PROJECT_STATUS.md` before source acceptance. Website spelling/copy conflicts and sparse profiles remain source issues; do not invent corrections or infer a specialty from a derivative directory title.
 
+The later quality audit also found decorative alt noise, invisible layout marks, unrelated footer-title context and orphaned Elementor comparison values. Follow the current versioned preparation policy. Exact deduplication must retain every occurrence in the draft input plan; numbers, doctor ownership, translations and differing qualifiers cannot be merged by similarity. Informative image labels remain literal. Do not equate clean drafts or a deduplication projection with verified token counts, source approval or retrieval quality.
+
 ## Implementation conventions
 
 - Use typed Python, Pydantic validation at external boundaries, and async I/O for provider and database calls.

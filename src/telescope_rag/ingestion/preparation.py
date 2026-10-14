@@ -18,7 +18,7 @@ from telescope_rag.ingestion.models import (
 )
 from telescope_rag.providers.contracts import EmbeddingFormat
 
-PREPARATION_VERSION = "structure-nfc-v2"
+PREPARATION_VERSION = "structure-nfc-v3"
 EMBEDDING_MODEL = "qwen/qwen3-embedding-8b"
 
 

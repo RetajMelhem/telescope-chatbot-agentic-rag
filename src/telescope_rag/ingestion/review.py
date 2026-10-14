@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pydantic import Field
 
+from telescope_rag.ingestion.deduplication import draft_input_plan
 from telescope_rag.ingestion.models import (
     PreparedChunk,
     PreparedDocument,
@@ -162,6 +163,7 @@ def write_bundle(
     """Exclusive directory; never overwrite a prior reviewed bundle."""
     if audit.prepared_digest != prepared_digest(documents):
         raise ValueError("audit_digest_mismatch")
+    input_plan = draft_input_plan(all_chunks(documents), audit.prepared_digest)
     output.mkdir(parents=True, exist_ok=False)
     for document in documents:
         # Names come from our digest, never from external paths/HTML identifiers.
@@ -183,6 +185,8 @@ def write_bundle(
         "snapshot_id": audit.snapshot_id,
         "document_count": audit.document_count,
         "chunk_count": audit.chunk_count,
+        "unique_embedding_inputs": input_plan["unique_input_count"],
+        "reused_embedding_occurrences": input_plan["reused_occurrence_count"],
         "doctor_occurrences": len(audit.directory),
         "hours_evidence_blocks": len(audit.hours),
         "gap_codes": audit.gap_codes,
@@ -192,6 +196,11 @@ def write_bundle(
     }
     (output / "summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    metadata = output / "metadata"
+    metadata.mkdir()
+    (metadata / "embedding-input-plan.json").write_text(
+        json.dumps(input_plan, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
 

@@ -10,7 +10,13 @@ from dataclasses import dataclass, field
 
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 
-from telescope_rag.ingestion.layouts import UnsupportedGridLayout, parse_css_grid
+from telescope_rag.ingestion.layouts import (
+    UnsupportedElementorLayout,
+    UnsupportedGridLayout,
+    is_elementor_comparison,
+    parse_css_grid,
+    parse_elementor_comparison,
+)
 from telescope_rag.ingestion.models import (
     AuditItem,
     ContentUnit,
@@ -78,11 +84,19 @@ _DUMMY_TEXT = re.compile(
 MAX_DOM_NODES = 20_000
 MAX_DOM_DEPTH = 128
 MAX_HTML_BYTES = 2_000_000
+_PRESENTATION_MARKS = str.maketrans({"\u061c": None, "\u200e": None, "\u200f": None, "\u200b": " "})
+_DECORATIVE_ALT = re.compile(
+    r"(?:telescope(?: medical center)? (?:logo(?: white| color)?|cta|image)"
+    r"|company logo(?:\s+\d+)?|testimonial cover image|transparent eye image"
+    r"|(?:image|rectangle|frame|group)[\s\d_-]*)",
+    re.I,
+)
 
 
 def normalize_text(value: str) -> str:
-    """NFC/layout whitespace only; retain letters, diacritics, numbers and punctuation."""
-    return re.sub(r"\s+", " ", unicodedata.normalize("NFC", value)).strip()
+    """Normalize presentation only; retain letters, joiners, diacritics and punctuation."""
+    value = unicodedata.normalize("NFC", value).translate(_PRESENTATION_MARKS)
+    return re.sub(r"\s+", " ", value).strip()
 
 
 def _language(value: str) -> str:
@@ -153,6 +167,7 @@ class _Extractor:
         self.removed: list[AuditItem] = []
         self.gaps: list[AuditItem] = []
         self.state = _State()
+        self.in_footer = False
         self.pending: list[Segment] = []
         self.pending_kind = "section"
         self.emitted_owners: set[str] = set()
@@ -274,7 +289,7 @@ class _Extractor:
                 node.decompose()
 
     def context(self) -> tuple[Segment, ...]:
-        context = ([self.title_context] if self.title_context else []) + [
+        context = ([self.title_context] if self.title_context and not self.in_footer else []) + [
             segment for _, segment in self.state.headings
         ]
         for extra in (self.state.doctor, self.state.faq):
@@ -586,9 +601,12 @@ class _Extractor:
         if (
             not text
             or text.casefold() in {"image", "doctor", "logo"}
-            or re.fullmatch(r"(?:image|rectangle|frame|group)[\s\d_-]*", text, re.I)
+            or _DECORATIVE_ALT.fullmatch(text)
         ):
             self.audit(node, "decorative_image")
+            return
+        if re.fullmatch(r"[^/\\]+\.(?:jpe?g|png|webp|gif|avif|svg)", text, re.I):
+            self.audit(node, "image_asset_filename")
             return
         locator = self.locators[id(node)] + "::attr(alt)"
         segment = Segment(
@@ -618,6 +636,17 @@ class _Extractor:
         )
         for row in rows:
             self.emit("table", [row], extra=list(headers))
+
+    def elementor_table(self, node: Tag):
+        self.flush()
+        try:
+            groups = parse_elementor_comparison(node, self.segment)
+        except UnsupportedElementorLayout:
+            self.audit(node, "unsupported_elementor_comparison_table", gap=True)
+            return
+        for group in groups:
+            for row in group.rows:
+                self.emit("table", [row], extra=list((*group.headers, *group.context)))
 
     def scoped(self, node: Tag, inside_profile: bool):
         self.flush()
@@ -772,6 +801,8 @@ class _Extractor:
         self.flush()
         self.finish_heading()
         saved = self.state
+        saved_footer = self.in_footer
+        self.in_footer = True
         self.state = _State()
         self.pending_kind = "contact"
         for child in node.children:
@@ -780,6 +811,7 @@ class _Extractor:
         self.flush()
         self.finish_heading()
         self.state = saved
+        self.in_footer = saved_footer
 
     def walk(self, node: Tag, *, inside_profile: bool = False):
         if node.name == "head":
@@ -804,6 +836,9 @@ class _Extractor:
             return
         if node.name == "table":
             self.table(node)
+            return
+        if is_elementor_comparison(node):
+            self.elementor_table(node)
             return
         if node.name == "div" and "grid" in _classes(node):
             children = [child for child in node.children if isinstance(child, Tag)]

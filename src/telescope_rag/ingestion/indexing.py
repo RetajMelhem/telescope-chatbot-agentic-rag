@@ -13,6 +13,7 @@ from pydantic import Field
 
 from telescope_rag.core.settings import Settings
 from telescope_rag.ingestion.collection import CollectionError, canonical_url
+from telescope_rag.ingestion.deduplication import embedding_input_key
 from telescope_rag.ingestion.models import PreparedChunk, PreparedDocument, Record, stable_id
 from telescope_rag.ingestion.review import (
     PreparationAudit,
@@ -185,7 +186,7 @@ async def embed_reviewed(
     config_hash = configuration_hash(configuration)
     groups: dict[str, list[PreparedChunk]] = {}
     for chunk in chunks:
-        key = stable_id(config_hash, chunk.language, chunk.doctor_id or "", chunk.retrieval_text)
+        key = embedding_input_key(chunk, config_hash)
         groups.setdefault(key, []).append(chunk)
     keys = list(groups)
     vectors: dict[str, tuple[float, ...]] = {}

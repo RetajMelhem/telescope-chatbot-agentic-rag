@@ -28,6 +28,7 @@ from telescope_rag.ingestion.models import (
     SourceSpan,
     stable_id,
 )
+from telescope_rag.ingestion.preparation import PREPARATION_VERSION
 from telescope_rag.ingestion.review import (
     ReviewApproval,
     build_audit,
@@ -42,7 +43,7 @@ CONFIG = EmbeddingConfiguration(
     dimensions=32,
     format_version=FORMAT.version,
     format_hash=stable_id("embedding-format-v1", FORMAT.model_dump_json()),
-    preparation_version="structure-nfc-v2",
+    preparation_version=PREPARATION_VERSION,
     tokenizer_version="synthetic-counter-v1",
 )
 

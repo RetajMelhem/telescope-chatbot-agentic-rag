@@ -83,6 +83,13 @@ def test_prepare_snapshot_produces_bound_bilingual_draft_and_unapproved_review(s
     prepared = json.loads((output / f"{prepared_name}.json").read_text(encoding="utf-8"))
 
     assert summary["document_count"] == 1 and summary["chunk_count"] == 2
+    plan = json.loads(
+        (output / "metadata" / "embedding-input-plan.json").read_text(encoding="utf-8")
+    )
+    assert plan["prepared_digest"] == audit["prepared_digest"]
+    assert plan["occurrence_count"] == 2 and plan["unique_input_count"] == 2
+    assert summary["unique_embedding_inputs"] == 2
+    assert summary["reused_embedding_occurrences"] == 0
     assert summary["approved"] is False and summary["embedding_ready"] is False
     assert (
         audit["collection_digest"]
@@ -150,7 +157,15 @@ def test_prepare_snapshot_integrity_failure_creates_no_prepared_bundle(
 def test_prepare_snapshot_rerun_preserves_immutable_review_bundle(snapshot, tmp_path):
     output = tmp_path / "prepared"
     prepare_snapshot(snapshot, output)
-    before = {path.name: path.read_bytes() for path in output.iterdir()}
+    before = {
+        str(path.relative_to(output)): path.read_bytes()
+        for path in output.rglob("*")
+        if path.is_file()
+    }
     with pytest.raises(FileExistsError):
         prepare_snapshot(snapshot, output)
-    assert {path.name: path.read_bytes() for path in output.iterdir()} == before
+    assert {
+        str(path.relative_to(output)): path.read_bytes()
+        for path in output.rglob("*")
+        if path.is_file()
+    } == before
