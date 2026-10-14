@@ -5,6 +5,7 @@ import logging
 from time import perf_counter
 from uuid import uuid4
 
+from starlette.datastructures import Headers
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
@@ -18,11 +19,13 @@ class RequestBoundaryMiddleware:
         *,
         max_body_bytes: int,
         timeout_seconds: float,
+        cors_allowed_origins: tuple[str, ...],
         logger: logging.Logger,
     ) -> None:
         self.app = app
         self.max_body_bytes = max_body_bytes
         self.timeout_seconds = timeout_seconds
+        self.cors_allowed_origins = cors_allowed_origins
         self.logger = logger
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -57,6 +60,13 @@ class RequestBoundaryMiddleware:
                 response = JSONResponse(
                     error_payload(request_id, reason, message), status_code=code
                 )
+                # These failures occur outside the inner CORS middleware. Keep them
+                # readable by allowed origins without granting any new origin access.
+                origin = Headers(scope=scope).get("origin")
+                if origin in self.cors_allowed_origins:
+                    response.headers["Access-Control-Allow-Origin"] = origin
+                    response.headers["Access-Control-Expose-Headers"] = "X-Request-ID"
+                    response.headers.add_vary_header("Origin")
                 await response(scope, receive, tracked_send)
 
         try:

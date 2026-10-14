@@ -90,6 +90,8 @@ Use `200` for handled product outcomes, including uncertainty and scope refusals
 
 Error responses contain an application-issued `request_id`, a stable `error.code`, and a safe `error.message`. Do not expose stack traces, keys, prompts, provider payloads, or database details.
 
+This envelope applies to application/API errors. Standard CORS preflight responses are transport responses: an unsupported origin/method/header returns `400` with plain text, no allowed-origin header, and an issued `X-Request-ID`. Successful preflight is also handled by CORS middleware. Neither path performs inference. Method rejection on an API route returns the JSON envelope and preserves its `Allow` header.
+
 Liveness returns `200` while the process is operational. Readiness returns `200` only with validated configuration and a readable compatible approved snapshot; otherwise `503`. Readiness does not prove a provider can complete a paid request or that the knowledge corpus has every answer.
 
 M1's readiness probe requires configured model credentials and a reachable, approved, identified snapshot with the selected embedding model/dimensions. The probe is bounded to two seconds by default. The production default adapter is unavailable until live knowledge is implemented. A `200` readiness response exists only in tests with an injected compatible fake snapshot at this stage. Liveness does not inspect the knowledge store.
@@ -97,6 +99,10 @@ M1's readiness probe requires configured model credentials and a reachable, appr
 The implemented health JSON is `{ "request_id": "...", "status": "live" }` or `{ "request_id": "...", "status": "ready" }`. Readiness failures use the error envelope with stable `configuration_incomplete`, `knowledge_unavailable`, `knowledge_not_ready`, or `knowledge_incompatible` codes. The 30-second overall request deadline is enforced by request middleware; expiration returns `504` / `request_timeout` before a response starts.
 
 Unexpected pre-response exceptions return a sanitized `500` / `internal_error`. Default application logs include only an issued request ID, matched route template, status, duration, level, and timestamp. They exclude raw paths/query strings, headers, bodies, settings, and exception details. Run Uvicorn with `--no-access-log` to keep its separate access log from recording user-controlled URLs. Diagnostic `/docs` and `/openapi.json` routes are available in development and disabled in production.
+
+Early body-limit errors and middleware-generated timeout/internal-error responses retain CORS headers for configured allowed origins, so a clinic browser client can read their error envelope and request ID. Unapproved origins receive no allowed-origin header.
+
+Async adapter cleanup is bounded by `SHUTDOWN_TIMEOUT_SECONDS` (five seconds by default), independently of HTTP request deadlines. Cleanup failure/timeout emits only a fixed warning event, without exception details or credentials. Like request cancellation, this relies on cooperative async I/O; future provider adapters must preserve cancellation behavior. `OPENROUTER_BASE_URL` is validated as the approved `https://openrouter.ai/api/v1` endpoint, with an optional trailing slash.
 
 ## Website integration
 

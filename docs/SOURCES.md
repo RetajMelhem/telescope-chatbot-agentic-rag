@@ -48,3 +48,7 @@ Re-inspected the [doctor directory](https://telescopecenter.com/doctors/) on 202
 [Qu et al., NAACL 2025](https://aclanthology.org/2025.findings-naacl.114/) reports inconsistent benefits from costlier semantic chunking in the study's tested retrieval/generation tasks. It does not establish a winning chunker for this clinic. The project therefore chooses a deterministic structure-aware default, retains token overflow limits, and requires source-grounded evaluation before claiming it is best.
 
 No complete cleaner/chunker, corpus comparison, or embedding call was executed for this revision. The policy/settings were updated in preparation for M3; M2 remains the next implementation milestone.
+
+## M1 completion audit
+
+The current implementation, installed middleware behavior, and offline tests were rechecked on 2026-10-14. [OpenRouter's quickstart](https://openrouter.ai/docs/quickstart) confirms the HTTPS `/api/v1` base used by the tightened configuration check. Audit findings and fixes concern the API shell, not live model compatibility. Results and the concrete M2 definition of done are recorded in the project status and implementation plan.

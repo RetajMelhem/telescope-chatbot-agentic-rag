@@ -4,14 +4,18 @@ import json
 import logging
 from datetime import UTC, datetime
 
+SAFE_EVENTS = frozenset(
+    {"request_completed", "adapter_cleanup_timed_out", "adapter_cleanup_failed"}
+)
+
 
 class SafeJsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload = {
             "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
-            "event": "request_completed"
-            if record.msg == "request_completed"
+            "event": record.msg
+            if isinstance(record.msg, str) and record.msg in SAFE_EVENTS
             else "application_event",
         }
         for name in ("request_id", "route", "status_code", "duration_ms"):

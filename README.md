@@ -18,7 +18,7 @@ From the repository root, with the prepared `.venv`:
 
 Open [local API documentation](http://127.0.0.1:8000/docs) after starting it. `/health/live` returns `200`. `/health/ready` returns `503` until model credentials and a compatible approved knowledge snapshot are available; the current default adapter always reports knowledge unavailable. A valid `POST /api/v1/chat` returns `503` with `chat_not_available`; invalid input returns `422`.
 
-The app factory reads `.env` from the working directory and accepts process-environment overrides. It never rewrites `.env` or performs network inference at import/startup. Invalid configuration fails with a sanitized startup message.
+The app factory reads `.env` from the working directory and accepts process-environment overrides. It never rewrites `.env` or performs network inference at import/startup. Invalid configuration fails with a sanitized startup message. Adapter cleanup has a five-second default deadline; failure logs contain only fixed event names. The OpenRouter URL must be the approved HTTPS `/api/v1` base endpoint.
 
 For a fresh checkout with `uv` installed, use `uv sync --locked`. On this workspace, `uv` was bootstrapped locally without changing the global Python installation:
 

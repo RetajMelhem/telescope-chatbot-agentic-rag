@@ -263,3 +263,107 @@ def test_production_does_not_expose_diagnostic_docs() -> None:
     with TestClient(create_app(config)) as client:
         assert client.get("/docs").status_code == 404
         assert client.get("/openapi.json").status_code == 404
+
+
+@pytest.mark.parametrize("failure", ["oversized", "timeout", "exception"])
+@pytest.mark.parametrize("origin", ["https://telescopecenter.com", "https://example.com"])
+def test_boundary_errors_preserve_cors_only_for_allowed_origins(failure: str, origin: str) -> None:
+    config = keyed_settings(
+        max_request_body_bytes=32,
+        request_timeout_seconds=0.05,
+        provider_timeout_seconds=0.01,
+        readiness_timeout_seconds=0.01,
+    )
+    app = create_app(config)
+
+    @app.get("/test/slow")
+    async def slow() -> None:
+        await asyncio.sleep(10)
+
+    @app.get("/test/failure")
+    async def fail() -> None:
+        raise RuntimeError("synthetic-private-exception")
+
+    with TestClient(app) as client:
+        if failure == "oversized":
+            response = client.post("/api/v1/chat", content=b"x" * 33, headers={"Origin": origin})
+            expected = 413
+        else:
+            path = "/test/slow" if failure == "timeout" else "/test/failure"
+            response = client.get(path, headers={"Origin": origin})
+            expected = 504 if failure == "timeout" else 500
+    assert response.status_code == expected
+    assert response.json()["request_id"] == response.headers["X-Request-ID"]
+    assert "synthetic-private-exception" not in response.text
+    if origin == "https://telescopecenter.com":
+        assert response.headers["Access-Control-Allow-Origin"] == origin
+        assert "X-Request-ID" in response.headers["Access-Control-Expose-Headers"]
+        assert "Origin" in response.headers["Vary"]
+    else:
+        assert "Access-Control-Allow-Origin" not in response.headers
+
+
+def test_method_not_allowed_preserves_allow_header() -> None:
+    with TestClient(create_app(keyed_settings())) as client:
+        response = client.get("/api/v1/chat")
+    assert response.status_code == 405
+    assert response.headers["Allow"] == "POST"
+    assert response.json()["error"]["code"] == "method_not_allowed"
+
+
+def test_blocked_cors_preflight_is_a_standard_transport_response() -> None:
+    with TestClient(create_app(keyed_settings())) as client:
+        response = client.options(
+            "/api/v1/chat",
+            headers={"Origin": "https://example.com", "Access-Control-Request-Method": "POST"},
+        )
+    assert response.status_code == 400
+    assert response.headers["Content-Type"].startswith("text/plain")
+    assert "Access-Control-Allow-Origin" not in response.headers
+    UUID(response.headers["X-Request-ID"])
+
+
+def test_shutdown_cancels_slow_cleanup_and_logs_only_the_event(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    class SlowCloseProbe(FakeKnowledgeProbe):
+        cancelled = False
+
+        async def aclose(self) -> None:
+            try:
+                await asyncio.sleep(10)
+            finally:
+                self.cancelled = True
+
+    probe = SlowCloseProbe()
+    app = create_app(keyed_settings(shutdown_timeout_seconds=0.01), knowledge_probe=probe)
+    logger = logging.getLogger("telescope_rag")
+    logger.addHandler(caplog.handler)
+    try:
+        with TestClient(app):
+            pass
+    finally:
+        logger.removeHandler(caplog.handler)
+    assert probe.cancelled
+    events = [json.loads(SafeJsonFormatter().format(record)) for record in caplog.records]
+    assert any(event["event"] == "adapter_cleanup_timed_out" for event in events)
+
+
+def test_failed_cleanup_is_visible_without_private_details(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    class FailedCloseProbe(FakeKnowledgeProbe):
+        async def aclose(self) -> None:
+            raise RuntimeError("synthetic-private-cleanup-value")
+
+    app = create_app(keyed_settings(), knowledge_probe=FailedCloseProbe())
+    logger = logging.getLogger("telescope_rag")
+    logger.addHandler(caplog.handler)
+    try:
+        with TestClient(app):
+            pass
+    finally:
+        logger.removeHandler(caplog.handler)
+    rendered = "\n".join(SafeJsonFormatter().format(record) for record in caplog.records)
+    assert "adapter_cleanup_failed" in rendered
+    assert "synthetic-private-cleanup-value" not in rendered

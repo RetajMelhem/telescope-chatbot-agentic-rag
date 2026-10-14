@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     retrieval_concurrency: int = Field(default=4, gt=0)
     max_request_body_bytes: int = Field(default=131072, gt=0)
     readiness_timeout_seconds: float = Field(default=2, gt=0)
+    shutdown_timeout_seconds: float = Field(default=5, gt=0)
 
     website_base_url: AnyHttpUrl = AnyHttpUrl("https://telescopecenter.com/")
     crawl_allowed_hosts: CsvValues = tuple(sorted(PUBLIC_HOSTS))
@@ -162,10 +163,13 @@ class Settings(BaseSettings):
             self.website_base_url.host not in self.crawl_allowed_hosts
         ):
             raise ValueError("The website base URL must use HTTPS on an approved crawl host.")
-        if self.openrouter_base_url.scheme != "https" or (
-            self.openrouter_base_url.host != "openrouter.ai"
+        if (
+            self.openrouter_base_url.scheme != "https"
+            or self.openrouter_base_url.host != "openrouter.ai"
+            or self.openrouter_base_url.port != 443
+            or (self.openrouter_base_url.path or "").rstrip("/") != "/api/v1"
         ):
-            raise ValueError("OpenRouter must use its HTTPS API endpoint.")
+            raise ValueError("OpenRouter must use the approved HTTPS API base URL.")
         if self.app_env == "production" and not self.qdrant_api_key.get_secret_value():
             raise ValueError("Production requires a read-only knowledge credential.")
         return self

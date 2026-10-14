@@ -39,6 +39,7 @@ def test_environment_overrides_dotenv_without_rewriting_it(
         {"max_subquestions": 5},
         {"provider_max_retries": 2},
         {"request_timeout_seconds": -1},
+        {"shutdown_timeout_seconds": 0},
         {"request_timeout_seconds": 5, "provider_timeout_seconds": 15},
         {"chunking_strategy": "fixed_tokens"},
         {"chunk_max_tokens": 0},
@@ -52,6 +53,8 @@ def test_environment_overrides_dotenv_without_rewriting_it(
         {"website_base_url": "https://example.com"},
         {"qdrant_url": "http://user:secret@localhost:6333"},
         {"openrouter_base_url": "https://example.com/api/v1"},
+        {"openrouter_base_url": "https://openrouter.ai/incorrect-api-path"},
+        {"openrouter_base_url": "https://openrouter.ai:444/api/v1"},
         {"openrouter_chat_model": "some-other-model"},
         {"langsmith_tracing": True},
         {"app_env": "production"},
@@ -116,3 +119,8 @@ def test_old_fixed_size_values_cannot_override_the_new_ceiling() -> None:
     )
     assert settings.chunk_max_tokens == 900
     assert settings.chunking_strategy == "structure_aware"
+
+
+def test_approved_api_base_accepts_optional_trailing_slash() -> None:
+    settings = Settings(_env_file=None, openrouter_base_url="https://openrouter.ai/api/v1/")
+    assert settings.openrouter_base_url.path == "/api/v1/"

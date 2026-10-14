@@ -6,7 +6,7 @@ Status: M1 configuration/API tests are implemented and verified offline. RAG, re
 
 Unit tests use synthetic/source fixtures and verify pure behavior. Integration tests use mocked OpenRouter responses and a fake retrieval adapter unless a local database check is explicitly being exercised. No provider requests are implicit in `pytest` or the existence of an API key.
 
-M1 tests use synthetic settings and fake knowledge probes, never the user's `.env`. External socket connections are blocked; loopback/Unix sockets remain available for event-loop internals on Windows and other platforms. No live local service is used by the test suite. The current tests cover configuration, startup/lifecycle, health readiness, chat schema rejection, bilingual input transport, body limits, deadlines, CORS, diagnostic exposure, and safe error/log behavior. They do not verify Arabic understanding or RAG answer quality.
+M1 tests use synthetic settings and fake knowledge probes, never the user's `.env`. External socket connections are blocked; loopback/Unix sockets remain available for event-loop internals on Windows and other platforms. No live local service is used by the test suite. The current tests cover configuration, startup/lifecycle, bounded shutdown, health readiness, chat schema rejection, bilingual input transport, body limits, deadlines, CORS including early/error responses, method-rejection headers, diagnostic exposure, and safe error/log behavior. They do not verify Arabic understanding or RAG answer quality.
 
 ## Required case families
 

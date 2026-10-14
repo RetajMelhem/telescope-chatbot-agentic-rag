@@ -1,5 +1,6 @@
 """Application factory; importing this module performs no configuration or network work."""
 
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -32,10 +33,13 @@ def create_app(
             yield
         finally:
             try:
-                await probe.aclose()
+                async with asyncio.timeout(config.shutdown_timeout_seconds):
+                    await probe.aclose()
+            except TimeoutError:
+                logger.warning("adapter_cleanup_timed_out")
             except Exception:
-                # Closing a failed adapter must not disclose its configuration or payload.
-                pass
+                # Only the failure event is public; adapter exception details stay private.
+                logger.warning("adapter_cleanup_failed")
 
     app = FastAPI(
         title="Telescope clinic chatbot",
@@ -74,7 +78,11 @@ def create_app(
             405: ("method_not_allowed", "The HTTP method is not allowed."),
         }.get(error.status_code, ("http_error", "The HTTP request could not be completed."))
         return JSONResponse(
-            error_payload(request.state.request_id, code, message), status_code=error.status_code
+            error_payload(request.state.request_id, code, message),
+            status_code=error.status_code,
+            headers={"Allow": error.headers["Allow"]}
+            if error.status_code == 405 and error.headers and "Allow" in error.headers
+            else None,
         )
 
     app.include_router(health.router)
@@ -91,6 +99,7 @@ def create_app(
         RequestBoundaryMiddleware,
         max_body_bytes=config.max_request_body_bytes,
         timeout_seconds=config.request_timeout_seconds,
+        cors_allowed_origins=config.cors_allowed_origins,
         logger=logger,
     )
     return app
