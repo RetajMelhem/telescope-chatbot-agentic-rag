@@ -24,9 +24,9 @@ Offline fixtures cover successful responses, malformed output, unsupported schem
 
 ## M3 — Public website ingestion
 
-Implement allowlisted discovery, robots-aware collection, redirect/address checks, bounded extraction, source snapshots, chunking, doctor ownership, directory coverage, hours records, candidate indexing, and audit manifests.
+Implement allowlisted discovery, robots-aware collection, redirect/address checks, immutable snapshots, structural extraction, deterministic cleaning and formatting, variable-length chunks by source format/ownership, pre-embedding validation, directory coverage, hours records, candidate indexing, and audit manifests. Follow [INGESTION.md](INGESTION.md); token limits are overflow guards, not fixed-size targets or default overlap windows.
 
-Validate local fixtures first, then run the authorized public-site collection. Review gaps and placeholder content before paid embedding. Publish the first approved index only after dimensions, provenance, exclusions, and coverage checks pass.
+Validate local HTML/block fixtures first, including adjacent doctors, FAQ pairings, tables/footnotes, Arabic normalization, oversized units, and preserved source mappings. Then run the authorized public-site collection. Review extraction, cleaning, formatting, chunk coverage, and rejected-input manifests before paid embedding. Publish the first approved index only after dimensions, provenance, exclusions, and coverage checks pass. Compare structural chunking with a bounded fixed-window evaluation baseline on the same inputs during M3/M4; a baseline is an experiment, not the default serving policy.
 
 ## M4 — Retrieval and deterministic knowledge operations
 

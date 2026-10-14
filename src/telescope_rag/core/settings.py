@@ -72,8 +72,11 @@ class Settings(BaseSettings):
     crawl_concurrency: int = Field(default=2, gt=0)
     crawl_delay_seconds: float = Field(default=1, ge=0)
     crawl_max_page_bytes: int = Field(default=2000000, gt=0)
-    chunk_target_tokens: int = Field(default=500, gt=0)
-    chunk_overlap_tokens: int = Field(default=75, ge=0)
+    chunking_strategy: Literal["structure_aware"] = "structure_aware"
+    chunk_max_tokens: int = Field(default=1200, gt=0, le=32768)
+    # Accepted only so existing .env files remain usable; neither controls chunking.
+    chunk_target_tokens: int | None = Field(default=None, repr=False, exclude=True)
+    chunk_overlap_tokens: int | None = Field(default=None, repr=False, exclude=True)
     knowledge_max_age_hours: int = Field(default=168, gt=0)
     langsmith_tracing: bool = False
 
@@ -151,8 +154,8 @@ class Settings(BaseSettings):
             raise ValueError("Provider timeout must fit the request deadline.")
         if self.readiness_timeout_seconds > self.request_timeout_seconds:
             raise ValueError("Readiness timeout must fit the request deadline.")
-        if self.chunk_overlap_tokens >= self.chunk_target_tokens:
-            raise ValueError("Chunk overlap must be smaller than the target chunk.")
+        if self.chunk_max_tokens > self.max_evidence_tokens:
+            raise ValueError("The chunk safety ceiling must fit the evidence budget.")
         if self.max_evidence_tokens >= self.max_total_input_tokens:
             raise ValueError("Input budget must leave room beyond evidence.")
         if self.website_base_url.scheme != "https" or (

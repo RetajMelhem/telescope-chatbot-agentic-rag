@@ -40,7 +40,9 @@ def test_environment_overrides_dotenv_without_rewriting_it(
         {"provider_max_retries": 2},
         {"request_timeout_seconds": -1},
         {"request_timeout_seconds": 5, "provider_timeout_seconds": 15},
-        {"chunk_overlap_tokens": 500},
+        {"chunking_strategy": "fixed_tokens"},
+        {"chunk_max_tokens": 0},
+        {"chunk_max_tokens": 6001},
         {"max_evidence_tokens": 16000},
         {"clinic_timezone": "Unknown/Zone"},
         {"cors_allowed_origins": "*"},
@@ -88,3 +90,29 @@ def test_unknown_dotenv_keys_fail_safely(tmp_path: Path) -> None:
     with pytest.raises(ConfigurationError) as error:
         load_settings(path)
     assert "synthetic-private-value" not in str(error.value)
+
+
+def test_previous_chunk_settings_do_not_control_structure_policy_or_rewrite_env(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / ".env"
+    original = (
+        "OPENROUTER_API_KEY=synthetic-test-secret\n"
+        "CHUNK_TARGET_TOKENS=500\n"
+        "CHUNK_OVERLAP_TOKENS=75\n"
+    )
+    path.write_text(original, encoding="utf-8")
+    settings = load_settings(path)
+    assert settings.chunking_strategy == "structure_aware"
+    assert settings.chunk_max_tokens == 1200
+    assert "chunk_target_tokens" not in settings.model_dump()
+    assert "chunk_overlap_tokens" not in settings.model_dump()
+    assert path.read_text(encoding="utf-8") == original
+
+
+def test_old_fixed_size_values_cannot_override_the_new_ceiling() -> None:
+    settings = Settings(
+        _env_file=None, chunk_max_tokens=900, chunk_target_tokens=10, chunk_overlap_tokens=100
+    )
+    assert settings.chunk_max_tokens == 900
+    assert settings.chunking_strategy == "structure_aware"

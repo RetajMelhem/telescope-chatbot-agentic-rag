@@ -18,6 +18,8 @@ M1 tests use synthetic settings and fake knowledge probes, never the user's `.en
 | Decomposition | Simple, compound, dependent, negative, comparative, and over-limit requests; account for every original part. |
 | Conversation | Clear pronoun, ambiguous pronoun, fabricated history, and stale prior answers; only current evidence establishes facts. |
 | Listings | Complete directory manifest and incomplete crawl/top-k hits; only verified coverage supports an exhaustive listing. |
+| Cleaning/formatting | Navigation removal without deleting footer hours/contact facts; HTML entities, Unicode/Arabic text, lists, table labels/footnotes, original-source mappings, and retained qualifiers. |
+| Structural chunking | Adjacent doctors stay separate; question/answer pairs retain their question; list ordering and table header relationships survive; small units are not padded; overflow preserves ownership/context or records a gap. |
 | Hours | Before opening, exact opening, exact closing, split shifts, overnight intervals, Friday, missing hours, explicit closure, date exceptions, stale hours, and ambiguous AM/PM. |
 | Public/private schedule boundary | Posted doctor working hours can be answered; availability, private calendars, actual attendance, and booking requests remain excluded. |
 | Mixed scope | Supported specialty plus record/booking request; answer the public part and retain the excluded part. |
@@ -35,6 +37,8 @@ After ingestion, create a small versioned bilingual set covering every core fami
 Each fixture stores the original query, language, any history, pinned snapshot, expected outcome, expected supporting source spans, required request parts, and prohibited claims. A fluent answer is not a pass if the source does not support it.
 
 Keep evaluation fixtures separate from live knowledge and prompts. Do not introduce case-specific runtime rules to pass a benchmark.
+
+Before approving the chunking policy in M3/M4, compare structure-aware chunks with a bounded fixed-window baseline using the same source snapshot, embedding model, retrieval budget, and bilingual questions. Review retained facts, exact source mapping, doctor/FAQ/table integrity, relevant-evidence recall, supported answers, embedding input count, and cost. No strategy is the proven best for this corpus before that comparison. A semantic/LLM chunker is a later candidate only if a measured gap justifies its complexity.
 
 ## Metrics and release criteria
 

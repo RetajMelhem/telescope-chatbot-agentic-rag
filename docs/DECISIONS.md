@@ -17,6 +17,8 @@ Updated: 2026-10-14. Distinguish user requirements from proposed implementation 
 | Codex repository instructions | User requested an agent instruction file |
 | One canonical `AGENTS.md` | User requested removal of the unnecessary duplicate; `agent.md` removed |
 | Living project progress/next-step file | User requested continuity for later Codex sessions |
+| Review chunking against source format; prepare content before embedding | User requested an evidence-based revision, not automatic agreement with their proposed approach |
+| Local Git repository for project checkpoints | User authorized repository creation to organize development |
 
 ## Proposed design defaults
 
@@ -27,6 +29,9 @@ Updated: 2026-10-14. Distinguish user requirements from proposed implementation 
 | Two Luna stages, one retrieval round | Retains decomposition/retrieval/generation while bounding latency and cost; evaluate recall and answer coverage |
 | Source citations and explicit partial/unknown answers | Needed to avoid unsupported clinic facts |
 | Source-backed directory and hours records | Supports complete listings and time calculations without guessing from top-k results |
+| Structure-aware, variable-length chunks | Appropriate initial policy for distinct website profiles, FAQs, sections, lists, and tables; actual retrieval gains require corpus evaluation |
+| Deterministic cleaning/normalization/formatting before embedding | Remove verified noise while retaining original evidence and source relationships; no model rewriting of clinic facts |
+| 1,200-token chunk ceiling | Overflow safety default only; no minimum/target size, padding, or default token overlap; tune against real inputs |
 | Client-provided bounded context, no server chat storage | Supports follow-ups without adding a retention/session service |
 | `Asia/Amman` for clinic time | Clinic website identifies an Amman location; verify branch-specific timezone if new branches appear |
 | 4096 vector dimensions | Upstream Qwen model capacity; verify the actual hosted endpoint before index creation |
@@ -44,4 +49,4 @@ These choices are reviewable defaults, not user mandates or verified runtime beh
 - What to do if opening hours cannot be found in the public website: remain unknown, or separately approve an additional official public source. No additional source is authorized by default.
 - Exact validated dependency/container versions and OpenRouter endpoint/provider settings.
 
-None of these prevent M1's offline API/configuration work. Resolve decisions when their implementation milestone needs them.
+None of these prevent M2's mocked provider-contract work. Resolve decisions when their implementation milestone needs them.

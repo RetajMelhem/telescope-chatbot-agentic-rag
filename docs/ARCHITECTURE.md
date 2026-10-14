@@ -31,6 +31,7 @@ clinic_agentic_rag/
   .env.example                 Planned configuration, no secrets
   .env                         Ignored local configuration
   .gitignore
+  .gitattributes               Consistent source line endings
   .dockerignore
   docs/
     PROJECT_SPECIFICATION.md
@@ -73,7 +74,7 @@ The implemented app entry point is `telescope_rag.api.main:create_app` with Uvic
 ```mermaid
 flowchart LR
     Web[Approved public website pages] --> Job[Separate ingestion job]
-    Job --> Clean[Clean, chunk and preserve sources]
+    Job --> Clean[Clean, format and structurally chunk]
     Clean --> Embed[Qwen document embeddings]
     Embed --> Index[(Versioned Qdrant knowledge)]
     User[Website visitor] --> API[FastAPI]
@@ -93,7 +94,7 @@ The ingestion process can write candidate index versions. The chat process can r
 - Graph nodes coordinate typed state and transitions. Provider adapters and retrieval services are injected, allowing offline tests.
 - Provider adapters own authentication, endpoint requests, output parsing, timeouts, and usage metadata. They expose narrow interfaces instead of leaking SDK responses through the application.
 - Retrieval owns Qdrant reads, source filters, query-to-result mapping, and finite directory reads. It cannot create or switch collections through the public serving interface.
-- Ingestion owns discovery policy, raw snapshots, extraction, chunk IDs, embedding batches, candidate writes, and index manifests.
+- Ingestion owns discovery policy, immutable raw snapshots, structural extraction, deterministic cleaning/formatting, variable-length chunk IDs, pre-embedding validation, embedding batches, candidate writes, and index manifests. A size ceiling is applied inside preserved structural/ownership boundaries, rather than flattening pages into fixed windows.
 - Knowledge models preserve evidence ownership and implement pure operations such as comparing a requested time with an evidenced interval.
 - Core owns validated settings and a shared request budget/deadline. Prompt files own model instructions; web content never changes them.
 

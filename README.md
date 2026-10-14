@@ -54,6 +54,10 @@ User question + bounded conversation context
 
 Website collection and document embedding run as a separate ingestion job. They do not run during a chat request. See [PIPELINE.md](docs/PIPELINE.md) for the graph and termination rules.
 
+The ingestion design cleans and formats source content before embedding and chunks by its structure: doctor profiles, FAQ pairs, service sections, lists, and tables. Token counts are a safety ceiling rather than a fixed chunk-size target. This M3 design is specified in [INGESTION.md](docs/INGESTION.md); the cleaner/chunker is not implemented yet.
+
+The project now has a local Git repository on `main` with a baseline checkpoint and a separate chunking-policy revision. Local secrets, tool environments, and generated data are ignored. `.gitattributes` keeps source line endings consistent for Windows development and Linux deployment. Use `git status` and `git diff` to review work; repository setup does not publish the project externally.
+
 ## Project documents
 
 | Document | Purpose |

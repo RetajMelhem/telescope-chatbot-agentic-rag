@@ -38,3 +38,13 @@ All project-specific budgets, folder organization, response schemas, and release
 Consulted on 2026-10-14: [FastAPI settings](https://fastapi.tiangolo.com/advanced/settings/), [FastAPI lifespan](https://fastapi.tiangolo.com/advanced/events/), [FastAPI error handling](https://fastapi.tiangolo.com/tutorial/handling-errors/), [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/), and [uv projects](https://docs.astral.sh/uv/guides/projects/). These informed the factory, validated environment settings, safe handlers, and locked environment.
 
 The installed Starlette test client requested HTTPX2 rather than deprecated HTTPX; the [HTTPX2 publisher page](https://pypi.org/project/httpx2/) was checked, and the compatible client is pinned in `uv.lock`. M1 verification is local/offline and does not change the provider-access limitations above.
+
+## Chunking revision evidence
+
+Re-inspected the [doctor directory](https://telescopecenter.com/doctors/) on 2026-10-14: distinct named profiles and team headings support preserving entity/section boundaries. Website observations establish input structure, not measured retrieval performance.
+
+[LangChain's heading-based splitting guide](https://docs.langchain.com/oss/python/integrations/splitters/markdown_header_metadata_splitter) describes preserving common heading context and constraining size within those groups. The guide concerns Markdown; applying the structural principle to parsed HTML cards/FAQs/tables is this project's design choice, and a generic heading splitter is not a complete HTML extraction solution.
+
+[Qu et al., NAACL 2025](https://aclanthology.org/2025.findings-naacl.114/) reports inconsistent benefits from costlier semantic chunking in the study's tested retrieval/generation tasks. It does not establish a winning chunker for this clinic. The project therefore chooses a deterministic structure-aware default, retains token overflow limits, and requires source-grounded evaluation before claiming it is best.
+
+No complete cleaner/chunker, corpus comparison, or embedding call was executed for this revision. The policy/settings were updated in preparation for M3; M2 remains the next implementation milestone.

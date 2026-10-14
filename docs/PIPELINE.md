@@ -7,13 +7,16 @@ LangGraph can express both fixed workflows and dynamic agents. This MVP is a bou
 ## Ingestion, before serving
 
 ```text
-Approved public pages -> collect snapshots -> extract clean sections
-  -> preserve page and doctor ownership -> chunk
+Approved public pages -> collect snapshots -> parse source structure
+  -> clean -> normalize and format typed blocks with provenance
+  -> form variable-length chunks by format and ownership -> validate inputs
   -> Qwen document embeddings -> candidate Qdrant collection
   -> validate coverage and sources -> publish approved snapshot
 ```
 
 Document embeddings are computed once per changed content/configuration, not on every chat request. The online pipeline embeds only the retrieval queries.
+
+Clean and format before document embedding. Retain doctor profiles, FAQ pairs, section hierarchies, lists, table headers/rows, and time qualifiers as meaningful units. Token counts provide a safety ceiling; they do not dictate default boundaries. See [INGESTION.md](INGESTION.md) for the format-specific policy, oversized-unit handling, and pre-embedding validation gate.
 
 ## Request graph
 

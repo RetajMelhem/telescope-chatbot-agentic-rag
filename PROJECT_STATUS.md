@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-14 (Asia/Amman).
 
-Current milestone: **M1 — FastAPI/configuration shell complete. M2 provider contracts are next.**
+Current milestone: **M1 complete; ingestion design revised and local Git checkpoints established. M2 provider contracts are next.**
 
 This is the continuity entry point for Codex. Read it before substantive work and update it after each completed task. The full roadmap is [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); repository rules are in [AGENTS.md](AGENTS.md).
 
@@ -30,9 +30,9 @@ FastAPI + LangGraph; GPT-6 Luna through OpenRouter; Qwen3 Embedding 8B; Arabic, 
 | Milestone | Actual status |
 | --- | --- |
 | M0 — specification/scaffold | Complete; foundation consistency checks passed |
-| M1 — FastAPI/configuration shell | Complete; 56 offline checks and local server smoke passed |
+| M1 — FastAPI/configuration shell | Complete; offline checks and local server smoke passed |
 | M2 — provider contracts | Not started |
-| M3 — public website ingestion | Not started |
+| M3 — public website ingestion | Implementation not started; structural cleaning/chunking policy revised |
 | M4 — retrieval and deterministic operations | Not started |
 | M5 — LangGraph chat flow | Not started |
 | M6 — Docker implementation/verification | Not started |
@@ -72,7 +72,19 @@ M1 verification on 2026-10-14:
 
 The first test run exposed Starlette's HTTPX2 requirement and Windows asyncio's need for a local socketpair; both were resolved before the final passing suite. Dependency versions are recorded in `uv.lock`, not inferred from older notes.
 
-No provider inference, embeddings, full crawl, index creation, live Qdrant request, Docker build, public deployment, Git initialization, or commit has run. The API shell works locally; there is no working RAG chatbot yet. Existing `.env` was not rewritten or printed.
+No provider inference, embeddings, full crawl, index creation, live Qdrant request, Docker build, or public deployment has run. The API shell works locally; there is no working RAG chatbot yet. Existing `.env` was not rewritten or printed.
+
+## Latest revision: data preparation and Git
+
+- [x] Replaced the fixed token-target/overlap design with variable-length chunks that follow doctor/FAQ/section/list/table structure and source ownership.
+- [x] Made the mandatory pre-embedding sequence explicit: snapshot, structural parsing, cleaning, normalization/formatting, structural chunking, provenance/input validation, then embedding.
+- [x] Retained a 1,200-token safety ceiling, including context, with recursive splitting inside a unit and recorded gaps for unsegmentable inputs. This is a design default, not a proven optimal size.
+- [x] Added `CHUNKING_STRATEGY=structure_aware` and `CHUNK_MAX_TOKENS`; existing target/overlap settings are accepted only for compatibility and excluded from active serialized settings. Local `.env` was preserved.
+- [x] Added M3/M4 structural-integrity checks and a controlled comparison against a fixed-window baseline. The baseline is for evaluation, not the default serving policy.
+- [x] Initialized a local Git repository on `main`; baseline checkpoint is `e940884`. The revision is kept as a separate local checkpoint; use `git log -2 --oneline` and scoped diffs to inspect it. No remote is configured.
+- [x] Added `.gitattributes` for consistent source line endings and verified Git ignores `.env`, local environments/tools, and generated data.
+
+Revision verification on 2026-10-14: 60 offline tests passed; Ruff lint/format, lockfile validation, staged-source/secret-exclusion review, documentation/configuration consistency, and Git whitespace checks passed. This verifies settings compatibility and the design handoff; it does not establish chunk quality or real-source retrieval performance. The cleaner/chunker and corpus comparison remain unimplemented.
 
 ## Known gaps and blockers
 
@@ -89,4 +101,4 @@ The user can put the OpenRouter key in the ignored local `.env`. A key's presenc
 
 ## Latest handoff
 
-2026-10-14: Completed M1 after the user requested the next step. API/configuration implementation, 56 offline checks, lint/format/lock verification, and a temporary localhost smoke check passed. Updated the roadmap and instructions. M2 is next; RAG answers and Docker deployment remain unimplemented.
+2026-10-14: At the user's request, revised ingestion to respect source format and prepare data before embedding, updated compatible settings/tests, and established local Git checkpoints. All 60 offline checks passed. M2 remains the next implementation task; M3's cleaner/chunker, RAG answers, and Docker deployment remain unimplemented.
