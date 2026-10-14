@@ -4,7 +4,7 @@
 
 Build a public website information chatbot for Telescope Medical Center using Python, FastAPI, LangGraph, GPT-6 Luna through OpenRouter, Qwen3 Embedding 8B, and Docker. Arabic, English, and everyday Jordanian Arabic are required.
 
-M0 specifications, the M1 FastAPI/configuration shell, and M2 provider adapters are implemented and tested offline. The default knowledge adapter fails closed and API chat inference is unavailable. Provider dispatch requires an explicitly supplied compatible token counter and verified embedding format; default counting refuses dispatch. Read the progress file for current milestone status. Do not describe planned behavior as implemented, tested, indexed, or deployed. Follow the active user request; documentation alone does not authorize paid requests, deployment, commits, or later milestones.
+M0 specifications, M1 FastAPI/configuration shell, M2 provider adapters, and M3 collection/preparation/review contracts are implemented. Public collection has run; provider/index contracts are tested offline. The default knowledge adapter fails closed and API chat inference is unavailable. Provider dispatch requires an explicitly supplied compatible token counter and verified embedding format; default counting refuses dispatch. Draft ingestion bundles are unapproved and not embedding-ready. Read the progress file for current milestone status. Do not describe planned behavior as implemented, tested, indexed, or deployed. Follow the active user request; documentation alone does not authorize paid requests, deployment, commits, or later milestones.
 
 ## Project continuity
 
@@ -29,6 +29,8 @@ Use `src/telescope_rag/api/` for transport and validation, `graph/` for orchestr
 Use the documents needed for the task: [project specification](docs/PROJECT_SPECIFICATION.md) for scope; [architecture](docs/ARCHITECTURE.md) for boundaries; [pipeline](docs/PIPELINE.md) for graph changes; [ingestion](docs/INGESTION.md) for data/index work; [deployment](docs/DEPLOYMENT.md) for containers.
 
 Read [provider contracts](docs/PROVIDERS.md) before provider or budget changes. Share one `ExecutionBudget` across a request's stages. Do not replace unknown token counts with character counts, mark a synthetic embedding format verified for production, silently accept a different reported model, or enable transport retries/fallbacks.
+
+For M3, follow [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md). Preserve original snapshots and bundles; reruns use new directories. Bind source review to raw-manifest and prepared-document digests. Keep placeholder/conflict/coverage gaps explicit. Candidate writes cannot change an active alias. Do not equate a bounded crawl, source occurrence count, draft chunk, or synthetic token profile with complete approved knowledge.
 
 ## Implementation conventions
 

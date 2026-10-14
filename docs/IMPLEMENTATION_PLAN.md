@@ -1,6 +1,6 @@
 # Implementation plan
 
-Status: roadmap. M0 foundation, M1 API/configuration shell, and the initial offline M2 implementation are complete. M3 is next. Track actual verification and next actions in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+Status: roadmap. M0 foundation, M1 API/configuration shell, and the initial offline M2 implementation are complete. M3 collection/preparation is implemented; source acceptance, embeddings, and live publication remain pending. Track actual verification and next actions in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## M0 — Specification and scaffold
 
@@ -41,6 +41,8 @@ Mocked tests verify success, refusals/truncated completions, malformed/missing J
 Run the existing regression suite plus the new mocked cases, lint, format, lockfile, package, and documentation checks. Record exact results in `PROJECT_STATUS.md`. Provider compatibility remains unverified until a separately authorized minimal live screen; mocked completion is sufficient to finish the initial M2 implementation.
 
 ## M3 — Public website ingestion
+
+M3 collection/preparation/review implementation has started and runs independently of inference. [INGESTION_RUNBOOK.md](INGESTION_RUNBOOK.md) records implemented commands, drafts, and gates. Completion of collection/preparation does not complete paid embedding, live candidate/index publication, source acceptance, or the retrieval comparison below.
 
 Implement allowlisted discovery, robots-aware collection, redirect/address checks, immutable snapshots, structural extraction, deterministic cleaning and formatting, variable-length chunks by source format/ownership, pre-embedding validation, directory coverage, hours records, candidate indexing, and audit manifests. Follow [INGESTION.md](INGESTION.md); token limits are overflow guards, not fixed-size targets or default overlap windows.
 

@@ -4,9 +4,9 @@ An Arabic and English chatbot project for public information on [Telescope Medic
 
 ## Current status
 
-M0 foundation, M1 API shell, and M2 provider contracts/adapters are implemented. The repository includes specifications, Codex instructions, a progress file, a locked Python environment, validated settings, health endpoints, safe request/error handling, a validated chat placeholder, and async OpenRouter adapters with offline protocol tests.
+M0 foundation, M1 API shell, M2 provider contracts/adapters, and M3 collection/data preparation are implemented. The repository includes specifications, Codex instructions, a progress file, a locked Python environment, validated settings, health endpoints, safe request/error handling, a validated chat placeholder, async OpenRouter adapters, and a separate ingestion CLI with offline acceptance tests.
 
-Ingestion, Qdrant access, LangGraph orchestration, chatbot answers, Docker packaging, and website integration are not implemented yet. The API shell can run locally; it is not a functioning clinic chatbot. No paid model or embedding requests have been made. [PROJECT_STATUS.md](PROJECT_STATUS.md) records actual verification and the next milestone.
+Live indexing, LangGraph orchestration, chatbot answers, Docker packaging, and website integration remain unfinished. The API shell can run locally; it is not a functioning clinic chatbot. Public HTML collection has run; no paid model or embedding requests have been made. [PROJECT_STATUS.md](PROJECT_STATUS.md) records actual verification and remaining M3 gates.
 
 M2 supports strict structured chat responses, ordered/validated embedding batches, shared token/deadline reservations, bounded retries, safe errors, and usage receipts. Provider adapters are not connected to the API yet. A verified model-compatible token counter must be injected before dispatch; the default refuses requests. Hosted Qwen query/document formatting also needs an explicit verified profile. Synthetic test profiles prove the contract, not live compatibility. See [PROVIDERS.md](docs/PROVIDERS.md).
 
@@ -56,7 +56,7 @@ User question + bounded conversation context
 
 Website collection and document embedding run as a separate ingestion job. They do not run during a chat request. See [PIPELINE.md](docs/PIPELINE.md) for the graph and termination rules.
 
-The ingestion design cleans and formats source content before embedding and chunks by its structure: doctor profiles, FAQ pairs, service sections, lists, and tables. Token counts are a safety ceiling rather than a fixed chunk-size target. This M3 design is specified in [INGESTION.md](docs/INGESTION.md); the cleaner/chunker is not implemented yet.
+Ingestion now collects immutable public snapshots, cleans/formats content, and forms chunks by doctor/FAQ/section/list/table boundaries with source mappings. The draft CLI refuses to claim token validation or embedding readiness without verified counting/format profiles. Token counts are a safety ceiling rather than a fixed chunk target. Run commands and the review/candidate gates are documented in [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md).
 
 The project now has a local Git repository on `main` with a baseline checkpoint and a separate chunking-policy revision. Local secrets, tool environments, and generated data are ignored. `.gitattributes` keeps source line endings consistent for Windows development and Linux deployment. Use `git status` and `git diff` to review work; repository setup does not publish the project externally.
 
@@ -69,6 +69,7 @@ The project now has a local Git repository on `main` with a baseline checkpoint 
 | [PIPELINE.md](docs/PIPELINE.md) | LangGraph nodes, state, budgets, and answer behavior |
 | [PROVIDERS.md](docs/PROVIDERS.md) | Implemented OpenRouter interfaces, accounting, retries, and live-use gates |
 | [INGESTION.md](docs/INGESTION.md) | Website crawling, chunking, provenance, and index updates |
+| [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md) | Implemented collection/preparation commands and review gates |
 | [API_CONTRACT.md](docs/API_CONTRACT.md) | Planned FastAPI request and response contracts |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker design, runtime configuration, and operations |
 | [EVALUATION.md](docs/EVALUATION.md) | Meaningful correctness and boundary checks |
@@ -84,4 +85,4 @@ The project now has a local Git repository on `main` with a baseline checkpoint 
 
 The model identifiers are `openai/gpt-6-luna` and `qwen/qwen3-embedding-8b`. Actual account access, endpoint behavior, structured-output support, returned model IDs/dimensions, counting, and embedding formatting remain unverified. New provider settings have defaults; the existing local `.env` was preserved.
 
-The next milestone is M3: implement public website ingestion, cleaning, formatting, structure-aware chunking, and provenance checks, starting with local HTML fixtures. Paid embedding and index publication require the remaining compatibility and source-review gates; see the implementation plan.
+The next step is to review the prepared corpus and resolve compatible Qwen counting/formatting before an authorized embedding/candidate-index run. M3 is not fully complete until its source, indexing, and evaluation gates pass. M4 retrieval follows the approved knowledge snapshot; see the implementation plan.

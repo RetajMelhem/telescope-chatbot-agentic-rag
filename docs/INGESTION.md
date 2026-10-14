@@ -1,6 +1,6 @@
 # Website ingestion and knowledge lifecycle
 
-Status: planned workflow. No corpus has been crawled or embedded.
+Status: M3 collection, structural extraction, cleaning/formatting, draft chunking, review manifests, and gated candidate-write contracts are implemented. Public HTML collection has run; paid embedding, a live Qdrant candidate, source acceptance, and publication have not. See [INGESTION_RUNBOOK.md](INGESTION_RUNBOOK.md) and [PROJECT_STATUS.md](../PROJECT_STATUS.md) for actual scope and results.
 
 ## Source boundary
 
@@ -66,7 +66,7 @@ The inspected [doctor directory](https://telescopecenter.com/doctors/) contains 
 
 This design does not require embedding-distance or LLM-based semantic chunking. [Qu et al., NAACL 2025](https://aclanthology.org/2025.findings-naacl.114/) found that semantic chunking's added cost did not produce consistent gains across their evaluated retrieval/generation tasks. That does not prove this clinic's best strategy; it argues against assuming a more complex method is automatically superior.
 
-During M3/M4, compare this policy with a bounded fixed-window baseline on the same approved snapshot, embedding model, retrieval settings, and bilingual questions. Review retained facts, source mapping, doctor/FAQ/table integrity, retrieval recall, answer support, total embedded inputs, and cost. Select or refine the policy using those results. No cleaning/chunking implementation or such comparison has run yet.
+During M3/M4, compare this policy with a bounded fixed-window baseline on the same approved snapshot, embedding model, retrieval settings, and bilingual questions. Review retained facts, source mapping, doctor/FAQ/table integrity, retrieval recall, answer support, total embedded inputs, and cost. Select or refine the policy using those results. Cleaning/chunking is implemented and tested structurally; no embedded retrieval comparison has run yet.
 
 Create separate source-backed structured records for hours and a complete directory manifest. Extracted values must point to exact supporting source spans. Ambiguous extraction remains unresolved; a model's inferred interval is not sufficient for time calculations.
 
@@ -100,4 +100,4 @@ A refresh cadence is still to be decided. The initial freshness threshold is 168
 
 A missing page or crawl error does not prove that a service or doctor does not exist. Do not retire a previously collected document on a transient failure without reviewing the coverage change.
 
-The limited website inspection on 2026-10-14 did not establish Friday opening hours. That is an evidence gap, not a fact that the clinic is closed. Complete ingestion and any clinic-approved source extension must be handled explicitly rather than inventing a schedule.
+The initial limited inspection did not establish Friday hours. M3 subsequently found published working-hours FAQ evidence, retained as raw unresolved clinic/pharmacy/optical-center information. Review its exact source, ownership, wording, and freshness before interpreting intervals in M4. No opening times or appointment availability have been inferred by the ingestion pipeline.

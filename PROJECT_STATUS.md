@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-14 (Asia/Amman).
 
-Current milestone: **M2 provider contracts/adapters implemented and verified offline. M3 public website ingestion is next.**
+Current milestone: **M3 collection, cleaning/formatting, structural draft chunking, and review/candidate contracts implemented. Source acceptance, verified counting/formatting, paid embedding, and live index publication remain pending.**
 
 This is the continuity entry point for Codex. Read it before substantive work and update it after each completed task. The full roadmap is [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); repository rules are in [AGENTS.md](AGENTS.md).
 
@@ -32,7 +32,7 @@ FastAPI + LangGraph; GPT-6 Luna through OpenRouter; Qwen3 Embedding 8B; Arabic, 
 | M0 — specification/scaffold | Complete; foundation consistency checks passed |
 | M1 — FastAPI/configuration shell | Complete; offline checks and local server smoke passed |
 | M2 — provider contracts | Complete for initial offline implementation; live compatibility remains gated |
-| M3 — public website ingestion | Implementation not started; structural cleaning/chunking policy revised |
+| M3 — public website ingestion | Collection/preparation implemented; source acceptance, embeddings, live index, and retrieval comparison pending |
 | M4 — retrieval and deterministic operations | Not started |
 | M5 — LangGraph chat flow | Not started |
 | M6 — Docker implementation/verification | Not started |
@@ -88,8 +88,8 @@ Revision verification on 2026-10-14: 60 offline tests passed; Ruff lint/format, 
 
 ## Known gaps and blockers
 
-- No implementation blocker for M3's local extraction/cleaning/chunking fixtures.
-- Friday/clinic opening hours are not verified by the limited website inspection. Never invent them; complete ingestion must establish what is actually published.
+- Collection/preparation fixtures and public collection run successfully; source-quality and format/count gates remain before embedding.
+- Working-hours evidence is now retained from English/Arabic FAQ pages. Clinic, pharmacy, and optical-center wording remains raw/unresolved until reviewed and interpreted; no availability claim is established.
 - Provider account access, hosted structured-output behavior, returned model IDs/dimensions, token-count compatibility, and Qwen formatting remain unverified. Default counting refuses dispatch; synthetic test profiles are not production profiles.
 - Hosting, widget integration, refresh cadence, and content-review ownership remain decisions for later milestones.
 
@@ -131,12 +131,31 @@ M2 offline verification on 2026-10-14: **180 tests passed**, including all 74 AP
 
 The API remains a shell: readiness is unavailable by default and valid chat returns `503`. No complete crawl, cleaner/chunker, Qdrant index, graph, Docker build, or deployment has run. Existing `.env` was preserved. Mock results establish local protocol/budget behavior, not live compatibility, token accuracy, source quality, or chatbot grounding.
 
+## M3 implementation and collection
+
+- [x] Separate ingestion models and CLI; exclusive immutable snapshots and draft bundles; no API chat/network inference integration.
+- [x] Robots-aware HTTPS GET collector, public-IP validation with DNS-pinned connections and TLS hostname verification, safe redirect/path handling, allowlisted discovery/sitemaps, and bounded link/request/time/page/body/record accounting.
+- [x] Structural HTML extraction, deterministic cleaning/NFC formatting, doctor/FAQ/section/list/table boundaries, meaningful footer retention, and source spans into original extracted text/DOM.
+- [x] Variable-length chunker with source-backed repeated context, verified-count ceiling/overflow quarantine, reproducible IDs, and explicit draft mode when counting/format is unavailable.
+- [x] Collection/prepared-digest-bound review artifacts, source-backed doctor occurrences/raw hours candidates, and provenance/ownership checks.
+- [x] Gated embedding batches, immutable configuration/content cache retaining every occurrence, and candidate-only Qdrant write contracts; no alias/delete path. These are tested offline, not executed against OpenRouter/Qdrant.
+
+The initial snapshot `data/raw/m3-20261014` contains 97 pages and hit a repeated-navigation discovery limit. Its draft bundle `data/processed/m3-20261014-initial` remains retained for audit and is superseded for further work. Real-source review exposed shared-footer source mismatches and placeholder contamination; those were corrected with regression cases, without modifying the old artifacts.
+
+The corrected `public-static-pinned-v2` collector produced `data/raw/m3-20261014-v2`: **127 pages**, 20,095 recorded outcomes, six sitemaps, all English seed pages and Arabic doctor/FAQ variants, and no crawl-budget gaps. This establishes bounded discovered static-HTML traversal, not all-site semantic completeness. Final policy excludes medical-report actions and testimonial routes. Source content includes placeholders, template pages, and inconsistent derivative doctor directories; collection alone does not admit them as clinic knowledge.
+
+Latest prepared bundle: `data/processed/m3-20261014-v4` (raw snapshot ID remains `m3-20261014-v2`). It contains **2,239 draft chunks**, 128 doctor occurrences across pages, and two raw hours candidates. Independent review matched all **9,854 source/context spans** to stored raw DOM text/offsets/IDs and verified raw/page/collection/prepared digest bindings. No placeholder retrieval contamination or invalid source mappings were detected. Main English/Arabic directories retain 11 names each; FAQ pages retain all 27 native pairs each plus one source-backed CTA question unit. The two Arabic name-only profiles are preserved without invented biographies/specialties.
+
+Remaining source gaps are explicit: 20 placeholder documents, 106 quarantined placeholder-content occurrences, seven pages without admitted main content, and unsupported merged CSS-grid/direct text on `/extra/` and `/ar/extra/`. Derivative doctor directories also need source acceptance rather than specialty inference from their titles/URLs. The technical audit is recorded in ignored `data/manifests/m3-20261014-source-review.json`. Older prepared v2/v3 bundles remain immutable and superseded by v4. All latest chunks have `token_count=null`, `embedding_ready=false`; source approval remains false and directory completeness requires review.
+
+M3 verification passes **338 offline tests** (all 180 existing regressions plus 65 collection, 56 preparation, 27 review/candidate, and 10 CLI cases), Ruff lint/format, lock validation, and offline distribution/wheel build. Runtime Beautiful Soup and HTTPcore2 dependencies are explicit; 33 packages are locked across supported Python branches. All 15 Markdown files, 54 local links/anchors, two JSON examples, and 50 active example settings validated. Wheel/sdist include the new implementation/dependencies and exclude local secrets/generated source content. Git whitespace, staged source, and generated-data/secret exclusions were checked. No paid model call, embedding, live Qdrant write/read, active-alias change, retrieval comparison, Docker build, or deployment ran. Local `.env` was preserved.
+
 ## Next concrete step
 
-Implement **M3 public website ingestion**, starting with typed source/block/chunk models and local HTML fixtures. Build the sequence: immutable snapshot -> structural extraction -> cleaning -> normalization/formatting -> variable-length structural chunks -> provenance/ownership/coverage/token validation. Preserve doctor profiles, FAQ pairs, heading context, table labels/footnotes, Arabic text, and source spans. A token ceiling is an overflow guard, not a chunk target.
+Complete **M3 source acceptance and provider preparation** using raw snapshot `m3-20261014-v2` and prepared bundle `m3-20261014-v4`. Review source gaps, placeholder removals, conflicting template directories, main English/Arabic doctor lists, FAQ pairings, hours ownership/wording, and unsupported layouts. Confirm an admitted source scope and directory manifest; do not treat 128 repeated doctor occurrences as 128 unique doctors.
 
-Then implement robots-aware allowlisted public collection and audit manifests, recording failures/gaps. Review extracted/formatted/chunked content before paid embedding or index publication; these need verified provider counting/format/dimensions and explicit authorization. Follow [M3](docs/IMPLEMENTATION_PLAN.md#m3--public-website-ingestion), [INGESTION.md](docs/INGESTION.md), and [PROVIDERS.md](docs/PROVIDERS.md). Clinic chat stays unavailable until M5.
+Establish verified Qwen-compatible counting, hosted document/query formatting and dimensions, rebuild token-validated chunks, then perform an explicitly authorized bounded embedding/candidate run. Source approval must bind exact collection/preparation digests; the generated template remains unapproved. Live publication and structural-versus-fixed-window retrieval evaluation remain pending. Follow [M3](docs/IMPLEMENTATION_PLAN.md#m3--public-website-ingestion), [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md), and [PROVIDERS.md](docs/PROVIDERS.md). M4 retrieval follows approved knowledge; clinic chat stays unavailable until M5.
 
 ## Latest handoff
 
-2026-10-14: Implemented M2's initial offline adapters and acceptance cases; 180 tests passed. Provider contracts document exact behavior and remaining live-use gates. M3 extraction/cleaning/structural chunking is the next milestone; a working RAG chatbot, live compatibility, source index, and Docker deployment remain later work.
+2026-10-14: Implemented M3 collection/preparation/review and gated candidate contracts, using subagents for collection, preparation, and independent source/testing review. Final raw traversal: 127 pages; latest preparation: 2,239 draft chunks; independent provenance audit and 338 offline tests passed. M3 remains partially complete until source/count/format/index/evaluation gates pass; a working RAG chatbot and Docker deployment remain later work.

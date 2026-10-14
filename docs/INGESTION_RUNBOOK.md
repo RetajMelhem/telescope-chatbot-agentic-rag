@@ -1,0 +1,47 @@
+# M3 ingestion runbook
+
+The collector and data preparation run separately from FastAPI. Neither command below calls a model, accesses patient systems, writes Qdrant, or changes an active index. They create new directories exclusively and refuse to overwrite existing snapshots/bundles.
+
+## Collect public HTML
+
+From the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe -m telescope_rag.ingestion.cli collect --snapshot-id YOUR_NEW_SNAPSHOT_ID --output data/raw/YOUR_NEW_SNAPSHOT_ID
+```
+
+The command uses collection defaults and process-environment settings without reading `.env`; model/database secrets are explicitly blanked. Maximum pages can be lowered with `--max-pages N` (1–250). Default seeds are homepage, doctors, contact, and FAQ. Internal language variants and permitted sitemap links are discovered from the site.
+
+Collection uses HTTPS GET, approved hosts only, public-address validation, a DNS-pinned connection with TLS hostname verification, explicit redirect checks, and robots rules. Unsupported robots patterns fail closed; this is a conservative supported subset, not a claim of complete RFC pattern support. It enforces one-second host delay or stricter site hints, page/depth/request/time/control-body limits, unique-discovery limits, and independent link/record caps. Collection is sequential, within the configured concurrency ceiling. Compressed responses, PDFs, non-UTF-8 HTML, unsupported resources, and JavaScript-only gaps are not silently converted into evidence.
+
+Raw `.html` bytes and typed `.json` records are stored under `raw/`; `manifest.json` records pages, redirect/discovery outcomes, timestamps, hashes, and coverage gaps. No credentials/query values or rejected off-domain URLs are stored in rejected-reference records. Private/action routes, medical-report forms, testimonials, and form links are excluded. `coverage_complete` means bounded discovered traversal, not proof of every possible website fact or semantic completeness.
+
+## Prepare a draft bundle
+
+```powershell
+.\.venv\Scripts\python.exe -m telescope_rag.ingestion.cli prepare --snapshot data/raw/YOUR_NEW_SNAPSHOT_ID --output data/processed/YOUR_NEW_SNAPSHOT_ID
+```
+
+Preparation verifies the manifest, original bytes/hashes, decoded HTML, page count and snapshot identities before extraction. It parses main content and meaningful footer information, then cleans known noise/placeholders and preserves structural ownership. It produces doctor units, paired FAQs (including closed accordions), coherent sections, lists, and tables. Source-backed context includes headings, FAQ questions, owner names, table labels, captions, and footnotes. NFC/layout normalization preserves Arabic letters/diacritics, names, numbers, negations, and time qualifiers. Unhandled or ambiguous structures are explicit audit gaps.
+
+Source spans use original DOM locators and offsets within original extracted node text. They are not raw HTML byte offsets. Original bytes remain available for review. The preparation policy and source mappings are versioned; chunk IDs are reproducible hashes and Qdrant point IDs are UUIDs.
+
+Default chunks are **drafts**: `token_count=null`, `embedding_ready=false`. The CLI does not guess counts or expose a flag to bypass verification. The library's `prepare_document` can enforce the 1,200-token ceiling only with an explicitly verified compatible counter and embedding format. It counts the complete formatted input including the document prefix. Small units remain small; oversized units split within their owner at paragraphs/items/rows, then safe sentence boundaries. An indivisible overflow is quarantined. There are no fixed token windows, automatic overlap, minimum target, or padding.
+
+The bundle includes prepared document JSON, `summary.json`, `audit.json`, and an unapproved `review-template.json`. It binds the exact collection-manifest digest and prepared-document digest. The audit retains all doctor occurrences and raw hours candidates, including hours inside FAQs. Hours interpretation remains unresolved; a candidate is not an executable schedule or a claim about appointment availability.
+
+## Review before embedding/indexing
+
+Review source-to-chunk coverage and every gap, removed-content reason, doctor occurrence, FAQ association, table/qualifier, language variant, and conflict. Repeated names/content on different pages retain separate provenance. A page's title/URL does not establish a doctor's specialty. Template or contradictory pages need a source decision; do not silently merge them into an authoritative directory. Directory coverage stays `requires_source_review` until reviewed.
+
+The preparation library and provider adapter require verified counter/format profiles. After those are established and the bundle is rebuilt, a reviewer must explicitly approve its exact digests and accepted crawl gaps. The provided template remains unapproved. Known source/preparation gaps cannot be erased merely by changing the approval flag; malformed mappings and incomplete preparation fail.
+
+`embed_reviewed` is a library entry point for an explicitly authorized embedding run. It requires source approval and validated preparation, pins model/dimensions/format/preparation/tokenizer configuration, forms bounded batches with independent budgets, and optionally uses an immutable content/configuration cache. Exact reuse retains every occurrence as a separate point. Synthetic counters, model fixtures, and test review approvals are not production profiles or reviews.
+
+`write_candidate` validates mappings, ownership, source policy, configuration, dimensions, finite nonzero vectors, unique IDs, and payload byte bounds before its first write. The ingestion-only `QdrantCandidateWriter` creates a new named collection and uploads bounded points with cosine vectors. It has no alias-switch or deletion API. Failed uploads leave an unpublished candidate for inspection; no automatic destructive rollback occurs. Candidate names bind snapshot, prepared digest, and embedding configuration. Actual Qdrant access/permissions remain unverified.
+
+Initial publication, active-alias promotion, verified hosted conventions, and source-based retrieval evaluation remain gated work. Compare structural chunking against a fixed-window evaluation baseline on identical approved inputs/settings during M3/M4; no superiority claim follows from a successful parser test.
+
+## Current evidence
+
+See [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the latest retained snapshots, actual counts, tests, known gaps, and next action. Local generated content is ignored by Git/Docker. No generated source text, credentials, or vectors belong in a commit.

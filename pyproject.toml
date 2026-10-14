@@ -9,7 +9,9 @@ description = "Public website information chatbot for Telescope Medical Center"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 dependencies = [
+    "beautifulsoup4>=4.14,<5",
     "fastapi>=0.115,<1",
+    "httpcore2>=2,<3",
     "httpx2>=2,<3",
     "pydantic>=2.10,<3",
     "pydantic-settings>=2.10,<3",

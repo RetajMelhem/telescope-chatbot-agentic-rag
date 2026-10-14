@@ -19,6 +19,7 @@ Updated: 2026-10-14. Distinguish user requirements from proposed implementation 
 | Living project progress/next-step file | User requested continuity for later Codex sessions |
 | Review chunking against source format; prepare content before embedding | User requested an evidence-based revision, not automatic agreement with their proposed approach |
 | Local Git repository for project checkpoints | User authorized repository creation to organize development |
+| Subagents for M3 collection/preparation/review | User explicitly authorized delegation to help this milestone |
 
 ## Proposed design defaults
 
@@ -46,7 +47,7 @@ These choices are reviewable defaults, not user mandates or verified runtime beh
 - Website widget scope and how it will be added to the clinic's existing website.
 - Knowledge refresh cadence and who approves content changes or conflicting hours.
 - First complete source inventory, Arabic-page coverage, and whether JavaScript/PDF/OCR ingestion is needed.
-- What to do if opening hours cannot be found in the public website: remain unknown, or separately approve an additional official public source. No additional source is authorized by default.
+- Review the working-hours FAQ evidence found during M3, including clinic/pharmacy/optical ownership, midnight wording, and freshness, before deterministic time interpretation. No additional source is authorized by default.
 - Exact validated dependency/container versions and OpenRouter endpoint/provider settings.
 
-None of these prevent M2's mocked provider-contract work. Resolve decisions when their implementation milestone needs them.
+M3's collection/preparation can run independently of paid inference. Verified counting/hosted formatting, exact corpus source acceptance, and a separately authorized embedding/indexing run are still required before finishing its knowledge publication path.

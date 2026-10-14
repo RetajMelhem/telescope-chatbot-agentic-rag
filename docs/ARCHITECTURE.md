@@ -1,6 +1,6 @@
 # Architecture and folder ownership
 
-Status: M1 API/configuration shell and M2 offline provider adapters implemented; graph, ingestion, and live retrieval layers remain future work.
+Status: M1 API/configuration shell, M2 offline provider adapters, and M3 collection/data preparation/review contracts implemented. Graph and live retrieval remain future work; no paid embedding or index publication has run.
 
 ## Stack
 
@@ -38,6 +38,8 @@ clinic_agentic_rag/
     ARCHITECTURE.md
     PIPELINE.md
     INGESTION.md
+    INGESTION_RUNBOOK.md
+    PROVIDERS.md
     API_CONTRACT.md
     DEPLOYMENT.md
     EVALUATION.md
@@ -57,7 +59,7 @@ clinic_agentic_rag/
     unit/                      Pure logic and schema checks
     integration/               API/graph/provider contracts with fakes
     evaluation/                Bilingual source-backed evaluation fixtures
-  scripts/                     Future ingestion and evaluation CLI entry points
+  scripts/                     Future evaluation helpers; ingestion has a package CLI
   deploy/                      Future Dockerfile, compose.yaml, proxy config
   data/
     raw/                       Ignored source snapshots
@@ -65,7 +67,7 @@ clinic_agentic_rag/
     manifests/                 Ignored snapshot/index audit manifests
 ```
 
-Unimplemented directories retain `.gitkeep` files. Package metadata, lockfile, settings, schemas, middleware, health/chat routes, app factory, knowledge readiness interface, and offline tests now exist. CLI ingestion scripts, Dockerfile, and Compose remain unimplemented.
+Unimplemented directories retain `.gitkeep` files. Package metadata, lockfile, settings, schemas, middleware, health/chat routes, app factory, knowledge readiness interface, provider adapters, ingestion package/CLI, and offline tests now exist. Dockerfile and Compose remain unimplemented.
 
 The implemented app entry point is `telescope_rag.api.main:create_app` with Uvicorn's `--factory`. Importing the module does not read secrets or start clients. The lifecycle closes its injected knowledge adapter with a configurable shutdown deadline and fixed, content-free failure events. The default adapter makes no network request and cannot claim an approved index exists. Production requires a knowledge credential to be present, but actual read-only permission enforcement belongs to the live Qdrant implementation and deployment checks.
 
@@ -99,6 +101,8 @@ The ingestion process can write candidate index versions. The chat process can r
 - Core owns validated settings. `providers/budget.py` implements the shared request budget/deadline; graph stages must use the same instance. Prompt files own model instructions; web content never changes them.
 
 The provider package now contains narrow typed contracts, safe errors, strict JSON/schema/vector validation, request-owned reservations and content-free receipts, and an async HTTPX2 client with no hidden retries. It is independent of the FastAPI factory and makes no initialization/shutdown inference calls. [PROVIDERS.md](PROVIDERS.md) documents the live-use gates and external wire behavior.
+
+Ingestion owns `collection.py` (robots/discovery and pinned GET transport), `models.py` (source/provenance records), `extraction.py`, `preparation.py`, `review.py` (digest-bound source review), `indexing.py` (gated embedding/cache/candidate writes), and `cli.py` (collect/prepare only). It uses Beautiful Soup and an explicit HTTPcore2 network backend. It cannot change an active index alias. [INGESTION_RUNBOOK.md](INGESTION_RUNBOOK.md) separates verified local behavior from remaining live-use gates.
 
 Keep this as one Python application plus a separately invoked ingestion command. Additional queues, Redis, a session database, rerankers, and specialized agents are not initial dependencies. Add them only for a measured need.
 
