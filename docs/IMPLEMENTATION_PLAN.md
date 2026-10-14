@@ -1,6 +1,6 @@
 # Implementation plan
 
-Status: roadmap. M0 foundation, M1 API/configuration shell, and the initial offline M2 implementation are complete. M3 collection/preparation is implemented; source acceptance, embeddings, and live publication remain pending. Track actual verification and next actions in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+Status: roadmap. M0 foundation, M1 API/configuration shell, and the initial offline M2 implementation are complete. M3 collection, source admission and Qwen/token preparation are verified; corpus embeddings, Qdrant publication and retrieval comparison remain pending. Luna compatibility remains unverified. Track actual verification and next actions in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## M0 — Specification and scaffold
 

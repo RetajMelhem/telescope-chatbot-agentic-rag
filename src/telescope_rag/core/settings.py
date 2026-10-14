@@ -1,12 +1,19 @@
 """Environment settings without inference or other startup network activity."""
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated, Literal, Self
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import AnyHttpUrl, Field, SecretStr, ValidationError, field_validator, model_validator
-from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict, SettingsError
+from pydantic_settings import (
+    BaseSettings,
+    NoDecode,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    SettingsError,
+)
 
 CsvValues = Annotated[tuple[str, ...], NoDecode]
 PUBLIC_HOSTS = frozenset({"telescopecenter.com", "www.telescopecenter.com"})
@@ -25,6 +32,35 @@ class Settings(BaseSettings):
         hide_input_in_errors=True,
         allow_inf_nan=False,
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource | Callable[[], dict], ...]:
+        def project_openrouter_key() -> dict:
+            # The user designated the project .env as this credential's authority.
+            # Other settings retain process overrides. Explicit injected settings
+            # still take priority for isolated tests; without dotenv, runtime
+            # environment injection remains available for future deployment.
+            values = dotenv_settings()
+            return (
+                {"openrouter_api_key": values["openrouter_api_key"]}
+                if "openrouter_api_key" in values
+                else {}
+            )
+
+        return (
+            init_settings,
+            project_openrouter_key,
+            env_settings,
+            dotenv_settings,
+            file_secret_settings,
+        )
 
     app_env: Literal["development", "test", "production"] = "development"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
@@ -186,7 +222,7 @@ class Settings(BaseSettings):
 
 
 def load_settings(env_file: str | Path | None = ".env") -> Settings:
-    """Process environment overrides the dotenv file. Suppress unsafe input details."""
+    """Use the project's dotenv OpenRouter key; suppress unsafe input details."""
     try:
         return Settings(_env_file=env_file)
     except (ValidationError, SettingsError, OSError, ValueError):

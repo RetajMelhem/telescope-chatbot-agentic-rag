@@ -20,7 +20,7 @@ From the repository root, with the prepared `.venv`:
 
 Open [local API documentation](http://127.0.0.1:8000/docs) after starting it. `/health/live` returns `200`. `/health/ready` returns `503` until model credentials and a compatible approved knowledge snapshot are available; the current default adapter always reports knowledge unavailable. A valid `POST /api/v1/chat` returns `503` with `chat_not_available`; invalid input returns `422`.
 
-The app factory reads `.env` from the working directory and accepts process-environment overrides. It never rewrites `.env` or performs network inference at import/startup. Invalid configuration fails with a sanitized startup message. Adapter cleanup has a five-second default deadline; failure logs contain only fixed event names. The OpenRouter URL must be the approved HTTPS `/api/v1` base endpoint.
+The app factory reads `.env` from the working directory. Its OpenRouter key takes priority over a process key, as requested by the user; other settings accept process-environment overrides. Explicit injected test settings still take priority, and environment injection works when no dotenv key exists. It never rewrites `.env` or performs network inference at import/startup. Invalid configuration fails with a sanitized startup message. Adapter cleanup has a five-second default deadline; failure logs contain only fixed event names. The OpenRouter URL must be the approved HTTPS `/api/v1` base endpoint.
 
 For a fresh checkout with `uv` installed, use `uv sync --locked`. On this workspace, `uv` was bootstrapped locally without changing the global Python installation:
 
@@ -85,6 +85,6 @@ The project now has a local Git repository on `main` with a baseline checkpoint 
 
 `.env.example` lists validated settings and design defaults. The local `.env` is for the user to fill in and has been preserved during implementation. Both Git and Docker exclusions protect local environment files. Do not paste the key into documentation or chat. The new body/readiness limits have defaults, so an existing `.env` need not be rewritten to use them.
 
-The model identifiers are `openai/gpt-6-luna` and `qwen/qwen3-embedding-8b`. Actual account access, endpoint behavior, structured-output support, returned model IDs/dimensions, counting, and embedding formatting remain unverified. New provider settings have defaults; the existing local `.env` was preserved.
+The model identifiers are `openai/gpt-6-luna` and `qwen/qwen3-embedding-8b`. The pinned Qwen tokenizer and OpenRouter/DeepInfra embedding wire profile passed a bounded Arabic/English document/query screen on 2026-10-15, including 4,096 dimensions and matching input counts. Luna access, chat counting and strict structured output remain unverified. Corpus embeddings, Qdrant publication and retrieval quality remain pending. See [provider contracts](docs/PROVIDERS.md) and [current progress](PROJECT_STATUS.md). The existing local `.env` was preserved.
 
 The next step is to review the prepared corpus and resolve compatible Qwen counting/formatting before an authorized embedding/candidate-index run. M3 is not fully complete until its source, indexing, and evaluation gates pass. M4 retrieval follows the approved knowledge snapshot; see the implementation plan.

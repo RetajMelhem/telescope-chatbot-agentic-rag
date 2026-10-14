@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from telescope_rag.providers.errors import ProviderError
 
@@ -87,6 +87,14 @@ class EmbeddingFormat(BaseModel):
     verified: bool = False
     query_prefix: str = Field(default="", repr=False)
     document_prefix: str = Field(default="", repr=False)
+    provider_slug: Literal["deepinfra/us"] | None = None
+    reported_model: Literal["Qwen/Qwen3-Embedding-8B"] | None = None
+
+    @model_validator(mode="after")
+    def bind_reported_model(self) -> "EmbeddingFormat":
+        if self.reported_model is not None and self.provider_slug != "deepinfra/us":
+            raise ValueError("Embedding model identifier requires its verified provider route.")
+        return self
 
     def format(self, text: str, role: Literal["query", "document"]) -> str:
         if not self.verified:

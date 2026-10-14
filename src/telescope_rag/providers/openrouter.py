@@ -60,7 +60,16 @@ class _Client:
         output: int,
         budget: ExecutionBudget,
         decode: Callable[[dict[str, Any]], V],
+        *,
+        reported_model_alias: str | None = None,
     ) -> tuple[V, tuple[AttemptReceipt, ...]]:
+        if reported_model_alias is not None and (
+            kind != "embedding"
+            or payload.get("model") != "qwen/qwen3-embedding-8b"
+            or reported_model_alias != "Qwen/Qwen3-Embedding-8B"
+            or payload.get("provider", {}).get("only") != ["deepinfra/us"]
+        ):
+            raise ProviderError("invalid_provider_request")
         if self.http.is_closed:
             raise ProviderError("provider_closed")
         key = self.settings.openrouter_api_key.get_secret_value()
@@ -97,6 +106,7 @@ class _Client:
                     operation,
                     attempt,
                     decode,
+                    reported_model_alias,
                 )
                 receipts = tuple(
                     item
@@ -130,6 +140,7 @@ class _Client:
         operation: int,
         attempt: int,
         decode: Callable[[dict[str, Any]], V],
+        reported_model_alias: str | None,
     ) -> V:
         reservation = budget.reserve(kind, count, output)
         usage = UsageReport()
@@ -165,7 +176,10 @@ class _Client:
                     provider = self._metadata(body.get("provider"))
                     if reported_model is None and kind == "chat":
                         raise ProviderError("missing_reported_model")
-                    if reported_model is not None and reported_model != model:
+                    if reported_model is not None and reported_model not in {
+                        model,
+                        reported_model_alias,
+                    }:
                         raise ProviderError("reported_model_mismatch")
                     value = decode(body)
                     budget.remaining_seconds()
@@ -338,6 +352,8 @@ class OpenRouterEmbeddingProvider:
             "encoding_format": "float",
             "provider": {"require_parameters": True, "allow_fallbacks": False},
         }
+        if format.provider_slug is not None:
+            payload["provider"]["only"] = [format.provider_slug]
         vectors, receipts = await self._client.execute(
             "embeddings",
             "embedding",
@@ -345,6 +361,7 @@ class OpenRouterEmbeddingProvider:
             0,
             budget,
             lambda body: parse_vectors(body, len(texts), settings.embedding_dimensions),
+            reported_model_alias=format.reported_model,
         )
         return EmbeddingResult(
             vectors,

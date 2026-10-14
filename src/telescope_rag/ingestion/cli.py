@@ -20,6 +20,7 @@ from telescope_rag.ingestion.review import (
     prepared_digest,
     write_bundle,
 )
+from telescope_rag.ingestion.token_validation import count_admitted_bundle
 
 
 def prepare_snapshot(snapshot: Path, output: Path, *, max_tokens: int = 1200) -> dict:
@@ -187,6 +188,18 @@ def main() -> None:
     admission.add_argument("--bundle", type=Path, required=True)
     admission.add_argument("--plan", type=Path, required=True)
     admission.add_argument("--output", type=Path, required=True)
+    counting = commands.add_parser(
+        "count", help="Count admitted source with the pinned offline Qwen tokenizer; no embedding"
+    )
+    counting.add_argument("--bundle", type=Path, required=True)
+    counting.add_argument("--tokenizer", type=Path, required=True)
+    counting.add_argument("--output", type=Path, required=True)
+    counting.add_argument(
+        "--profile",
+        choices=("upstream", "openrouter-deepinfra-v1"),
+        default="upstream",
+        help="Select a pinned format; upstream alone cannot enable embedding",
+    )
     args = parser.parse_args()
     try:
         if args.command == "collect":
@@ -212,6 +225,10 @@ def main() -> None:
             }
         elif args.command == "admit":
             summary = admit_bundle(args.bundle, args.plan, args.output)
+        elif args.command == "count":
+            summary = count_admitted_bundle(
+                args.bundle, args.output, args.tokenizer, profile=args.profile
+            )
         else:
             summary = prepare_snapshot(args.snapshot, args.output)
         print(json.dumps(summary, ensure_ascii=False, indent=2))

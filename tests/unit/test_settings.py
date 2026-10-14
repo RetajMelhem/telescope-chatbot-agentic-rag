@@ -32,6 +32,31 @@ def test_environment_overrides_dotenv_without_rewriting_it(
     assert "synthetic-test-secret" not in settings.model_dump_json()
 
 
+@pytest.mark.parametrize("file_key", ["synthetic-project-key", "", "   "])
+def test_project_openrouter_key_wins_over_stale_process_key(tmp_path, monkeypatch, file_key):
+    path = tmp_path / ".env"
+    original = f'OPENROUTER_API_KEY="{file_key}"\nPORT=8123\n'
+    path.write_text(original, encoding="utf-8")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "synthetic-stale-process-key")
+    monkeypatch.setenv("PORT", "8456")
+    settings = load_settings(path)
+    assert settings.openrouter_api_key.get_secret_value() == file_key.strip()
+    assert settings.port == 8456
+    assert path.read_text(encoding="utf-8") == original
+
+
+def test_explicit_injection_and_no_dotenv_keep_isolated_credential_sources(tmp_path, monkeypatch):
+    path = tmp_path / ".env"
+    path.write_text("OPENROUTER_API_KEY=synthetic-project-key\n", encoding="utf-8")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "synthetic-runtime-key")
+    injected = Settings(_env_file=path, openrouter_api_key="synthetic-injected-key")
+    assert injected.openrouter_api_key.get_secret_value() == "synthetic-injected-key"
+    assert Settings(_env_file=None).openrouter_api_key.get_secret_value() == "synthetic-runtime-key"
+    assert load_settings(tmp_path / "absent.env").openrouter_api_key.get_secret_value() == (
+        "synthetic-runtime-key"
+    )
+
+
 @pytest.mark.parametrize(
     "values",
     [

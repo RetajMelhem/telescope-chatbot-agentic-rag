@@ -1,6 +1,6 @@
 # Provider contracts and verified scope
 
-Status: M2 implemented with offline HTTP fixtures on 2026-10-14. No authenticated inference was performed. FastAPI chat still returns `503`; stage prompts, graph orchestration, and ingestion are later milestones.
+Status: M2 contracts were implemented offline on 2026-10-14. M3's Qwen embedding preparation passed the bounded hosted screen on 2026-10-15; see the dated profile below. FastAPI chat still returns `503`; Luna compatibility, stage prompts and graph orchestration remain pending.
 
 ## Interfaces and ownership
 
@@ -11,7 +11,7 @@ Status: M2 implemented with offline HTTP fixtures on 2026-10-14. No authenticate
 | `EmbeddingProvider.embed` | Accepts 1–32 original nonblank texts, query/document role, explicit verified formatting profile, and budget. Returns vectors ordered by input index and receipts. |
 | `ExecutionBudget` | One instance for all request stages; new bounded instance per ingestion batch. Enforces logical calls, physical attempts, separate chat/embedding input totals, cumulative output, and deadline. |
 | `TokenCounter` | Trusted injected dependency that returns a selected-model count, versioned profile, and `exact` or `upper_bound` basis for the complete effective input. Includes messages, schema, formatting/instruction, and model framing overhead. |
-| `EmbeddingFormat` | Explicit version, query/document prefixes, and verification flag. Formats original text once; does not guess instructions or detect/remove existing prefixes. |
+| `EmbeddingFormat` | Explicit version, query/document prefixes, verification flag and optional pinned provider/reported-model mapping. Formats original text once; does not guess instructions or detect/remove existing prefixes. |
 | `ProviderError` | Stable code with optional status/retry timing. Contains no upstream body, key, input, or original exception message. |
 
 Implementation lives in `src/telescope_rag/providers/`: `contracts.py`, `errors.py`, `budget.py`, `validation.py`, and `openrouter.py`. Clients and keys belong to service dependencies, not graph state or public API schemas. Caller-owned Pydantic schemas must forbid extra object fields and require every property, including nested objects. Stage-specific schemas and prompts are M5 work.
@@ -24,7 +24,26 @@ Embeddings additionally require a verified format profile. Hosted Qwen behavior 
 
 Missing/invalid credentials, incompatible/unavailable counts, unverified formatting, invalid inputs/schemas, excessive request bytes, or exhausted reservations/deadlines prevent dispatch. Creating a client, setting a key, running health checks, or closing the client does not start inference. API integration remains M5 work; its future readiness contract must include approved compatible dependencies.
 
-A separately authorized minimal live screen must establish account/model access, strict-schema behavior, reported model IDs, usage fields, actual dimensions, and formatting/count compatibility. Chat currently requires the reported model to exactly match `openai/gpt-6-luna`; a dated or different ID fails. Embeddings accept absent optional model metadata honestly, but reject a supplied different model. Never silently add aliases or switch models to get a passing screen.
+A separately authorized minimal live screen must establish account/model access, strict-schema behavior, reported model IDs, usage fields, actual dimensions, and formatting/count compatibility. Chat currently requires the reported model to exactly match `openai/gpt-6-luna`; a dated or different ID fails. Embeddings accept absent optional model metadata honestly, and otherwise require the requested identifier or the exact documented identifier bound to a verified provider profile. Other supplied model IDs fail. Never silently add aliases or switch models to get a passing screen.
+
+## Verified Qwen embedding profile (2026-10-15)
+
+The public upstream [Qwen model card](https://huggingface.co/Qwen/Qwen3-Embedding-8B) specifies instruction-bearing queries and plain documents. The pinned repository's `config_sentence_transformers.json` supplies this exact query prefix (there is no trailing space after `Query:`):
+
+```text
+Instruct: Given a web search query, retrieve relevant passages that answer the query
+Query:
+```
+
+`qwen_tokenizer.py` pins repository revision `1d8ad4ca9b3dd8059ad90a75d4983776a23d44af`, tokenizer SHA-256 `83cdf8c3a34f68862319cb1810ee7b1e2c0a44e0864ae930194ddb76bb7feb8d`, and `tokenizers==0.22.2`. Loading is local and hash-checked, without model weights, Hub lookup or remote code. Counts include actual special-token post-processing (`<|endoftext|>`, ID 151643), with no padding/truncation. Do not use the tokenizer-config maximum as an endpoint budget. `QwenPreparationCounter` establishes exact upstream counts; its receipt alone makes no hosted claim.
+
+`hosted_qwen_format()` selects `qwen3-8b-openrouter-deepinfra-v1`: empty document prefix, the exact query prefix above, `provider.only=["deepinfra/us"]`, 4,096 dimensions and float vectors. Parameter support remains required and fallbacks disabled. [OpenRouter routing](https://github.com/OpenRouterTeam/docs/blob/main/guides/routing/provider-selection.mdx) documents full endpoint slugs. [DeepInfra's API](https://deepinfra.com/Qwen/Qwen3-Embedding-8B/api) uses Qwen's official identifier, `Qwen/Qwen3-Embedding-8B`; the live response confirms it. This one exact identifier is admitted only on that pinned Qwen embedding route. Receipts retain both requested and reported IDs. Chat has no such mapping.
+
+`QwenEmbeddingCounter` counts the complete already-formatted text array, including the prefix and per-input end token. It refuses chat, different models/dimensions/routes/encoding, added `input_type` or other fields, fallbacks and malformed batches. Its exact count matched hosted reported usage for the synthetic Arabic/English document batch (18 tokens) and query batch (59 tokens); all four returned vectors passed the adapter's dimension/index/finite/nonzero validation. This is a wire/profile compatibility screen, not evidence of clinical answer quality, optimal retrieval, future availability or the backend's undisclosed weight/tokenizer revision.
+
+The first request used an inherited process key and returned 401. The user's explicit `.env` instruction led to a tested credential-priority fix, without editing the file. A subsequent HTTP 200 exposed the exact official model ID (77 reported tokens), then two final role-specific requests passed. Four physical requests were issued with no retries; three returned HTTP 200 with 154 reported input tokens in total. Unknown usage on the rejected request remains unknown. No corpus input or vector file was produced. Content-free receipts are under ignored `artifacts/m3-provider-preparation/`, notably `hosted-verification-v3.json`; the first receipt's local serialization failure was recovered without dispatch.
+
+The default provider constructor still refuses dispatch unless a counter is explicitly supplied. `candidate_qwen_format()` stays unverified. Luna counting/strict-schema verification, corpus embedding, Qdrant permissions/publication and API wiring remain separate work. Keep the local tokenizer outside Git/Docker; a later container build must supply this exact verified artifact explicitly rather than downloading at API startup.
 
 ## Wire and output validation
 

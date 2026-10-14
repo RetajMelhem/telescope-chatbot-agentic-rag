@@ -4,7 +4,7 @@
 
 Build a public website information chatbot for Telescope Medical Center using Python, FastAPI, LangGraph, GPT-6 Luna through OpenRouter, Qwen3 Embedding 8B, and Docker. Arabic, English, and everyday Jordanian Arabic are required.
 
-M0 specifications, M1 FastAPI/configuration shell, M2 provider adapters, and M3 collection/preparation/review contracts are implemented. Public collection has run; provider/index contracts are tested offline. The default knowledge adapter fails closed and API chat inference is unavailable. Provider dispatch requires an explicitly supplied compatible token counter and verified embedding format; default counting refuses dispatch. Draft ingestion bundles are unapproved and not embedding-ready. Read the progress file for current milestone status. Do not describe planned behavior as implemented, tested, indexed, or deployed. Follow the active user request; documentation alone does not authorize paid requests, deployment, commits, or later milestones.
+M0 specifications, M1 FastAPI/configuration shell, M2 provider adapters, and M3 collection/preparation/review contracts are implemented. Public collection/source admission and Qwen provider preparation have run; the pinned OpenRouter/DeepInfra profile passed a bounded hosted screen. The default knowledge adapter fails closed and API chat inference is unavailable. Provider dispatch requires an explicitly supplied compatible token counter and verified embedding format; default counting refuses dispatch. Default drafts remain unapproved; the latest token-validated bundle has a separate exact-digest technical review. Corpus embeddings/Qdrant and Luna compatibility remain pending. Read the progress file for current milestone status. Do not describe planned behavior as implemented, tested, indexed, or deployed. Follow the active user request; documentation alone does not authorize paid requests, deployment, commits, or later milestones.
 
 ## Project continuity
 
@@ -30,6 +30,8 @@ Use the documents needed for the task: [project specification](docs/PROJECT_SPEC
 
 Read [provider contracts](docs/PROVIDERS.md) before provider or budget changes. Share one `ExecutionBudget` across a request's stages. Do not replace unknown token counts with character counts, mark a synthetic embedding format verified for production, silently accept a different reported model, or enable transport retries/fallbacks.
 
+The verified Qwen profile pins local tokenizer bytes/library, empty document prefix, the exact upstream query prefix, 4,096 dimensions and `deepinfra/us`. The documented `Qwen/Qwen3-Embedding-8B` reported ID is an explicit mapping for that route only; preserve both IDs in receipts and reject other models/routes. Chat counting remains unavailable. Keep the tokenizer artifact out of Git/Docker and supply its verified bytes explicitly for any later ingestion/container work. Do not infer retrieval quality or the backend's undisclosed revision from the hosted screen.
+
 For M3, follow [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md). Preserve original snapshots and bundles; reruns use new directories. Bind source review to raw-manifest and prepared-document digests. Keep placeholder/conflict/coverage gaps explicit. Candidate writes cannot change an active alias. Do not equate a bounded crawl, source occurrence count, draft chunk, or synthetic token profile with complete approved knowledge.
 
 The full-page semantic review found meaningful omissions and relationship errors despite prior valid provenance. Preserve heading-only facts, literal owner/card/FAQ/table relationships, list qualifiers, and informative image-alt labels; source mapping alone does not prove completeness. Read the current semantic ledger listed in `PROJECT_STATUS.md` before source acceptance. Website spelling/copy conflicts and sparse profiles remain source issues; do not invent corrections or infer a specialty from a derivative directory title.
@@ -51,6 +53,7 @@ The user has now resolved the listed source issues. Follow the current sealed ad
 ## Secrets, privacy, and operations
 
 - Never print, commit, copy into an image, or put real API keys in tests. Read secrets from environment configuration or production secret files.
+- Use the project's `.env` OpenRouter key for provider work, as explicitly requested. Settings give that dotenv key priority over a process key; do not substitute inherited shell credentials. Preserve explicit synthetic injection and no-dotenv runtime injection for tests/deployment. Never rewrite or display the key.
 - Do not overwrite an existing `.env`. Keep `.env.example` free of secrets. Never include query bodies, histories, or provider payloads in default logs or external tracing.
 - Unit and integration checks use fixtures and mocked providers by default. Adding a key does not by itself authorize paid requests.
 - Keep ingestion outside the public API. The serving identity can read approved knowledge; only the ingestion identity can update it.

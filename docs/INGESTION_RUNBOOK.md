@@ -46,6 +46,22 @@ The admitted bundle includes policy/receipt and optional primary-directory metad
 
 ## Review before embedding/indexing
 
+### Count reviewed source with the pinned Qwen tokenizer
+
+The current verified tokenizer is a public `tokenizer.json`, not model weights. Obtain it from the immutable upstream URL `https://huggingface.co/Qwen/Qwen3-Embedding-8B/resolve/1d8ad4ca9b3dd8059ad90a75d4983776a23d44af/tokenizer.json` into a local ignored directory. The counter verifies SHA-256 `83cdf8c3a34f68862319cb1810ee7b1e2c0a44e0864ae930194ddb76bb7feb8d` and the locked library version before use. The current local copy is `.tools/qwen-tokenizer/1d8ad4ca9b3dd8059ad90a75d4983776a23d44af/tokenizer.json`.
+
+```powershell
+.\.venv\Scripts\python.exe -m telescope_rag.ingestion.cli count --bundle data/processed/m3-source-admitted-v2 --tokenizer .tools/qwen-tokenizer/1d8ad4ca9b3dd8059ad90a75d4983776a23d44af/tokenizer.json --profile openrouter-deepinfra-v1 --output data/processed/YOUR_NEW_COUNTED_BUNDLE
+```
+
+`count` performs offline preparation, without `.env`, provider dispatch or index access. It requires the direct admitted bundle's exact document/audit/review/plan/receipt bindings, preserves selected `ExtractedDocument` values and alias/source metadata, enforces the structural token ceiling, regenerates directory chunk references and writes a new digest-bound receipt. It retains the previous admission receipt as a parent record rather than relabeling that receipt. Earlier bundles cannot be overwritten. There is no free-form verification flag: the named hosted profile is the separately verified profile in [PROVIDERS.md](PROVIDERS.md). Omitting `--profile` uses an upstream-only unverified format and leaves embedding blocked. Neither profile approves a bundle automatically.
+
+Latest verified output: `data/processed/m3-token-validated-v2` (107 documents, 1,701 chunks, 1,441 unique inputs). One 1,617-token Arabic experience unit split into 1,195/438-token chunks at existing paragraph boundaries. Independent checks verified all 8,189 raw spans and complete selected-body interval coverage. The separate exact-digest technical review is `metadata/review-approved.json`; the generated template/audit remain unapproved by default. `metadata/embedding-configuration.json` pins the next run's model, dimensions, format hash, preparation and tokenizer versions. The technical review does not certify clinical truth or authorize deployment.
+
+Chunks and raw evidence remain in local immutable bundles for reproducibility. The next ingestion run will store vectors plus each original chunk's text, source and ownership metadata as separate points in a new Qdrant candidate collection. Exact duplicate vector inputs may reuse a vector, but every occurrence remains represented. The optional local `EmbeddingCache` is ignored by Git/Docker; it is a resumable cache, while Qdrant serves approved retrieval. No Qdrant collection has been populated by this milestone yet.
+
+### Validate exact digests and run bounded ingestion
+
 Review source-to-chunk coverage and every gap, removed-content reason, doctor occurrence, FAQ association, table/qualifier, language variant, and conflict. Repeated names/content on different pages retain separate provenance. A page's title/URL does not establish a doctor's specialty. Template or contradictory pages need a source decision; do not silently merge them into an authoritative directory. Directory coverage stays `requires_source_review` until reviewed. A source-span check proves mapping, not semantic completeness: the first M3 bundle passed mapping checks but the subsequent full-page LLM review found omitted facts and incorrect relationships. Keep those forms of evidence separate.
 
 The preparation library and provider adapter require verified counter/format profiles. After those are established and the bundle is rebuilt, a reviewer must explicitly approve its exact digests and accepted crawl gaps. The provided template remains unapproved. Known source/preparation gaps cannot be erased merely by changing the approval flag; malformed mappings and incomplete preparation fail.
