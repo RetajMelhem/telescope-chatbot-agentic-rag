@@ -1,6 +1,6 @@
 # Evaluation and acceptance
 
-Status: M1 configuration/API tests are implemented and verified offline. RAG, real-source, live provider, Qdrant, and deployment evaluation remain future work. Current results are recorded in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+Status: API/provider/ingestion contracts have offline tests. A source-bound, independently reviewed 90-case benchmark is frozen for the v6 corpus; real retrieval and answer execution remain unexecuted. Live RAG, Qdrant and deployment acceptance remain future work. Current results are recorded in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## Offline checks first
 
@@ -35,6 +35,30 @@ M1 tests use synthetic settings and fake knowledge probes, never the user's `.en
 After ingestion, create a small versioned bilingual set covering every core family rather than relying on a large count of similar questions. Include known-answer positives, deliberately unanswerable questions, mixed questions, and source attribution traps. Mark synthetic hours and doctor examples explicitly so they cannot enter real clinic knowledge.
 
 Each fixture stores the original query, language, any history, pinned snapshot, expected outcome, expected supporting source spans, required request parts, and prohibited claims. A fluent answer is not a pass if the source does not support it.
+
+### Frozen source benchmark v1
+
+The current local benchmark is [artifacts/m3-retrieval-benchmark-v1/manifest.json](../artifacts/m3-retrieval-benchmark-v1/manifest.json). It contains 30 intents, each in English, Arabic and everyday Jordanian Arabic: 90 individually authored and independently reviewed cases. All cases bind to v6 prepared digest `a46be2d3fd18f11d46c79ff9bc992de22aab496836894a708bc57c1e8b48af88`; the benchmark canonical content hash is `e753d931c558c29a74ccfd18c0921efc4dd943b04c8a972267643943458be84b`. Manifest SHA-256 is `ee9ace13c784f6c8182ec9f9db4cf76fdc39dc24dc82ba9ad62c8c1b18dbd499`.
+
+Gold cases, exact source witnesses, approved-alias authority, per-part supported/unknown/clarification/excluded outcomes, prohibited inferences/actions and hash-bound independent review records remain separate from `requests.jsonl`. Requests contain only case ID, language, query and synthetic history. Do not pass gold answers, chunk IDs, tags, expected outcomes or review rationales into planning/retrieval/answer prompts. These files are evaluation artifacts, never admitted clinic knowledge.
+
+The split has 18 development and 72 evaluation cases. All three language variants of an intent stay together. Evaluation cases are visible local fixtures, not a secret or statistically independent production holdout. Do not tune retrieval to the evaluation cases or add case-specific runtime behavior. Preserve original failed drafts and repair reviews as evidence; future fixture changes use a new version and new review hashes.
+
+Run the read-only verifier from the repository root:
+
+```powershell
+& .\.tools\uv\bin\uv.exe run --locked python -m scripts.check_frozen_benchmark --benchmark artifacts/m3-retrieval-benchmark-v1 --manifest-sha256 ee9ace13c784f6c8182ec9f9db4cf76fdc39dc24dc82ba9ad62c8c1b18dbd499
+```
+
+The verifier checks frozen file inventory/hashes, actual corpus digest, source-policy/configuration/manifest bindings, every exact source quote, all 90 independent case reviews, requests without gold fields, witness payloads and split integrity. It does not make semantic judgments, execute retrieval or establish readiness. The offline freezer is `scripts/freeze_retrieval_benchmark.py`; it refuses an existing output directory. Collected source quotes and generated evaluation files remain ignored by Git/Docker.
+
+For later authorized runs, evaluate known answer-support witness-group recall at `k=5,10,20`, separately from uncertainty/clarification-context recall. All groups are AND requirements; alternatives inside a group are explicit OR choices. Cases without a role's evidence groups have a null metric. A relevant generic FAQ or free-consultation advertisement is not support for an unresolved specific claim. The gold witnesses are selected known positives, not an exhaustive inventory of every valid source; manually adjudicate valid unlisted alternatives before revising fixtures. Exact duplicate occurrences retain their own provenance and are not silently made interchangeable.
+
+`score_receipts` in `scripts/retrieval_benchmark.py` scores only supplied ranked receipts and never issues retrieval/model/database calls. Call it only after verifying the frozen benchmark and actual source bundle; direct use of its in-memory arguments is not corpus attestation. Synthetic contract-test receipts must remain labeled synthetic and cannot be mixed with real retrieval receipts. No real scores are recorded in the frozen v1 preparation artifact.
+
+The 11-owner directory question must be reported separately from small top-k passage retrieval: five retrieved chunks cannot satisfy eleven distinct directory-owner witnesses. Conversation cases require the future context-aware planner; embedding an isolated pronoun is not an end-to-end conversation evaluation. Compare chunking strategies with identical source selections, query handling, provider/configuration and budgets. Any fixed-window baseline stays isolated from the serving policy.
+
+After an actual run, a source reviewer must assess every request part for supported facts/qualifiers/negations, correct ownership/citation, partial/unknown outcomes and prohibited actions. `answer-review-template.json` starts with null judgments. Retrieval recall does not measure answer faithfulness, citation entailment, diagnosis safety or runtime enforcement of source issue codes. No second paid judge-model call is authorized by this benchmark.
 
 Keep evaluation fixtures separate from live knowledge and prompts. Do not introduce case-specific runtime rules to pass a benchmark.
 
