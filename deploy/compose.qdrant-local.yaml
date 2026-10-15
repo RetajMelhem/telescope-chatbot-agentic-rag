@@ -1,0 +1,43 @@
+# Local M3 gateway only. This does not deploy the chatbot or publish an index.
+# The existing Qdrant container, internal network, keys and volume are external.
+services:
+  qdrant_gateway:
+    image: nginx@sha256:ed84151ed2d47ef93c0939eb9b9754c6990db6092cd2081e11988a47a83d47ea
+    container_name: telescope-m3-qdrant-gateway
+    entrypoint: ["/usr/sbin/nginx"]
+    command: ["-g", "daemon off;"]
+    user: "101:101"
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.25
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6333:6333"
+    volumes:
+      - type: bind
+        source: ./qdrant-gateway.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    networks:
+      - m3_ingress
+      - m3_private
+    labels:
+      telescope.project: clinic_agentic_rag
+      telescope.scope: local-m3-gateway
+
+networks:
+  m3_ingress:
+    name: telescope-m3-loopback
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+    labels:
+      telescope.project: clinic_agentic_rag
+  m3_private:
+    name: telescope-m3-local
+    external: true

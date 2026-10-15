@@ -1,6 +1,6 @@
 # Provider contracts and verified scope
 
-Status: M2 contracts were implemented offline on 2026-10-14. M3's Qwen embedding preparation passed the bounded hosted screen on 2026-10-15; see the dated profile below. FastAPI chat still returns `503`; Luna compatibility, stage prompts and graph orchestration remain pending.
+Status: M2 contracts were implemented offline on 2026-10-14. M3's Qwen embedding preparation and the separately authorized 834-input corpus run passed on 2026-10-15; see the dated evidence below. FastAPI chat still returns `503`; Luna compatibility, stage prompts and graph orchestration remain pending.
 
 ## Interfaces and ownership
 
@@ -43,7 +43,9 @@ Query:
 
 The first request used an inherited process key and returned 401. The user's explicit `.env` instruction led to a tested credential-priority fix, without editing the file. A subsequent HTTP 200 exposed the exact official model ID (77 reported tokens), then two final role-specific requests passed. Four physical requests were issued with no retries; three returned HTTP 200 with 154 reported input tokens in total. Unknown usage on the rejected request remains unknown. No corpus input or vector file was produced. Content-free receipts are under ignored `artifacts/m3-provider-preparation/`, notably `hosted-verification-v3.json`; the first receipt's local serialization failure was recovered without dispatch.
 
-The default provider constructor still refuses dispatch unless a counter is explicitly supplied. `candidate_qwen_format()` stays unverified. Luna counting/strict-schema verification, corpus embedding, Qdrant permissions/publication and API wiring remain separate work. Keep the local tokenizer outside Git/Docker; a later container build must supply this exact verified artifact explicitly rather than downloading at API startup.
+The separately authorized corpus run used this unchanged profile for 834 distinct document inputs: 53 successful requests, 71,804 reported tokens exactly matching each local reservation, provider `DeepInfra`, requested model `qwen/qwen3-embedding-8b` and reported model `Qwen/Qwen3-Embedding-8B`. No retry/fallback or extra query/chat call ran. All 955 occurrence payloads and normalized vectors were verified in an unpublished local candidate. Receipts: `artifacts/m3-candidate-execution-v6-v1`; authorization/preservation evidence: `artifacts/m3-candidate-authorization-v1`. This establishes that document batch16 responses fit the configured bounds in this run; future query batch32, retrieval quality and backend revision remain unverified. Pricing/accounting observations are point-in-time receipts, not a final invoice.
+
+The default provider constructor still refuses dispatch unless a counter is explicitly supplied. `candidate_qwen_format()` stays unverified. Luna counting/strict-schema verification, query embedding evaluation, Qdrant publication and API wiring remain separate work. Keep the local tokenizer outside Git/Docker; a later container build must supply this exact verified artifact explicitly rather than downloading at API startup.
 
 ## Wire and output validation
 

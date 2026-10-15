@@ -20,6 +20,7 @@ from telescope_rag.ingestion.review import (
     prepared_digest,
     write_bundle,
 )
+from telescope_rag.ingestion.runner import read_secret, run_candidate
 from telescope_rag.ingestion.token_validation import count_admitted_bundle
 
 
@@ -200,6 +201,22 @@ def main() -> None:
         default="upstream",
         help="Select a pinned format; upstream alone cannot enable embedding",
     )
+    indexing = commands.add_parser(
+        "index", help="Explicit paid embedding and unpublished local candidate run"
+    )
+    indexing.add_argument("--bundle", type=Path, required=True)
+    indexing.add_argument("--tokenizer", type=Path, required=True)
+    indexing.add_argument("--cache", type=Path, required=True)
+    indexing.add_argument("--output", type=Path, required=True)
+    indexing.add_argument("--qdrant-write-key-file", type=Path, required=True)
+    indexing.add_argument("--qdrant-read-key-file", type=Path, required=True)
+    indexing.add_argument("--batch-size", type=int, choices=range(1, 17), default=16)
+    indexing.add_argument("--max-requests", type=int, default=128)
+    indexing.add_argument("--max-input-tokens", type=int, default=100000)
+    indexing.add_argument("--deadline-seconds", type=float, default=600)
+    indexing.add_argument(
+        "--execute", action="store_true", help="Required explicit dispatch selection"
+    )
     args = parser.parse_args()
     try:
         if args.command == "collect":
@@ -228,6 +245,28 @@ def main() -> None:
         elif args.command == "count":
             summary = count_admitted_bundle(
                 args.bundle, args.output, args.tokenizer, profile=args.profile
+            )
+        elif args.command == "index":
+            if not args.execute:
+                raise ValueError("index_execution_not_selected")
+            settings = Settings(
+                provider_max_retries=0,
+                max_embedding_batch_size=args.batch_size,
+                qdrant_api_key=read_secret(args.qdrant_write_key_file),
+            )
+            summary = asyncio.run(
+                run_candidate(
+                    args.bundle,
+                    args.tokenizer,
+                    args.cache,
+                    args.output,
+                    settings,
+                    read_secret(args.qdrant_read_key_file),
+                    max_requests=args.max_requests,
+                    max_input_tokens=args.max_input_tokens,
+                    deadline_seconds=args.deadline_seconds,
+                    progress=lambda receipt: print(json.dumps(receipt), flush=True),
+                )
             )
         else:
             summary = prepare_snapshot(args.snapshot, args.output)

@@ -1,6 +1,22 @@
 # Docker deployment design
 
-Status: deployment specification. M1 can run the API shell locally. No Dockerfile, Compose runtime, image, or deployed endpoint exists yet.
+Status: application deployment specification. M1 can run the API shell locally; its Dockerfile/application Compose runtime and deployed chatbot do not exist yet. A separate local M3 Qdrant gateway is implemented and tested below; it does not complete M6 or publish an index.
+
+## Current local M3 Qdrant access
+
+The existing `telescope-m3-qdrant` container (Qdrant 1.19.2) retains its original storage volume, key/config files and sole internal network `telescope-m3-local`. Its attempted host publication was ineffective on that network. [compose.qdrant-local.yaml](../deploy/compose.qdrant-local.yaml) adds a separate gateway on the private network and `telescope-m3-loopback`; only the gateway publishes `127.0.0.1:6333`. [qdrant-gateway.conf](../deploy/qdrant-gateway.conf) forwards client authentication to the fixed Qdrant upstream without embedding a key, access logging, caching or upstream retries.
+
+The gateway uses a digest-pinned official Nginx image (observed 1.30.6), non-root identity, read-only root, dropped capabilities, `no-new-privileges`, bounded resources and temporary storage. Its only bind mount is the read-only gateway configuration; it receives no data volume, key or Docker socket. These gateway properties do not describe the unchanged Qdrant container's own privilege configuration. Host-local processes and containers on the gateway network can reach it but still need Qdrant credentials; this is PC-only access, not public deployment.
+
+The following was executed against the existing dedicated environment, followed by configuration, authentication, restart and empty-inventory checks:
+
+```powershell
+docker start telescope-m3-qdrant
+docker compose -f deploy/compose.qdrant-local.yaml --project-name telescope-m3-local config --quiet
+docker compose -f deploy/compose.qdrant-local.yaml --project-name telescope-m3-local up -d
+```
+
+Both containers now use `unless-stopped`. The authenticated checker and its explicit non-creating permission-probe flag are documented in [INGESTION_RUNBOOK.md](INGESTION_RUNBOOK.md). Evidence: `artifacts/m3-local-preflight-repair-v1/REPORT.md`. To withdraw host access, stop `telescope-m3-qdrant-gateway`; this leaves the private database, volume and keys intact. Do not delete/reinitialize the existing database or volume as a connectivity repair.
 
 ## Planned services
 
@@ -24,7 +40,7 @@ Implement `deploy/Dockerfile` and `deploy/compose.yaml` in M6 using the existing
 - Use container limits and graceful shutdown. Production images do not use `--reload`.
 - Run the ingestion CLI through a separate command once implemented; never perform a crawl or paid warmup during image build or API startup.
 
-The API factory exists and runs locally; the ingestion CLI and Docker packaging remain future work. [FastAPI's Docker documentation](https://fastapi.tiangolo.com/deployment/docker/) describes the underlying container pattern.
+The API factory and offline ingestion CLI exist; application Docker packaging remains future work. [FastAPI's Docker documentation](https://fastapi.tiangolo.com/deployment/docker/) describes the underlying container pattern.
 
 ## Networks, secrets, and storage
 
