@@ -29,6 +29,37 @@ class SyntheticCounter:
         return len(text.split())
 
 
+def test_oversized_icon_condition_group_repeats_governing_and_closing_source_context():
+    html = (
+        "<main><section class='e-con'><div class='e-con'><h2>Conditions</h2>"
+        "<div>May apply only if:</div></div><div class='e-con'>"
+        + "".join(
+            f"<div class='e-con'><div class='elementor-icon-box-content'><h3>"
+            f"Condition {n} with complete literal qualifier "
+            "and several source words.</h3></div></div>"
+            for n in range(5)
+        )
+        + "</div><div>Assessment remains necessary.</div></section></main>"
+    )
+    result = prepare_document(
+        extract_page(page(html)),
+        max_tokens=30,
+        counter=SyntheticCounter(),
+        embedding_format=format_profile(),
+    )
+    assert len(result.chunks) > 1 and not result.gaps
+    assert all(c.token_count <= 30 for c in result.chunks)
+    assert all(
+        "May apply only if:" in c.retrieval_text
+        and "Assessment remains necessary." in c.retrieval_text
+        for c in result.chunks
+    )
+    assert all(
+        any(s.original_text == "Assessment remains necessary." for s in c.context_spans)
+        for c in result.chunks
+    )
+
+
 def page(html):
     return RawPage(
         snapshot_id="synthetic-snapshot",

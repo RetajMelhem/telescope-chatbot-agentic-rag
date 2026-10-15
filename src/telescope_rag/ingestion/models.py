@@ -89,7 +89,7 @@ class ExtractedDocument(Record):
     units: tuple[ContentUnit, ...]
     removed: tuple[AuditItem, ...] = ()
     gaps: tuple[AuditItem, ...] = ()
-    extractor_version: str = "html-structure-v3"
+    extractor_version: str = "html-structure-v5"
     admission_policy_hash: str | None = None
 
 
@@ -120,7 +120,7 @@ class PreparedChunk(Record):
     tokenizer_version: str | None = None
     embedding_format_version: str | None = None
     embedding_format_hash: str | None = None
-    preparation_version: str = "structure-nfc-v4"
+    preparation_version: str = "structure-nfc-v5"
     embedding_ready: bool = False
 
 

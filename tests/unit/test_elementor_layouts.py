@@ -10,6 +10,7 @@ from telescope_rag.ingestion.extraction import extract_page
 from telescope_rag.ingestion.layouts import (
     UnsupportedElementorLayout,
     is_elementor_comparison,
+    is_parallel_category_comparison,
     parse_elementor_comparison,
 )
 from telescope_rag.ingestion.models import RawPage, Segment, SourceSpan, stable_id
@@ -185,6 +186,27 @@ def test_generic_four_service_cards_do_not_establish_a_comparison_matrix():
         parse_elementor_comparison(node, source)
 
 
+@pytest.mark.parametrize("label", ["Category", "فئة"])
+def test_detached_parallel_category_column_is_quarantined_without_row_order_inference(label):
+    html = (
+        "<main><h1>Public comparison</h1><div id='parallel' class='e-con'>"
+        "<div class='e-con'><div class='elementor-widget-text-editor'>"
+        f"{label}</div><h4>Group one</h4><h4>Group two</h4></div>"
+        "<div id='matrix' class='e-con'>"
+        + headers(ENGLISH)
+        + row(FIRST, "first")
+        + row(SECOND, "second")
+        + "</div></div><p>Independent public fact.</p></main>"
+    )
+    soup = BeautifulSoup(html, "html.parser")
+    assert is_parallel_category_comparison(soup.find(id="parallel"))
+    result = prepared(html)
+    assert any(g.code == "unsupported_parallel_category_layout" and g.locator for g in result.gaps)
+    assert not any("Example technique" in c.retrieval_text for c in result.chunks)
+    assert any("Independent public fact" in c.retrieval_text for c in result.chunks)
+    assert not result.embedding_ready
+
+
 @pytest.mark.parametrize(
     "bad_data",
     [
@@ -289,22 +311,21 @@ def test_preparation_retrieves_each_complete_technique_row_with_its_own_values()
         + "</div></main>"
     )
     tables = [chunk for chunk in result.chunks if chunk.block_type == "table"]
-    assert len(tables) == 2
+    assert len(tables) == 1
     assert (
         "Technique: Example technique one; How It Works: No flap is created"
         in tables[0].retrieval_text
     )
     assert "Recovery Time: Very fast; Best For: Selected cases only" in tables[0].retrieval_text
-    assert "Example technique two" not in tables[0].retrieval_text
     assert (
         "Technique: Example technique two; How It Works: Surface treatment"
-        in tables[1].retrieval_text
+        in tables[0].retrieval_text
     )
-    assert "Recovery Time: Slower; Best For: Other assessed cases" in tables[1].retrieval_text
-    assert "Example technique one" not in tables[1].retrieval_text
+    assert "Recovery Time: Slower; Best For: Other assessed cases" in tables[0].retrieval_text
+    assert len(tables[0].source_spans) == 10
     assert all(chunk.doctor_id is None for chunk in tables)
     assert not any(item.code == "invalid_source_mapping" for item in result.gaps)
-    assert all(len(chunk.source_spans) == 5 for chunk in tables)
+    assert all(len(chunk.source_spans) == 10 for chunk in tables)
 
 
 def test_integration_quarantines_incomplete_candidate_without_orphan_cell_fallback():

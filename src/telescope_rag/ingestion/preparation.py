@@ -18,7 +18,7 @@ from telescope_rag.ingestion.models import (
 )
 from telescope_rag.providers.contracts import EmbeddingFormat
 
-PREPARATION_VERSION = "structure-nfc-v4"
+PREPARATION_VERSION = "structure-nfc-v5"
 EMBEDDING_MODEL = "qwen/qwen3-embedding-8b"
 
 
@@ -46,31 +46,44 @@ def _unique_context(unit: ContentUnit) -> tuple[Segment, ...]:
 def _formatted(unit: ContentUnit, segments: Sequence[Segment]) -> str:
     context = _unique_context(unit)
     content_refs = {(s.source.block_id, s.source.start, s.source.end) for s in segments}
-    parts = [
-        normalize_text(segment.text)
-        for segment in context
-        if (segment.source.block_id, segment.source.start, segment.source.end) not in content_refs
-    ]
+    body_texts = {normalize_text(s.text) for s in segments}
+    parts = []
+    seen = set()
+
+    def append(part: str, *, preserve_repetition: bool = False):
+        if part and (preserve_repetition or part not in seen):
+            parts.append(part)
+            seen.add(part)
+
+    for segment in context:
+        if (segment.source.block_id, segment.source.start, segment.source.end) not in content_refs:
+            text = normalize_text(segment.text)
+            if unit.kind in {"list", "table"} or text not in body_texts:
+                append(text)
     for segment in segments:
         if segment.table_headers and segment.table_cells:
-            parts.append(
+            append(
                 "; ".join(
                     normalize_text(header.original_text[header.start : header.end])
                     + ": "
                     + normalize_text(cell.original_text[cell.start : cell.end])
                     for header, cell in zip(segment.table_headers, segment.table_cells, strict=True)
-                )
+                ),
+                preserve_repetition=True,
             )
-        elif unit.kind == "list":
+        elif unit.kind == "list" or "li:nth-of-type(" in segment.source.locator:
             marker = "- "
             if "ol:nth-of-type(" in segment.source.locator:
                 index = re.search(r"li:nth-of-type\((\d+)\)$", segment.source.locator)
                 if index:
                     marker = index[1] + ". "
-            parts.append(marker + normalize_text(segment.text))
+            append(marker + normalize_text(segment.text), preserve_repetition=True)
         else:
-            parts.append(normalize_text(segment.text))
+            append(normalize_text(segment.text))
     # Layout separation is deterministic. It never fabricates clinical labels or facts.
+    # Repeated context/heading/alt labels do not need repeated embedding text.
+    # Every source occurrence remains in the chunk's span records. Ordered list
+    # items and complete table rows preserve intentional repetition and ordering.
     return "\n\n".join(part for part in parts if part)
 
 

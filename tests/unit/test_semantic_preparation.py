@@ -340,16 +340,16 @@ def test_supported_css_table_rows_are_formatted_with_all_source_labels_and_group
         "<div class='cell'>Fast</div><div class='cell'>Other cases</div></div></main>"
     )
     rows = [c for c in result.chunks if c.block_type == "table"]
-    assert len(rows) == 2
+    assert len(rows) == 1
     assert (
         "Category: Group; Technique: First; Method: Method one; "
         "Recovery: Slow; For whom: Selected cases" in rows[0].retrieval_text
     )
     assert (
         "Category: Group; Technique: Second; Method: Method two; "
-        "Recovery: Fast; For whom: Other cases" in rows[1].retrieval_text
+        "Recovery: Fast; For whom: Other cases" in rows[0].retrieval_text
     )
-    assert len(rows[0].context_spans) >= 5 and len(rows[1].source_spans) == 6
+    assert len(rows[0].context_spans) >= 5 and len(rows[0].source_spans) == 12
     assert "unsupported_css_grid_table" not in {g.code for g in result.gaps}
 
 

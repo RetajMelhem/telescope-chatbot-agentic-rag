@@ -250,6 +250,46 @@ def test_owner_context_cannot_be_removed():
         apply(docs, plan.model_copy(update={"units": tuple(entries)}))
 
 
+@pytest.mark.parametrize(
+    "change", ["whole_row", "cell_fragment", "reordered", "missing_header", "missing_category"]
+)
+def test_table_selection_keeps_complete_rows_headers_and_source_order(change):
+    html = (
+        "<main><h2>Source category</h2><table><tr><th>Technique</th><th>Qualification</th></tr>"
+        "<tr><td>First</td><td>Selected cases only</td></tr>"
+        "<tr><td>Second</td><td>Other assessed cases</td></tr></table></main>"
+    )
+    page = sources()[0].document.page.model_copy(
+        update={"html": html, "content_hash": stable_id(html)}
+    )
+    docs = (prepare_document(extract_page(page)),)
+    plan = plan_for(docs).model_copy(update={"aliases": ()})
+    unit = next(u for u in docs[0].document.units if u.kind == "table")
+    other = [selection(docs[0], u) for u in docs[0].document.units if u is not unit]
+    if change == "whole_row":
+        entry = selection(docs[0], unit, segment_keys=(segment_key(unit.segments[1]),))
+        admitted = apply(docs, plan.model_copy(update={"units": (*other, entry)}))
+        chunk = next(c for c in prepare_document(admitted[0]).chunks if c.block_type == "table")
+        assert "Other assessed cases" in chunk.retrieval_text
+        assert "Selected cases only" not in chunk.retrieval_text
+        assert all(h in chunk.context_spans for h in unit.segments[1].table_headers)
+        return
+    updates = {
+        "cell_fragment": {"segment_keys": (segment_key(unit.context[0]),)},
+        "reordered": {"segment_keys": tuple(segment_key(s) for s in reversed(unit.segments))},
+        "missing_header": {"context_keys": ()},
+        "missing_category": {
+            "context_keys": tuple(
+                segment_key(s) for s in unit.context if s.text != "Source category"
+            ),
+            "section_path": (),
+        },
+    }[change]
+    entry = selection(docs[0], unit, **updates)
+    with pytest.raises(ValueError):
+        apply(docs, plan.model_copy(update={"units": (*other, entry)}))
+
+
 def test_admit_cli_receipt_is_bound_and_does_not_bypass_embedding_gates(tmp_path):
     docs = sources()
     plan = plan_for(docs).model_copy(update={"primary_directory_document_ids": ("doc-0",)})

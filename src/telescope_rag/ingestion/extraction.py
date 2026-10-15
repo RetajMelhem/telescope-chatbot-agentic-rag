@@ -4,6 +4,8 @@ Locators address the original DOM. Offsets address text extracted from that node
 not HTML bytes. No model, network request, or factual rewrite is involved.
 """
 
+from __future__ import annotations
+
 import re
 import unicodedata
 from dataclasses import dataclass, field
@@ -14,6 +16,7 @@ from telescope_rag.ingestion.layouts import (
     UnsupportedElementorLayout,
     UnsupportedGridLayout,
     is_elementor_comparison,
+    is_parallel_category_comparison,
     parse_css_grid,
     parse_elementor_comparison,
 )
@@ -634,8 +637,7 @@ class _Extractor:
             Segment(text=normalize_text(span.original_text), source=span)
             for span in rows[0].table_headers
         )
-        for row in rows:
-            self.emit("table", [row], extra=list(headers))
+        self.emit("table", list(rows), extra=list(headers))
 
     def elementor_table(self, node: Tag):
         self.flush()
@@ -645,8 +647,83 @@ class _Extractor:
             self.audit(node, "unsupported_elementor_comparison_table", gap=True)
             return
         for group in groups:
-            for row in group.rows:
-                self.emit("table", [row], extra=list((*group.headers, *group.context)))
+            self.emit("table", list(group.rows), extra=list((*group.headers, *group.context)))
+
+    def source_introduction(self, first: Tag, following: list[Tag]) -> bool:
+        """Recognize a source header block before a nested group, never a sibling card.
+
+        A header-only block uses explicit heading levels. A header with prose is
+        admitted only before a multi-heading descendant group, not another single
+        labeled description. No heading text, medical meaning or page ID is used.
+        """
+        headings = first.find_all(_HEADINGS)
+        if _HEADINGS.match(first.name):
+            headings.insert(0, first)
+        if len(headings) != 1 or _doctor_name(self.segment(headings[0]).text):
+            return False
+        if first.find(["img", "ul", "ol", "table", "details", "dl"]):
+            return False
+        if first.find(class_="elementor-icon-box-content"):
+            return False
+        if any(_FAQ_CLASSES & _classes(n) for n in [first, *first.find_all(True)]):
+            return False
+        if following:
+            branch = following[0]
+            descendants = [
+                c
+                for c in branch.children
+                if isinstance(c, Tag) and normalize_text(c.get_text(" ", strip=False))
+            ]
+            while len(descendants) == 1 and not _HEADINGS.match(descendants[0].name):
+                branch = descendants[0]
+                descendants = [
+                    c
+                    for c in branch.children
+                    if isinstance(c, Tag) and normalize_text(c.get_text(" ", strip=False))
+                ]
+            # A following group with its own introductory header is a new
+            # semantic section, even if the author inverted its h-levels.
+            if len(descendants) > 1:
+                own_headings = descendants[0].find_all(_HEADINGS)
+                if _HEADINGS.match(descendants[0].name):
+                    own_headings.insert(0, descendants[0])
+                if (
+                    len(own_headings) == 1
+                    and normalize_text(descendants[0].get_text(" ", strip=False))
+                    != self.segment(own_headings[0]).text
+                    and (
+                        descendants[0].find(["ul", "ol", "details", "dl", "table"])
+                        or self.source_introduction(descendants[0], descendants[1:])
+                    )
+                ):
+                    return False
+        if normalize_text(first.get_text(" ", strip=False)) == self.segment(headings[0]).text:
+            next_label = self.label(following[0]) if following else None
+            if next_label is None:
+                return True
+            next_node = next(
+                (
+                    n
+                    for n in [following[0], *following[0].find_all(_HEADINGS)]
+                    if self.locators.get(id(n)) == next_label.source.locator
+                ),
+                None,
+            )
+            return bool(
+                next_node
+                and _HEADINGS.match(next_node.name)
+                and int(headings[0].name[1]) < int(next_node.name[1])
+            )
+        return bool(
+            following
+            and (
+                len(following[0].find_all(_HEADINGS)) > 1
+                or (
+                    following[0].find(["ul", "ol"])
+                    and not any(normalize_text(p.get_text()) for p in following[0].find_all("p"))
+                )
+            )
+        )
 
     def scoped(self, node: Tag, inside_profile: bool):
         self.flush()
@@ -667,6 +744,9 @@ class _Extractor:
             and (normalize_text(c.get_text()) or c.name == "img" or c.find("img"))
         ]
         first_label = self.label(children[0]) if children else None
+        introduction = bool(
+            len(children) > 1 and self.source_introduction(children[0], children[1:])
+        )
         second_label = self.label(children[1]) if len(children) > 1 else None
         first_level = (
             re.search(r"h([1-6]):nth-of-type\(\d+\)$", first_label.source.locator)
@@ -687,13 +767,31 @@ class _Extractor:
             )
         )
         previous_prose = None
+        introduction_segments = ()
         for child in node.children:
             if isinstance(child, Tag):
+                child_start = len(self.units)
                 prior_qualifiers = list(self.state.qualifiers)
                 if previous_prose and (child.name in {"ul", "ol"} or child.find(["ul", "ol"])):
                     self.state.qualifiers.append(previous_prose)
                 self.walk(child, inside_profile=inside_profile)
                 self.state.qualifiers = prior_qualifiers
+                if introduction and child is children[0]:
+                    prefix = self.locators[id(child)]
+                    introduced = {}
+                    for unit in self.units[child_start:]:
+                        for segment in (*unit.context, *unit.segments):
+                            base = segment.source.locator.split("::")[0]
+                            if base == prefix or base.startswith(prefix + " > "):
+                                introduced[
+                                    (
+                                        segment.source.block_id,
+                                        segment.source.start,
+                                        segment.source.end,
+                                    )
+                                ] = segment
+                    self.state.qualifiers.extend(introduced.values())
+                    introduction_segments = tuple(introduced.values())
                 if promote_label and child is children[0]:
                     if all(
                         s.source.block_id != first_label.source.block_id
@@ -742,16 +840,56 @@ class _Extractor:
             and all(len(c.find_all(_HEADINGS)) <= 1 for c in children)
         )
         labeled_card = first_label and len(headings) <= 1 and "e-grid" not in _classes(node)
+        # Visually authored lists use heading-only icon boxes rather than <li>.
+        # Keep their introductory condition and closing qualification with all
+        # items. Described sibling treatments and native FAQ pairs stay separate.
+        item_prefix = self.locators[id(children[1])] if len(children) > 1 else ""
+        item_segments = [
+            s
+            for u in self.units[start:]
+            for s in u.segments
+            if s.source.locator.split("::")[0] == item_prefix
+            or s.source.locator.split("::")[0].startswith(item_prefix + " > ")
+        ]
+        heading_group = (
+            introduction
+            and len(headings) > 2
+            and bool(item_segments)
+            and all(
+                re.search(r"(?:h[1-6]|li):nth-of-type\(\d+\)$", s.source.locator)
+                or s.source.attribute == "alt"
+                for s in item_segments
+            )
+        )
+        native_faq = node.find(["details", "dl"]) or any(
+            _FAQ_CLASSES & _classes(n) or "elementor-accordion-item" in _classes(n)
+            for n in node.find_all(True)
+        )
+        # A narrative question heading with a list is one section, including
+        # its lead-in and closing qualification. Native FAQ pairs are separate.
+        narrative_question = (
+            len(headings) == 1
+            and bool(_QUESTION.search(normalize_text(headings[0].get_text(" ", strip=False))))
+            and node.find(["ul", "ol"]) is not None
+            and not native_faq
+        )
         if (
             (leaf_container and len(headings) <= 1)
             or card_classes
             or is_comparison_card
             or is_text_comparison
             or labeled_card
+            or heading_group
         ) and len(self.units) > start + 1:
             units = self.units[start:]
-            if len({u.doctor_id for u in units}) == 1 and not any(
-                u.kind in {"faq", "table"} for u in units
+            if (
+                len({u.doctor_id for u in units}) == 1
+                and not native_faq
+                and not any(
+                    u.kind == "table"
+                    or (u.kind == "faq" and not (heading_group or narrative_question))
+                    for u in units
+                )
             ):
                 sources = {}
                 for unit in units:
@@ -763,21 +901,72 @@ class _Extractor:
                 segments = [
                     s
                     for s in sources.values()
-                    if s.source.block_id not in {seg.source.block_id for _, seg in saved.headings}
-                    and s.source.block_id
-                    != (self.title_context.source.block_id if self.title_context else "")
+                    if s.source.locator.split("::")[0] == self.locators[id(node)]
+                    or s.source.locator.split("::")[0].startswith(self.locators[id(node)] + " > ")
                 ]
                 segments.sort(
                     key=lambda s: self.source_order.get(s.source.locator.split("::")[0], 10**9)
                 )
+                # Some text-only wrappers and their children are both emitted.
+                # Retire a wrapper only when its complete literal text equals
+                # the ordered child text. This never drops unique parent text.
+                redundant = []
+                for parent in segments:
+                    if parent.source.attribute:
+                        continue
+                    descendants = [
+                        s
+                        for s in segments
+                        if not s.source.attribute
+                        and s.source.locator.startswith(parent.source.locator + " > ")
+                    ]
+                    leaves = [
+                        s
+                        for s in descendants
+                        if not any(
+                            t.source.locator.startswith(s.source.locator + " > ")
+                            for t in descendants
+                        )
+                    ]
+                    if leaves and normalize_text(parent.text) == normalize_text(
+                        " ".join(s.text for s in leaves)
+                    ):
+                        redundant.append(parent)
+                        self.removed.append(
+                            AuditItem(
+                                code="overlapping_container_text_represented_by_children",
+                                locator=parent.source.locator,
+                            )
+                        )
+                segments = [s for s in segments if s not in redundant]
                 if segments:
                     del self.units[start:]
                     self.state = _State(
                         headings=list(saved.headings),
                         doctor=saved.doctor,
                         doctor_level=saved.doctor_level,
+                        qualifiers=list(saved.qualifiers),
                     )
-                    self.emit("doctor" if saved.doctor else "section", segments)
+                    mandatory = list(introduction_segments) if heading_group else []
+                    if heading_group and not children[-1].find(_HEADINGS):
+                        closing = self.locators[id(children[-1])]
+                        mandatory.extend(
+                            s
+                            for s in segments
+                            if s.source.locator.split("::")[0] == closing
+                            or s.source.locator.split("::")[0].startswith(closing + " > ")
+                        )
+                    if narrative_question:
+                        mandatory.extend(
+                            s
+                            for s in segments
+                            if not re.search(r"(?:ul|ol):nth-of-type\(\d+\) > ", s.source.locator)
+                            and not s.source.attribute
+                        )
+                    kind = (
+                        "doctor" if saved.doctor else ("faq" if narrative_question else "section")
+                    )
+                    self.emit(kind, segments, extra=mandatory)
         self.state = saved
 
     def label(self, node: Tag) -> Segment | None:
@@ -836,6 +1025,10 @@ class _Extractor:
             return
         if node.name == "table":
             self.table(node)
+            return
+        if is_parallel_category_comparison(node):
+            self.flush()
+            self.audit(node, "unsupported_parallel_category_layout", gap=True)
             return
         if is_elementor_comparison(node):
             self.elementor_table(node)

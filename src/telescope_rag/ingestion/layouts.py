@@ -230,6 +230,22 @@ def is_elementor_comparison(node: Tag) -> bool:
     return bool(_local_elementor_headers(node))
 
 
+def is_parallel_category_comparison(node: Tag) -> bool:
+    """Detect a detached category column beside a four-column matrix.
+
+    Parallel visual columns do not authenticate category-to-row membership.
+    Detection deliberately refuses that enclosing layout instead of allowing a
+    generic walk to orphan the labels or infer an association from row order.
+    """
+    if not _elementor_container(node):
+        return False
+    children = [child for child in node.children if isinstance(child, Tag)]
+    if len(children) != 2 or not is_elementor_comparison(children[1]):
+        return False
+    labels = children[0].find_all(class_="elementor-widget-text-editor")
+    return any(_elementor_text(label) in {"Category", "فئة"} for label in labels)
+
+
 def _elementor_cell(node: Tag) -> bool:
     if not _elementor_container(node) or node.get("style"):
         return False

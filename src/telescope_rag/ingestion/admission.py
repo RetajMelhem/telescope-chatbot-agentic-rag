@@ -48,7 +48,12 @@ class AdmissionPlan(Record):
     excluded_document_ids: tuple[str, ...] = ()
     primary_directory_document_ids: tuple[str, ...] = ()
     accepted_exclusion_gaps: tuple[
-        Literal["placeholder_document", "placeholder_content_quarantined"], ...
+        Literal[
+            "placeholder_document",
+            "placeholder_content_quarantined",
+            "unsupported_parallel_category_layout",
+        ],
+        ...,
     ] = ()
     units: tuple[UnitSelection, ...]
 
@@ -106,15 +111,19 @@ def _project(unit: ContentUnit, selection: UnitSelection) -> ContentUnit:
     )
     if not (own_body or heading_only):
         raise ValueError("admission_projection_invalid")
-    if unit.kind in {"faq", "table"} and selection.segment_keys != own_keys:
+    if unit.kind == "faq" and selection.segment_keys != own_keys:
         raise ValueError("admission_atomic_unit_changed")
+    # A table may select complete existing row segments. Cell/header fragments
+    # cannot become body segments because own_body requires a source subsequence.
     # Required FAQ/table labels and owner identity may not be trimmed by admission.
     retained_context = {originals[k].source.block_id for k in selection.context_keys}
     if unit.kind == "table" and any(
         h.block_id not in retained_context for s in unit.segments for h in s.table_headers
     ):
         raise ValueError("admission_atomic_context_changed")
-    if unit.kind == "faq" and selection.context_keys != tuple(segment_key(s) for s in unit.context):
+    if unit.kind in {"faq", "table"} and selection.context_keys != tuple(
+        segment_key(s) for s in unit.context
+    ):
         raise ValueError("admission_atomic_context_changed")
     segments = tuple(originals[k] for k in selection.segment_keys)
     context = tuple(originals[k] for k in selection.context_keys)
