@@ -2,6 +2,8 @@
 
 Last updated: 2026-10-15 (Asia/Amman).
 
+Repository checkpoint rule: the user requires a scoped local Git commit after each completed and verified work step with file changes, unless explicitly told not to commit. `AGENTS.md` now records standing commit permission and mandatory staged review, secret/generated-data exclusions and commit-hash reporting. This instruction change was checked for Markdown/local-link integrity, Git whitespace and staged scope; existing pending source, benchmark and index work is preserved.
+
 Current milestone: **M3 collection, semantic/quality review, source admission and Qwen provider preparation are verified. Latest token-validated bundle: `data/processed/m3-token-validated-v2`, with a separate exact-digest technical approval. Corpus embedding, Qdrant candidate/publication and retrieval comparison remain pending.**
 
 This is the continuity entry point for Codex. Read it before substantive work and update it after each completed task. The full roadmap is [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); repository rules are in [AGENTS.md](AGENTS.md).

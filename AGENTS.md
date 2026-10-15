@@ -48,6 +48,7 @@ The user has now resolved the listed source issues. Follow the current sealed ad
 - Pin dependencies in a lockfile when implementation begins. Pin container versions for releases. Do not claim a particular dependency version is validated before checking it.
 - Preserve unrelated work. If any Legacy code is encountered, leave it unchanged unless the user specifically authorizes work on it.
 - Use `git status` and scoped diffs to inspect the local repository; preserve existing user changes. Keep checkpoints small and reviewable within the authorized task. Never stage `.env`, local environments, collected content, or credentials; inspect staged paths and content before a commit.
+- The user grants standing permission for local Git checkpoints: after each completed and verified work step with file changes, commit the scoped code, tests and documentation without asking again, unless the user explicitly says not to commit; preserve unrelated changes, exclude secrets/generated data, inspect the staged diff and report the commit hash in the handoff.
 - Keep docs synchronized with contract and behavior changes. Label synthetic examples and unverified assumptions.
 
 ## Secrets, privacy, and operations
