@@ -98,6 +98,24 @@ The full 786-test offline suite passed before execution; an independent post-run
 
 Next: bounded evidence assembly, complete admitted source reads when a question requires that scope, occurrence-preserving presentation and explicit source/identity/uncertainty enforcement. Use development fixtures and a new reviewed evaluation version; do not tune to the now-exposed evaluation cases or delete useful source occurrences to improve ranking scores.
 
+### M5 planner preparation
+
+The next offline graph step is prepared in `artifacts/m5-planner-cases-v1`: **24 new authored cases, eight families × English/Arabic/Jordanian Arabic, covering 63 parts**. Six cases are development; 18 are reserved evaluation, grouped by family. These are new compositions of known source/policy challenges, not an unseen statistical holdout. Prompts and runtime were fixed before authoring; no runtime tuning used these cases. The old 90-case benchmark remains unchanged.
+
+GPT-6.1 Sol authors made the semantic decisions. A different service reviewer actually reviewed 12 cases/36 parts; root independently reviewed the other author's 12 doctor cases/27 parts after the first reviewer was interrupted. Each record identifies its actual reviewer, current case/plan hashes, individual part rationale and saved source evidence. Forty selected witness chunks span 15 saved official URLs. This is targeted fixture review, not another full-corpus or fresh live-site audit. Selected witnesses are not exhaustive relevance labels.
+
+[planner_review.py](../scripts/planner_review.py) verifies coverage, literal spans/history anchors, app-issued handles, source-use restrictions, split integrity, independent judgment bindings, exact source payloads/owners, original HTML hashes and DOM coordinates. Scripts make **zero semantic decisions**. Frozen source packets preserve 42 per-ledger chunk entries (40 distinct chunks), 333 node entries and 358 source/context span references, including repeated source/context references. It checks that `requests.jsonl` contains no expected plans, selected-witness labels or rationales and keeps requested language separate from the case's language.
+
+Read-only verification requires the manifest hash recorded in the local report:
+
+```powershell
+& .\.tools\uv\bin\uv.exe run --locked python -m scripts.planner_review --frozen artifacts/m5-planner-cases-v1 --manifest-sha256 HASH_FROM_REPORT
+```
+
+The accompanying [offline Luna payload preparation](../scripts/prepare_luna_screen.py) exercises the actual adapter and graph with an always-rejecting counter and a forbidden mock transport. An explicitly labelled authored plan and selected-witness oracle allow inspection of the second-stage payload; they are not model planning or search results. All 24 cases captured both payloads, and all draft dispatches stop at unavailable counting. No draft answers were fabricated. Neither the resulting `provider_failed` outcomes nor the authored 33 candidate/18 unknown/three clarification/nine excluded expectations are model accuracy scores.
+
+Complete source reads remain bounded to the admitted membership, while source language, doctor ownership, comparisons, negations and public/private siblings stay distinct. Unknown source claims and unavailable time operations remain unknown. No nDCG, new retrieval gain, Luna planning accuracy, answer quality, live latency or provider cost was measured. Before a separately authorized live screen, establish compatible complete-input Luna counting, verify the exact OpenRouter route and strict schema, and retain all partial/unknown outcomes. Readiness remains false.
+
 ### Offline cached assembly replay
 
 The first candidate-assembly implementation has synthetic contract/safety tests and an independent code review. [replay_evidence_assembly.py](../scripts/replay_evidence_assembly.py) provides a separate offline experiment: `cached_occurrence20`, `cached_pool20_coalesced`, and `cached_distinct20`. They use the same cached query/document vectors, exact local float64 cosine, source corpus and 6,000-Qwen-token/16-rendered-unit budget. The second arm changes presentation within an unchanged pool; the third also changes candidate supply by grouping before truncation. No re-chunking, query decomposition, provider call, index request or API integration is performed.

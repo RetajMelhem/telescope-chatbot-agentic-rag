@@ -81,3 +81,19 @@ Receipts contain operation/attempt ordinals, requested/reported model and provid
 | `MAX_EMBEDDING_BATCH_SIZE` | 32 |
 
 Offline tests exercise bilingual wire preservation, strict parsing, refusal/truncation, retry limits/statuses, transport ambiguity, reservations and unknown usage, model mismatch, batch/index/dimension/vector errors, deadlines, cancellation, response bounds, safe logs/errors, and bounded cleanup. They use synthetic keys/counts/formats and mocked HTTP; no account, corpus, latency, grounding, or deployment claim follows from their success. Exact checks and next steps are in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+
+## Offline Luna screen preparation
+
+[prepare_luna_screen.py](../scripts/prepare_luna_screen.py) captures the actual `openai/gpt-6-luna` Chat Completions payload, including both messages, the entire strict output schema, provider parameters and output cap. It uses explicit default settings, `_env_file=None`, a synthetic credential, retries zero, an always-rejecting full-input counter and an independently forbidden mock HTTP transport. It cannot execute a paid screen. Payload artifacts contain public evidence and synthetic questions; credentials and headers are absent.
+
+After the planning adapter rejects counting, an explicitly labelled authored plan allows offline traversal into evidence assembly. Selected witness IDs are an oracle, not measured retrieval. Qwen counts only the full retrieval rendering. The draft adapter then rejects counting too, so no answer model runs. Oracle planning charges zero; actual planning usage may change the later output reservation. Captured draft input is a concrete compatibility fixture, not a token reservation or a future byte-identical live conversation.
+
+```powershell
+& .\.tools\uv\bin\uv.exe run --locked python -m scripts.prepare_luna_screen --cases artifacts/m5-planner-cases-v1/cases.jsonl --bundle data/processed/m3-llm-semantic-token-validated-v6 --prepared-digest a46be2d3fd18f11d46c79ff9bc992de22aab496836894a708bc57c1e8b48af88 --tokenizer .tools/qwen-tokenizer/1d8ad4ca9b3dd8059ad90a75d4983776a23d44af/tokenizer.json --output artifacts/NEW_LUNA_WIRE_PREPARATION
+```
+
+The dated run captured 48 payloads across 24 cases, with zero HTTP attempts and unknown Luna input counts/cost. Serialized byte bounds are transport checks, not tokens. Source bundle digest and exact case inputs are bound; output directories must be new. No credential, endpoint, model or execute option is exposed by this script.
+
+As checked on 2026-10-16, [OpenAI's Luna model documentation](https://developers.openai.com/api/docs/models/gpt-6-luna) lists structured-output support, while [OpenAI's counting guide](https://developers.openai.com/api/docs/guides/token-counting) describes counting the complete Responses input through `/v1/responses/input_tokens`. The project's [OpenRouter Chat Completions route](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion) is a separate wire contract. These documents do not establish a compatible counter for the project's exact messages/schema/route. No Responses-to-Chat equivalence, tokenizer mapping, character-based upper bound, model substitution or provider compatibility has been assumed. The default unavailable counter remains unchanged.
+
+Next gate: establish an evidenced full-input counting profile for that exact route, or document an explicitly approved contract change; then prepare actual token/cost reservations for a separately authorized bounded bilingual strict-schema/planning screen. Missing counts, refusal, truncation, incorrect model, schema or ownership errors must stop without paid repair/retry. Read-only source/counter preparation does not authorize that screen.
