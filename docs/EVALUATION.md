@@ -1,6 +1,6 @@
 # Evaluation and acceptance
 
-Status: API/provider/ingestion contracts have offline tests. A source-bound, independently reviewed 90-case benchmark is frozen for the v6 corpus; real retrieval and answer execution remain unexecuted. Live RAG, Qdrant and deployment acceptance remain future work. Current results are recorded in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+Status: API/provider/ingestion and comparison contracts have offline tests. A source-bound, independently reviewed 90-case benchmark is frozen for v6; its initial dense/BM25/hybrid retrieval comparison has executed. Dense is retained provisionally under the frozen rule. Source-policy enforcement, generated answers and deployment acceptance remain unverified. Current results are recorded in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## Offline checks first
 
@@ -64,9 +64,9 @@ Keep evaluation fixtures separate from live knowledge and prompts. Do not introd
 
 ### Dense versus local hybrid comparison
 
-`scripts/compare_retrieval.py` implements a separate evaluation-only comparison on the unpublished v6 candidate. It reuses the 955 stored occurrence vectors and compares exact Qwen dense top20, a local BM25 control, and dense+BM25 application-side reciprocal rank fusion. It does not wire the public API to the candidate or change its configuration/aliases. The original frozen preparation artifact remains immutable; actual results use a new evidence directory.
+`scripts/compare_retrieval.py` implements a separate evaluation-only comparison on the unpublished v6 candidate. It reuses the 955 stored occurrence vectors and compares exact Qwen dense top 20, a local BM25 control, and dense+BM25 application-side reciprocal rank fusion. It does not wire the public API to the candidate or change its configuration/aliases. The original frozen preparation artifact remains immutable; actual results use a new evidence directory.
 
-BM25 uses the same literal chunk retrieval texts, fixed `k1=1.2`, `b=.75`, positive `log(1+(N-df+.5)/(df+.5))` IDF, and NFC/casefold/Unicode-letter-number-mark tokens. It has no stemming, Arabic letter folding, translations, stopword list or query expansion. Original RRF uses equal contributions and one-based ranks with `k=60`; this is explicitly application-side fusion, not Qdrant's default/native RRF. Dense results are queried once per case and reused unchanged by hybrid. Fetched ties sort by chunk ID; exact ties crossing the top20 cutoff remain a documented limitation. All source occurrences and issue codes remain independent and intact.
+BM25 uses the same literal chunk retrieval texts, fixed `k1=1.2`, `b=.75`, positive `log(1+(N-df+.5)/(df+.5))` IDF, and NFC/casefold/Unicode-letter-number-mark tokens. It has no stemming, Arabic letter folding, translations, stopword list or query expansion. Original RRF uses equal contributions and one-based ranks with `k=60`; this is explicitly application-side fusion, not Qdrant's default/native RRF. Dense results are queried once per case and reused unchanged by hybrid. Fetched ties sort by chunk ID; exact ties crossing the top 20 cutoff remain a documented limitation. All source occurrences and issue codes remain independent and intact.
 
 Prepare/count without dispatch:
 
@@ -78,7 +78,27 @@ Only an explicitly authorized run adds `--execute`. The bounded query stage uses
 
 Report known support/context witness recall at 5/10/20 for all 90 cases, by development/evaluation split and language. The frozen preliminary selection rule excludes six raw-query conversation and three exhaustive-directory cases from its eligible denominator while retaining their separate scores/receipts. Hybrid qualifies only if development support recall@10 strictly increases, support and context recall do not decrease in any language, and evaluation confirms all conditions without retuning. Otherwise retain dense as the experimental baseline and call the comparison inconclusive. Development context coverage has only three cases; aggregate gains cannot establish universal superiority. Manual source review of gains/losses and valid unlisted alternatives is required before adoption. Ranking scores and diagnostic flags do not establish source-policy enforcement, answer correctness or readiness.
 
-Before approving the chunking policy in M3/M4, compare structure-aware chunks with a bounded fixed-window baseline using the same source snapshot, embedding model, retrieval budget, and bilingual questions. Review retained facts, exact source mapping, doctor/FAQ/table integrity, relevant-evidence recall, supported answers, embedding input count, and cost. No strategy is the proven best for this corpus before that comparison. A semantic/LLM chunker is a later candidate only if a measured gap justifies its complexity.
+#### Executed comparison v1
+
+The authorized run is recorded separately in [the local comparison report](../artifacts/m4-retrieval-comparison-v1/REPORT.md). All 90 raw queries ran: six query-embedding attempts, 4,758 reserved/reported tokens, 90 cached 4096-dimensional vectors, 90 exact candidate reads, 270 ranked lists and 810 case/cutoff score rows. No corpus embedding, index mutation, alias publication or Luna call was repeated/initiated.
+
+The predeclared eligible evaluation split has 63 cases, including 51 with support groups and 15 with uncertainty/clarification groups (roles can overlap). The six history and three exhaustive-directory cases remain scored separately. Macro recall concerns the selected known witness groups, not all relevant chunks or generated answers:
+
+| Mode | Support@5 | Support@10 | Support@20 | Context@10 |
+| --- | ---: | ---: | ---: | ---: |
+| Dense | 73.53% | 84.31% | 88.24% | 56.67% |
+| Local BM25 | 50.98% | 53.92% | 62.75% | 33.33% |
+| Dense + BM25 RRF | 64.71% | 76.47% | 87.25% | 60.00% |
+
+Hybrid's development support@10 improved from 54.44% to 60.00%, but evaluation support fell in each language. The frozen rule returns `inconclusive_dense_baseline_retained`; do not describe this one fusion/analyzer configuration as proving that dense is universally better.
+
+GPT-6.1 Sol actually reviewed every individual query/part and complete dense/hybrid top 10 source text across all 90 cases, with exact source IDs/quotes and family ledgers. Scripts only bound/tracked judgments and verified inputs. Review found real loss of active-acne details for two Arabic hybrid queries, plus strict-witness misses with legitimate alternate phone/location/role evidence. Independent adjudication qualifies profile-path ambiguity and rejects a derivative directory claim as sufficient specialty authority for either mode. Gold and scores were not rewritten. Both modes still fail some compound/history/exhaustive-list needs; repeated footer/contact occurrences can consume top-k. BM25-only and lower top 20 semantic contents were not exhaustively reviewed, and no new full-site semantic audit is claimed.
+
+The full 786-test offline suite passed before execution; an independent post-run audit passed 506 deterministic checks covering sources, cache/receipts, rankings, all score rows and the selector. Empty alias responses were checked but not separately saved during execution; fresh read-only observations corroborate current state only. Query quote is $0.00004758 at the checked route price; key counters remained unchanged at the final bounded observation, so final billing is unresolved. No answer-level safety/readiness follows from these checks.
+
+Next: bounded evidence assembly, complete admitted source reads when a question requires that scope, occurrence-preserving presentation and explicit source/identity/uncertainty enforcement. Use development fixtures and a new reviewed evaluation version; do not tune to the now-exposed evaluation cases or delete useful source occurrences to improve ranking scores.
+
+Before approving a claim of optimal chunking in M3/M4, compare structure-aware chunks with a bounded fixed-window baseline using the same source snapshot, embedding model, retrieval budget, and bilingual questions. Review retained facts, exact source mapping, doctor/FAQ/table integrity, relevant-evidence recall, supported answers, embedding input count, and cost. No strategy is the proven best for this corpus before that comparison. A semantic/LLM chunker is a later candidate only if a measured gap justifies its complexity.
 
 ## Metrics and release criteria
 
