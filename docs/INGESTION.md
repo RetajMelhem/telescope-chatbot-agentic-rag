@@ -1,6 +1,6 @@
 # Website ingestion and knowledge lifecycle
 
-Status: M3 collection, structural extraction, cleaning/formatting, chunking, reviewed source selection, verified Qwen counting and candidate writing are implemented. The authorized corpus run produced 834 distinct embeddings and verified all 955 occurrence payloads/vectors in an unpublished local Qdrant candidate. Retrieval comparison, runtime source-policy enforcement and publication remain pending. See [INGESTION_RUNBOOK.md](INGESTION_RUNBOOK.md) and [PROJECT_STATUS.md](../PROJECT_STATUS.md) for exact bundles, checks and remaining gates.
+Status: M3 collection, structural extraction, cleaning/formatting, chunking, reviewed source selection, verified Qwen counting and candidate writing are implemented. The authorized corpus run produced 834 distinct embeddings and verified all 955 occurrence payloads/vectors in an unpublished local Qdrant candidate. The initial dense/BM25/hybrid comparison has executed; dense remains provisional. Runtime source-policy enforcement and publication remain pending. A later targeted semantic diagnosis found coherent broader units suitable for a controlled granularity experiment, without establishing a need for wholesale re-chunking; see [RETRIEVAL_DIAGNOSIS.md](RETRIEVAL_DIAGNOSIS.md). See [INGESTION_RUNBOOK.md](INGESTION_RUNBOOK.md) and [PROJECT_STATUS.md](../PROJECT_STATUS.md) for exact bundles, checks and remaining gates.
 
 ## Source boundary
 
