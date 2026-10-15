@@ -73,6 +73,8 @@ A complete directory listing uses its validated manifest, not just top-k vector 
 
 No paid reranker, query-rewrite retry, or extra answer judge is part of the initial flow. Diagnose observed recall failures through evaluation before adding these dependencies.
 
+The initial offline assembly contract is now implemented in [assembly.py](../src/telescope_rag/retrieval/assembly.py). It accepts already-authored parts and exact admitted source scopes; it does not parse a question or authenticate a caller's intended-use classification. Every original non-whitespace character must belong to a retained request span. Source limitations apply to explicit uses, and output remains candidate evidence with semantic support unassessed. Exact coalescing preserves all occurrence records and per-part source subsets. Full admitted-source membership is separately reported from answer completeness or full-website coverage. Only the returned, fully counted rendering is within its Qwen retrieval budget; serializing its larger provenance sidecar for a model would require a new complete count. The planned online graph, semantic admission and Luna counting are still unimplemented.
+
 ## Opening-hours calculations
 
 Clinic hours and public doctor working hours are separate facts. Use `Asia/Amman`; keep UTC timestamps for collection metadata. Use the server clock for "now," not a model's guessed current time.
