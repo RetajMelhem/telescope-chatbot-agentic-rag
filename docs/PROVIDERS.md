@@ -1,6 +1,6 @@
 # Provider contracts and verified scope
 
-Status: M2 contracts were implemented offline on 2026-10-14. M3's Qwen embedding preparation and the separately authorized 834-input corpus run passed on 2026-10-15; see the dated evidence below. FastAPI chat still returns `503`; Luna compatibility, stage prompts and graph orchestration remain pending.
+Status: M2 contracts were implemented offline on 2026-10-14. M3's Qwen embedding preparation and the separately authorized 834-input corpus run passed on 2026-10-15; see the dated evidence below. Initial M5 offline stage schemas/prompts and LangGraph orchestration are now implemented. FastAPI chat still returns `503`; Luna compatibility/counting, actual model-driven planning/generation and serving integration remain pending.
 
 ## Interfaces and ownership
 
@@ -14,7 +14,9 @@ Status: M2 contracts were implemented offline on 2026-10-14. M3's Qwen embedding
 | `EmbeddingFormat` | Explicit version, query/document prefixes, verification flag and optional pinned provider/reported-model mapping. Formats original text once; does not guess instructions or detect/remove existing prefixes. |
 | `ProviderError` | Stable code with optional status/retry timing. Contains no upstream body, key, input, or original exception message. |
 
-Implementation lives in `src/telescope_rag/providers/`: `contracts.py`, `errors.py`, `budget.py`, `validation.py`, and `openrouter.py`. Clients and keys belong to service dependencies, not graph state or public API schemas. Caller-owned Pydantic schemas must forbid extra object fields and require every property, including nested objects. Stage-specific schemas and prompts are M5 work.
+Implementation lives in `src/telescope_rag/providers/`: `contracts.py`, `errors.py`, `budget.py`, `validation.py`, and `openrouter.py`. Clients and keys belong to service dependencies, not graph state or public API schemas. Caller-owned Pydantic schemas must forbid extra object fields and require every property, including nested objects. M5's `PlannerReply` and `AnswerDraft` in `graph/contracts.py` satisfy that local schema contract; `prompts/offline_v1.py` is versioned but not a hosted Luna compatibility or quality result.
+
+`OfflineRagWorkflow` passes the same budget to both chat stages and the single injected retrieval batch. An integration test supplies the actual OpenRouter adapter with its default unavailable counter and a mocked transport: planning fails before any HTTP dispatch. Other graph tests charge explicit synthetic reservations through mocked services. Their character-based assembly counter and mock usage are clearly synthetic and never establish a model token profile. Source identity/quotation validation cannot replace semantic source grounding.
 
 ## Dispatch gates and live-use prerequisites
 

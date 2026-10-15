@@ -56,6 +56,8 @@ User question + bounded conversation context
 
 Website collection and document embedding run as a separate ingestion job. They do not run during a chat request. See [PIPELINE.md](docs/PIPELINE.md) for the graph and termination rules.
 
+An initial offline LangGraph workflow now exists in `src/telescope_rag/graph/`, with strict planning/draft schemas, per-part retrieval/complete-source reads, evidence assembly and citation validation. It uses injected mocked services in tests and returns review-only full-passage drafts. Real Luna planning/counting, source-grounded answer acceptance and serving retrieval integration remain unverified; the public chat endpoint still returns `503`. [PROJECT_STATUS.md](PROJECT_STATUS.md) records the current milestone and exact checks.
+
 Ingestion now collects immutable public snapshots, cleans/formats content, and forms chunks by doctor/FAQ/section/list/table boundaries with source mappings. The draft CLI refuses to claim token validation or embedding readiness without verified counting/format profiles. Token counts are a safety ceiling rather than a fixed chunk target. Run commands and the review/candidate gates are documented in [INGESTION_RUNBOOK.md](docs/INGESTION_RUNBOOK.md).
 
 A full-page LLM review compared all 127 collected public pages with the original preparation and a fresh crawl. It found omitted heading-only facts and incorrect source relationships, which led to the version 2 extractor/formatter. The latest draft is `data/processed/m3-page-audit-final`; the per-page findings and checks are in `data/manifests/m3-page-by-page-review.json`. Clinical source acceptance and verified token/embedding preparation remain pending.

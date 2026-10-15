@@ -13,6 +13,7 @@ dependencies = [
     "fastapi>=0.115,<1",
     "httpcore2>=2,<3",
     "httpx2>=2,<3",
+    "langgraph==1.2.15",
     "pydantic>=2.10,<3",
     "pydantic-settings>=2.10,<3",
     "tokenizers==0.22.2",

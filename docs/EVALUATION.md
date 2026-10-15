@@ -112,6 +112,12 @@ Before approving a claim of optimal chunking in M3/M4, compare structure-aware c
 
 ## Metrics and release criteria
 
+### Initial M5 offline graph checks
+
+The compiled `OfflineRagWorkflow` is tested with injected synthetic plans, source catalogs, counters and providers. Tests cover English/Arabic/Jordanian Arabic passages, unchanged history, explicit excluded/clarification siblings, complete-source reads without search, source-policy context restrictions, exact full-passage quotation/qualifier preservation, per-part source/citation isolation, missing evidence/scope, invalid provider/retrieval output, shared budgets, deadlines and cancellation. Ambient tracing and default-counter dispatch gates are tested separately. The public chat route remains `503`.
+
+These are control-flow/contract tests, not measured natural-language planning, fresh retrieval improvement or semantic grounding. Full-passage identity avoids deterministic acceptance of clipped qualifiers; it still does not establish relevance or completeness of an answer. A separately reviewed bilingual planner/source-scope fixture set and a fresh held-out evaluation remain needed. Luna-compatible full-payload counting/strict-schema compatibility must be verified before any authorized live screen. Record mock success separately from production acceptance.
+
 Track per-question retrieval recall against known source spans, attribution correctness, completeness of addressed request parts, citation validity, source support of generated claims, correct uncertainty, public/private boundary behavior, latency, physical provider attempts, and token usage.
 
 All mandatory boundary, attribution, citation-reference, and deterministic-hours cases must pass. Every answer in the curated release set must be reviewed for source support, and all requested parts must be represented. Report failures rather than averaging a harmful attribution error into a favorable score.

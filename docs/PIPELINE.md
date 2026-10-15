@@ -1,6 +1,6 @@
 # LangGraph pipeline
 
-Status: design only. The flow retains the user's original proposal and adds explicit boundaries, evidence ownership, uncertainty, and time calculations.
+Status: an initial offline LangGraph prototype is implemented and tested on 2026-10-16. Live Luna execution, semantic admission, serving retrieval, time calculations and API integration remain pending. The serving graph below remains the target design.
 
 LangGraph can express both fixed workflows and dynamic agents. This MVP is a bounded adaptive RAG workflow: Luna plans the questions and the graph chooses answer, partial-answer, clarification, or refusal paths. It is not an unrestricted tool-selection loop. See [LangGraph's workflow and agent guide](https://docs.langchain.com/oss/python/langgraph/workflows-agents).
 
@@ -18,7 +18,29 @@ Document embeddings are computed once per changed content/configuration, not on 
 
 Clean and format before document embedding. Retain doctor profiles, FAQ pairs, section hierarchies, lists, table headers/rows, and time qualifiers as meaningful units. Token counts provide a safety ceiling; they do not dictate default boundaries. See [INGESTION.md](INGESTION.md) for the format-specific policy, oversized-unit handling, and pre-embedding validation gate.
 
-## Request graph
+## Implemented offline prototype
+
+[OfflineRagWorkflow](../src/telescope_rag/graph/workflow.py) uses pinned `langgraph==1.2.15` and an acyclic `StateGraph` with explicit conditional edges:
+
+```text
+validate_request -> plan_query -> validate_plan
+  -> retrieve_evidence -> assemble_evidence -> generate_draft -> validate_draft -> END
+  -> finalize_safe -> END (excluded, clarification, unavailable operation or no eligible evidence)
+```
+
+The safe branch can follow plan validation or assembly. There is no graph retry/repair loop, durable checkpointer, streaming interface or default live dependency. One request-owned `ExecutionBudget` stays in runtime context outside serializable state and is shared with injected chat/retrieval services. The wrapper disables inherited LangSmith tracing and accepts no caller `RunnableConfig` or callbacks. Its deadline covers async stages; cancellation propagates. Assembly runs in a bounded worker: cancelling the await cannot forcibly terminate a counter already running in that thread.
+
+The [closed planner and draft schemas](../src/telescope_rag/graph/contracts.py) have required nullable properties and forbid extras. The app issues part IDs after validating original character-span coverage, literal history links and source handles. The planner receives the unchanged question/history and a bounded server manifest; source handles are resolved only against the supplied pinned catalog. These literal/schema checks do not establish that the proposed semantic decomposition or intended use is correct. Tests use authored synthetic plans; natural-language Luna planning is unverified.
+
+Search parts use one injected batch retrieval interface with exact snapshot/digest/part membership checks. Dense remains the provisional algorithm for later real adapter integration; graph tests use fakes, not live Qdrant or a newly connected dense/embedding service. `read_source` parts read exact complete admitted membership through `EvidenceCatalog`, without arbitrary URL fetching or a search call. Source restrictions apply to declared intended uses and per-part occurrence subsets. Time comparisons currently return `operation_unavailable`, preserving public siblings.
+
+[Versioned offline prompts](../src/telescope_rag/prompts/offline_v1.py) ask for review-only extractive drafts. Each candidate quotation must equal the complete source `retrieval_text`; shortened qualifiers, invented IDs, hidden sidecar occurrences and sibling citations fail validation. Only the per-part citation IDs actually offered in the counted rendering are accepted; all other exact occurrences remain provenance. A complete-source candidate draft must reference every eligible rendered group. Coverage and source identity are checked, but relevance/entailment remain unverified.
+
+Outputs use `draft_ready`, `not_found`, `out_of_scope`, `clarification_required` or `failed`, with each original part explicit. They never use `answered` or declare supported clinical claims. `offline_only=true`, `semantic_grounding_verified=false` and `luna_compatibility_verified=false` remain mandatory. The full provenance sidecar, stage events and content-free budget receipts accompany the offline result. Construction refuses production settings. Trusted injected services retain their own capabilities; dependency injection alone does not prove an arbitrary service is offline.
+
+The normal path has one planning and one draft logical chat stage; all-nonpublic/no-eligible-evidence paths stop earlier. The existing provider counter must count the complete messages/schema/history/render/metadata for each dispatch; the assembler's Qwen count is only a retrieval-render ceiling. No synthetic count authorizes Luna. FastAPI still returns `503`; mock successes do not enable chat or establish production readiness.
+
+## Planned serving request graph
 
 ```mermaid
 flowchart TD

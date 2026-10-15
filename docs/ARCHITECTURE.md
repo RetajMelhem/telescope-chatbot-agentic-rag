@@ -1,6 +1,6 @@
 # Architecture and folder ownership
 
-Status: M1 API/configuration shell, M2 provider adapters and M3 corpus preparation/embedding/unpublished candidate verification are implemented. M4 now has an evaluation-only exact dense reader and a local BM25/RRF comparison harness; no serving retrieval is connected. Graph orchestration, runtime source-policy enforcement and active-index publication remain pending. Actual scoped evidence is in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+Status: M1 API/configuration shell, M2 provider adapters and M3 corpus preparation/embedding/unpublished candidate verification are implemented. M4 has evaluation-only retrieval and evidence assembly; M5 now has an initial offline LangGraph prototype. Serving retrieval, verified semantic planning/answer admission and active-index publication remain pending. Actual scoped evidence is in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## Stack
 
@@ -8,7 +8,7 @@ Status: M1 API/configuration shell, M2 provider adapters and M3 corpus preparati
 | --- | --- |
 | Runtime | Python 3.11.9 verified locally; manifest permits 3.11 through 3.13, with 3.12/3.13 untested |
 | HTTP API | FastAPI with Pydantic request/response models |
-| Orchestration | LangGraph `StateGraph`, conditional edges, bounded shared state |
+| Orchestration | Pinned LangGraph 1.2.15 `StateGraph`; initial offline conditional workflow tested |
 | Planning and answers | `openai/gpt-6-luna`, accessed through OpenRouter |
 | Embeddings | `qwen/qwen3-embedding-8b`, hosted through OpenRouter by default |
 | Knowledge store | Qdrant, cosine vectors plus source metadata |
@@ -49,7 +49,7 @@ clinic_agentic_rag/
   src/telescope_rag/
     api/routes/                Chat and health endpoint adapters
     core/                      Settings, budgets, errors, safe logging
-    graph/nodes/               State, graph assembly, node functions
+    graph/                     Closed contracts, source bindings, offline graph and nodes
     providers/                 Chat and embedding adapters
     ingestion/                 Discovery, collection, cleaning, indexing
     retrieval/                 Bounded read operations on approved knowledge
@@ -115,6 +115,8 @@ The M4 comparison reader is explicitly supplied the complete pinned candidate po
 ## State and persistence
 
 The initial API accepts bounded conversation history and does not persist conversations on the server. Compile the graph without a durable conversation checkpointer for this phase. Preserve knowledge snapshots and ingestion manifests independently of chat state.
+
+The implemented `graph/workflow.py` compiles an acyclic offline graph with no checkpointer/retry policy. Provider/retrieval/catalog dependencies stay on the service, while the per-run budget stays in runtime context outside state. The public API does not construct or call this graph. `graph/bindings.py` issues exact source handles and validates literal spans/history links; `graph/contracts.py` separates strict provider wire models from convenience assembly models. `prompts/offline_v1.py` defines planner and full-passage extractive-draft instructions. Every final part remains explicit, and candidate quotations have per-part source identity/provenance. Semantic interpretation, quote relevance, Luna compatibility and serving admission are still unverified; see [the implemented offline scope](PIPELINE.md#implemented-offline-prototype).
 
 If server-side memory becomes necessary, define ownership, retention, deletion, and multi-worker behavior first. An arbitrary client-supplied conversation ID must never expose another visitor's messages.
 
