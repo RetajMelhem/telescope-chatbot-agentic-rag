@@ -62,6 +62,22 @@ After an actual run, a source reviewer must assess every request part for suppor
 
 Keep evaluation fixtures separate from live knowledge and prompts. Do not introduce case-specific runtime rules to pass a benchmark.
 
+### Dense versus local hybrid comparison
+
+`scripts/compare_retrieval.py` implements a separate evaluation-only comparison on the unpublished v6 candidate. It reuses the 955 stored occurrence vectors and compares exact Qwen dense top20, a local BM25 control, and dense+BM25 application-side reciprocal rank fusion. It does not wire the public API to the candidate or change its configuration/aliases. The original frozen preparation artifact remains immutable; actual results use a new evidence directory.
+
+BM25 uses the same literal chunk retrieval texts, fixed `k1=1.2`, `b=.75`, positive `log(1+(N-df+.5)/(df+.5))` IDF, and NFC/casefold/Unicode-letter-number-mark tokens. It has no stemming, Arabic letter folding, translations, stopword list or query expansion. Original RRF uses equal contributions and one-based ranks with `k=60`; this is explicitly application-side fusion, not Qdrant's default/native RRF. Dense results are queried once per case and reused unchanged by hybrid. Fetched ties sort by chunk ID; exact ties crossing the top20 cutoff remain a documented limitation. All source occurrences and issue codes remain independent and intact.
+
+Prepare/count without dispatch:
+
+```powershell
+& .\.tools\uv\bin\uv.exe run --locked python -m scripts.compare_retrieval --output artifacts/NEW_COMPARISON
+```
+
+Only an explicitly authorized run adds `--execute`. The bounded query stage uses the unchanged pinned Qwen query prefix/route, batches of 16, at most six requests and 4,758 exact input tokens for the 90 raw queries, retries/fallbacks off and a 180-second experiment deadline. Existing corpus embeddings are not repeated. Query vectors are cached by exact formatted input/configuration and shared across modes. The runner verifies current route pricing/key allowance and candidate reads before dispatch, preserves all completed per-case rankings before scoring, and rejects silent repetition of a started evidence directory. Any failure stops and preserves receipts/cache; no automatic paid fallback or candidate cleanup occurs.
+
+Report known support/context witness recall at 5/10/20 for all 90 cases, by development/evaluation split and language. The frozen preliminary selection rule excludes six raw-query conversation and three exhaustive-directory cases from its eligible denominator while retaining their separate scores/receipts. Hybrid qualifies only if development support recall@10 strictly increases, support and context recall do not decrease in any language, and evaluation confirms all conditions without retuning. Otherwise retain dense as the experimental baseline and call the comparison inconclusive. Development context coverage has only three cases; aggregate gains cannot establish universal superiority. Manual source review of gains/losses and valid unlisted alternatives is required before adoption. Ranking scores and diagnostic flags do not establish source-policy enforcement, answer correctness or readiness.
+
 Before approving the chunking policy in M3/M4, compare structure-aware chunks with a bounded fixed-window baseline using the same source snapshot, embedding model, retrieval budget, and bilingual questions. Review retained facts, exact source mapping, doctor/FAQ/table integrity, relevant-evidence recall, supported answers, embedding input count, and cost. No strategy is the proven best for this corpus before that comparison. A semantic/LLM chunker is a later candidate only if a measured gap justifies its complexity.
 
 ## Metrics and release criteria

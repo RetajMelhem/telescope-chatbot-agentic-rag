@@ -1,6 +1,6 @@
 # Architecture and folder ownership
 
-Status: M1 API/configuration shell, M2 offline provider adapters, and M3 collection/data preparation/review contracts implemented. Graph and live retrieval remain future work; no paid embedding or index publication has run.
+Status: M1 API/configuration shell, M2 provider adapters and M3 corpus preparation/embedding/unpublished candidate verification are implemented. M4 now has an evaluation-only exact dense reader and a local BM25/RRF comparison harness; no serving retrieval is connected. Graph orchestration, runtime source-policy enforcement and active-index publication remain pending. Actual scoped evidence is in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## Stack
 
@@ -67,7 +67,7 @@ clinic_agentic_rag/
     manifests/                 Ignored snapshot/index audit manifests
 ```
 
-Unimplemented directories retain `.gitkeep` files. Package metadata, lockfile, settings, schemas, middleware, health/chat routes, app factory, knowledge readiness interface, provider adapters, ingestion package/CLI, and offline tests now exist. Dockerfile and Compose remain unimplemented.
+Unimplemented directories retain `.gitkeep` files. Package metadata, lockfile, settings, schemas, middleware, health/chat routes, app factory, knowledge readiness interface, provider adapters, ingestion package/CLI and offline tests exist. A separate local Qdrant gateway Compose file exists; application Dockerfile/Compose packaging remains unimplemented.
 
 The implemented app entry point is `telescope_rag.api.main:create_app` with Uvicorn's `--factory`. Importing the module does not read secrets or start clients. The lifecycle closes its injected knowledge adapter with a configurable shutdown deadline and fixed, content-free failure events. The default adapter makes no network request and cannot claim an approved index exists. Production requires a knowledge credential to be present, but actual read-only permission enforcement belongs to the live Qdrant implementation and deployment checks.
 
@@ -105,6 +105,8 @@ The provider package now contains narrow typed contracts, safe errors, strict JS
 Ingestion owns `collection.py` (robots/discovery and pinned GET transport), `models.py` (source/provenance records), `extraction.py`, `preparation.py`, `review.py` (digest-bound source review), `indexing.py` (gated embedding/cache/candidate writes), and `cli.py` (collect/prepare only). It uses Beautiful Soup and an explicit HTTPcore2 network backend. It cannot change an active index alias. [INGESTION_RUNBOOK.md](INGESTION_RUNBOOK.md) separates verified local behavior from remaining live-use gates.
 
 Keep this as one Python application plus a separately invoked ingestion command. Additional queues, Redis, a session database, rerankers, and specialized agents are not initial dependencies. Add them only for a measured need.
+
+The M4 comparison reader is explicitly supplied the complete pinned candidate point inventory and a read-only key. It allows only candidate-info/alias reads and exact query requests, bounds response bytes/time/results and rejects mismatched owner/payload metadata. `retrieval/lexical.py` provides the local BM25/RRF baseline, and `retrieval/query_vectors.py` provides an explicit query-only cached embedding stage with verified counts and receipts. `scripts/compare_retrieval.py` freezes parameters and writes separate experiment evidence. These modules do not change the default unavailable knowledge adapter, enable chat inference, infer query scope or interpret source uncertainties. Dense and hybrid remain measured candidates until the documented comparison/adoption gates pass.
 
 ## State and persistence
 
