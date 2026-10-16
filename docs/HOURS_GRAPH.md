@@ -209,13 +209,41 @@ All 30 earlier v12/v13 payloads reconstruct exactly. Default graph/API selection
 remains v12. The runner's `--hours-profile contracts_v14` option freezes the new
 schema; execution uses the frozen profile and exact payload, with no automatic
 retry/repair. The candidate is not exposed by default API injection or adopted
-for production. New runtime/schema/prompt behavior is offline-tested only.
+for production. The later bounded hosted confirmation below is separate from
+the implementation's offline verification.
 
 The real-bundle audit replays twelve saved proposals under v14: nine complete and
 all three known bad plans are rejected. Four explicitly authored valid variants
 and six frozen confirmation oracle plans work through the actual catalog/Qwen/
 graph/presenter with mocked transport. These checks do not establish Luna behavior.
 Evidence: `artifacts/m5-hours-contract-repair-v1/REPORT.md`. **1,986 guarded tests**
-pass, including 59 new contrasts. Next is the bounded six-case live schema/planner
-confirmation after allowance/pricing refresh, followed by individual actual-output
-review and unchanged replay. No candidate inference or adoption has run yet.
+pass, including 59 new contrasts. Those preparation receipts remain historical;
+the frozen six-case confirmation subsequently ran once, as recorded below.
+
+The confirmation made six actual HTTP 200 Luna/OpenAI planner requests: all six
+passed strict-schema and literal/binding checks. Primary Codex language reasoning
+individually accepted all six complete outputs/six parts against the frozen
+criteria and saved official sources, including two cautions. The three previously
+failing clock/operation/doctor-scope cases now pass. Fresh contrasts preserve noon,
+24-hour midnight/no-booking and an explicitly literal profile restriction. Six
+unchanged actual-plan replays through the real catalog/Qwen/graph/presenter complete;
+three time comparisons retain both native FAQ citations and three scoped missing
+hours remain unknown without fallback. Added facets discard no current exact-scope
+member, but future structure completeness is untested. The noon negation survives
+in original_text and is correctly interpreted without a separate constraint receipt.
+
+Evidence: `artifacts/m5-hours-contract-confirmation-v1/REPORT.md`, individual ledger,
+scope/replay/accounting checks and final seal. The prior 1,986-test pass is preserved
+against unchanged code/tests; this documentation/evidence step did not rerun the
+full suite. No runtime, source, index, credential or default API behavior changed.
+The runner's original summary retains pending semantic review; the later separate
+ledger binds every reviewed actual receipt by hash. No receipt is retroactively
+rewritten. Three exposed regressions plus three fresh development cases do not
+establish broad new-prompt acceptance, independence or production readiness.
+
+Next: offline consolidation of existing hours cohorts under v14 and an explicit
+acceptance-gap matrix. Replaying saved decisions tests execution/nonregression,
+not the new prompt's ability to make every decision. Select any further minimal
+live coverage only from those documented gaps. Typed unspecified AM/PM, broader
+hours-model behavior, answer/directory acceptance and serving remain unverified;
+default v12 stays and production adoption is held.

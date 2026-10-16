@@ -2,7 +2,45 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
-Latest implementation — **hours contract repair, offline and not adopted**:
+Latest result — **six-case hours contract confirmation passed; adoption held**:
+The frozen `contracts_v14` cohort ran once at checkpoint `ae0afa1`: **six actual
+HTTP 200 Luna/OpenAI planner requests**, six strict-schema and six literal/binding
+passes. Primary Codex language reasoning individually reviewed **six complete
+actual proposals / six parts** against frozen requests/criteria and saved official
+sources: all six pass, including two explicit cautions. All three earlier failures
+are absent in this run: midnight uses valid 12/am, contact-only hours has no search
+query, and canonical Lina is compatible with the exact main-directory restriction.
+The fresh literal-profile contrast preserves its literal owner. Six verbatim
+actual-plan replays through the real catalog/Qwen/graph/presenter complete: three
+source-cited time comparisons and three correctly scoped missing-hours unknowns.
+Exact scope checks show added type/language filters discard no current relevant
+members. The noon qualifier is preserved and honored but lacks a separate constraint
+receipt; broad constraint extraction and future structure completeness are unproven.
+
+Evidence: `artifacts/m5-hours-contract-confirmation-v1/REPORT.md`, individual
+`semantic-review.json`, replay, scope, accounting and verification/seal receipts.
+The earlier frozen plan and six actual receipts remain in
+`artifacts/m5-hours-contract-repair-v1/run`; its runner summary intentionally records
+zero semantic reviews because the separate authored review occurs afterward.
+The prior **1,986 guarded test** pass (59 new), code/test hashes and 446-entry seal
+are preserved; no code changed or unnecessary full-suite rerun occurred here.
+`.env`, 122 source inputs, reviewed hours plan, 924 vectors and default API remain.
+No repair/retry, answer/judge/embedding/Qdrant request, deployment or subagent ran.
+Usage: **165,538 input / 4,052 output**, including 2,603 reasoning tokens within
+output. Uncached catalog estimate **$0.0185798**, not a settled bill. Last key GET
+at **01:09:30 Amman October 17** reports **$1.05630809 remaining** without counter
+movement; initial and delayed first-generation lookups return 404. Exact request
+charges and Activity/account reconciliation remain unresolved. Six metadata GETs.
+
+This is three exposed regressions plus three fresh development contrasts, not an
+independent holdout, causal A/B, broad generalization proof or production acceptance.
+**Next:** offline consolidation of existing hours cohorts under v14 and an explicit
+acceptance-gap matrix, before choosing any further minimal paid coverage. Saved
+outputs can establish execution nonregression, not new-prompt model behavior.
+Broader hours-model coverage, typed unspecified AM/PM, answer/directory acceptance,
+serving integration and production adoption remain unverified. Default v12 stays.
+
+Previous implementation — **hours contract repair, prepared offline**:
 `contracts_v14` adds a separate closed planner schema/prompt, explicit clock-pair
 and hours/search rules, 134 exact doctor source-membership tuples and joint
 subject/document/type/language/owner validation, independently rechecked by the
@@ -17,16 +55,12 @@ work; these are authored diagnostics, not repaired model outputs or live success
 
 Evidence: `artifacts/m5-hours-contract-repair-v1/REPORT.md`, actual-bundle and
 confirmation-oracle receipts, JUnit and final verification/seal. Six confirmation
-requests are frozen (three exact failures / three fresh contrasts); all six desired
-oracle plans pass exact-wire/catalog/Qwen/graph/presenter checks. No actual API or
-metadata request, embedding/index change, deployment or subagent ran: **new spend
-$0**. `.env`, 122 source inputs, reviewed hours plan, 924 vectors and prior evidence
-are preserved. Last observed allowance remains **$1.05630809** at 00:14:10 Amman
-on October 17, unrefreshed; the dated six-call planning estimate is $0.030288 using
-30,000 assumed input tokens per call, not counted input or a billing cap. **Next:**
-refresh allowance/pricing read-only, execute the separately requested six-case
-confirmation once, individually review/replay actual outputs. Hosted schema
-compatibility, model compliance, broader acceptance and adoption remain unverified.
+requests were frozen (three exact failures / three fresh contrasts); all six desired
+oracle plans passed exact-wire/catalog/Qwen/graph/presenter checks. That preparation
+step made no API/metadata request and spent $0; it preserved sources/cache/credentials.
+Its then-prospective $0.030288 estimate assumed 30,000 input tokens per call and was
+not counted input or a billing cap. The actual confirmation is recorded above;
+the preparation receipts remain immutable historical evidence.
 
 Latest result — **broader hours acceptance executed; adoption withheld**:
 `artifacts/m5-hours-broader-acceptance-v1` freezes 12 requests/criteria (two exact
