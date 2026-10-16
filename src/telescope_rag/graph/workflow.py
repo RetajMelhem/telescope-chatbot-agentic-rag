@@ -20,6 +20,7 @@ from telescope_rag.graph.contracts import (
     BudgetSummary,
     EvidenceRetriever,
     PartAnchorBinding,
+    PartAnswerTarget,
     PartResult,
     PlannerReply,
     QuotedEvidence,
@@ -30,7 +31,10 @@ from telescope_rag.graph.contracts import (
     WorkflowRun,
 )
 from telescope_rag.graph.planning import planner_messages
+from telescope_rag.graph.target_context import bind_answer_targets
 from telescope_rag.prompts.offline_v1 import DRAFT_SYSTEM, PROMPT_VERSION
+from telescope_rag.prompts.planner_targets_v5 import DRAFT_APPEND
+from telescope_rag.prompts.planner_targets_v5 import PROMPT_VERSION as TARGET_VERSION
 from telescope_rag.providers.budget import ExecutionBudget
 from telescope_rag.providers.contracts import ChatMessage, ChatProvider, StructuredResult, T
 from telescope_rag.providers.errors import ProviderError
@@ -49,6 +53,7 @@ class _RunContext:
     evidence: AssembledEvidence | None = field(default=None, repr=False)
     stages: list[str] = field(default_factory=list)
     request_anchors: tuple[PartAnchorBinding, ...] = field(default=(), repr=False)
+    answer_targets: tuple[PartAnswerTarget, ...] = field(default=(), repr=False)
 
 
 class _State(TypedDict, total=False):
@@ -77,12 +82,12 @@ class OfflineRagWorkflow:
         catalog: EvidenceCatalog,
         counter: AssemblyCounter,
         token_basis: Literal["qwen_retrieval_only", "synthetic_test"] = "qwen_retrieval_only",
-        planner_profile: Literal["baseline", "literal_anchors"] = "baseline",
+        planner_profile: Literal["baseline", "literal_anchors", "answer_targets"] = "baseline",
         planner_output_tokens: int = 1000,
         draft_output_tokens: int = 1000,
     ) -> None:
         if (
-            planner_profile not in {"baseline", "literal_anchors"}
+            planner_profile not in {"baseline", "literal_anchors", "answer_targets"}
             or any(
                 type(cap) is not int or cap < 16
                 for cap in (planner_output_tokens, draft_output_tokens)
@@ -102,9 +107,7 @@ class OfflineRagWorkflow:
             planner_output_tokens,
             draft_output_tokens,
         )
-        self._bindings = SourceBindings(
-            catalog, include_block_types=planner_profile == "literal_anchors"
-        )
+        self._bindings = SourceBindings(catalog, include_block_types=planner_profile != "baseline")
         self._snapshot = next(iter(catalog.chunks.values())).snapshot_id
         builder = StateGraph(_State, context_schema=_RunContext)
         for name, node in (
@@ -173,7 +176,7 @@ class OfflineRagWorkflow:
 
     async def _plan_query(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "plan_query")
-        model = AnchoredPlannerReply if self._planner_profile == "literal_anchors" else PlannerReply
+        model = AnchoredPlannerReply if self._planner_profile != "baseline" else PlannerReply
         try:
             result = await self._chat.complete(
                 planner_messages(
@@ -197,11 +200,13 @@ class OfflineRagWorkflow:
     async def _validate_plan(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "validate_plan")
         try:
-            proposal, anchors = state["proposal"], ()
-            if self._planner_profile == "literal_anchors":
+            proposal, anchors, targets = state["proposal"], (), ()
+            if self._planner_profile != "baseline":
                 proposal, anchors = resolve_anchored_plan(
                     proposal, state["request"], runtime.context.request_id
                 )
+                if self._planner_profile == "answer_targets":
+                    targets = bind_answer_targets(state["proposal"], anchors)
             plan = self._bindings.validate(
                 proposal,
                 state["request"],
@@ -214,6 +219,7 @@ class OfflineRagWorkflow:
             raise WorkflowError("invalid_plan") from None
         runtime.context.plan = plan
         runtime.context.request_anchors = anchors
+        runtime.context.answer_targets = targets
         return {"plan": plan}
 
     @staticmethod
@@ -324,7 +330,9 @@ class OfflineRagWorkflow:
     async def _generate_draft(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "generate_draft")
         body = {
-            "prompt_version": PROMPT_VERSION,
+            "prompt_version": TARGET_VERSION
+            if self._planner_profile == "answer_targets"
+            else PROMPT_VERSION,
             "original_query": state["request"].query,
             "history": [h.model_dump() for h in state["request"].history],
             "language": state["plan"].language,
@@ -342,7 +350,21 @@ class OfflineRagWorkflow:
                                 for span in runtime.context.request_anchors[i].constraints
                             ],
                         }
-                        if self._planner_profile == "literal_anchors"
+                        if self._planner_profile != "baseline"
+                        else {}
+                    ),
+                    **(
+                        {
+                            "answer_target": runtime.context.answer_targets[i].target.quote,
+                            "reference_context": {
+                                "literal_text": runtime.context.answer_targets[i].reference_text,
+                                "history_indices": runtime.context.answer_targets[
+                                    i
+                                ].history_indices,
+                                "role": "interpretation_only",
+                            },
+                        }
+                        if self._planner_profile == "answer_targets"
                         else {}
                     ),
                     "eligible_quote_chunk_ids": list(
@@ -368,7 +390,11 @@ class OfflineRagWorkflow:
         try:
             result = await self._chat.complete(
                 (
-                    ChatMessage(role="system", content=DRAFT_SYSTEM),
+                    ChatMessage(
+                        role="system",
+                        content=DRAFT_SYSTEM
+                        + (DRAFT_APPEND if self._planner_profile == "answer_targets" else ""),
+                    ),
                     ChatMessage(role="user", content=json.dumps(body, ensure_ascii=False)),
                 ),
                 AnswerDraft,
@@ -565,6 +591,7 @@ class OfflineRagWorkflow:
                 budget.receipts,
             ),
             context.request_anchors,
+            context.answer_targets,
         )
 
     def _failure(self, request: WorkflowRequest, context: _RunContext, code: str) -> WorkflowResult:

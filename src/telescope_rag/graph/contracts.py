@@ -189,6 +189,14 @@ class PartAnchorBinding:
 
 
 @dataclass(frozen=True)
+class PartAnswerTarget:
+    part_id: str
+    target: LiteralRequestSpan = field(repr=False)
+    reference_text: str | None = field(repr=False)
+    history_indices: tuple[int, ...]
+
+
+@dataclass(frozen=True)
 class WorkflowRun:
     request: WorkflowRequest = field(repr=False)
     result: WorkflowResult
@@ -197,3 +205,4 @@ class WorkflowRun:
     stages: tuple[str, ...]
     usage: BudgetSummary
     request_anchors: tuple[PartAnchorBinding, ...] = field(default=(), repr=False)
+    answer_targets: tuple[PartAnswerTarget, ...] = field(default=(), repr=False)

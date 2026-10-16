@@ -27,6 +27,7 @@ from telescope_rag.graph.anchoring import AnchoredPlannerReply, AnchorError, res
 from telescope_rag.graph.bindings import SourceBindings
 from telescope_rag.graph.contracts import PlannerReply, WorkflowRequest
 from telescope_rag.graph.planning import planner_messages
+from telescope_rag.graph.target_context import bind_answer_targets
 from telescope_rag.providers.budget import ExecutionBudget
 from telescope_rag.providers.contracts import ChatMessage, ChatProvider
 from telescope_rag.providers.errors import ProviderError
@@ -44,14 +45,18 @@ OUTPUT_CAP = 1000  # Exactly the graph's current planning cap; no tuning in this
 OUTPUT_CAP_CHOICES = (1000, 4096)
 
 
-def selected_case_ids(case_ids: tuple[str, ...]) -> tuple[str, ...]:
+def selected_case_ids(
+    case_ids: tuple[str, ...], *, inventory: tuple[str, ...] = DEVELOPMENT_IDS
+) -> tuple[str, ...]:
     if (
         not case_ids
         or len(set(case_ids)) != len(case_ids)
-        or not set(case_ids) <= set(DEVELOPMENT_IDS)
+        or not inventory
+        or len(set(inventory)) != len(inventory)
+        or not set(case_ids) <= set(inventory)
     ):
         raise ValueError("development_inventory_mismatch")
-    return tuple(i for i in DEVELOPMENT_IDS if i in case_ids)
+    return tuple(i for i in inventory if i in case_ids)
 
 
 def file_hash(path: Path) -> str:
@@ -93,7 +98,9 @@ def planner_payload(
     profile="baseline",
     output_cap=OUTPUT_CAP,
 ) -> dict:
-    model = AnchoredPlannerReply if profile == "literal_anchors" else PlannerReply
+    model = (
+        AnchoredPlannerReply if profile in {"literal_anchors", "answer_targets"} else PlannerReply
+    )
     payload = {
         "model": settings.openrouter_chat_model,
         "messages": [m.model_dump() for m in messages],
@@ -120,8 +127,9 @@ def development_packets(
     profile="baseline",
     case_ids=DEVELOPMENT_IDS,
     output_cap=OUTPUT_CAP,
+    inventory=DEVELOPMENT_IDS,
 ) -> list[dict]:
-    expected = selected_case_ids(tuple(case_ids))
+    expected = selected_case_ids(tuple(case_ids), inventory=inventory)
     selected = sorted(
         (c for c in cases if c.split == "development" and c.case_id in expected),
         key=lambda c: c.case_id,
@@ -151,7 +159,12 @@ def development_packets(
 def build_plan(
     root: Path, *, profile="baseline", case_ids=DEVELOPMENT_IDS, output_cap=OUTPUT_CAP
 ) -> tuple[dict, SourceBindings]:
-    if profile not in {"baseline", "source_types_no_reasoning", "literal_anchors"}:
+    if profile not in {
+        "baseline",
+        "source_types_no_reasoning",
+        "literal_anchors",
+        "answer_targets",
+    }:
         raise ValueError("unknown_planner_profile")
     expected = selected_case_ids(tuple(case_ids))
     config = screen_settings(profile=profile, output_cap=output_cap)
@@ -228,8 +241,9 @@ async def run_packets(
     profile="baseline",
     case_ids=DEVELOPMENT_IDS,
     output_cap=OUTPUT_CAP,
+    inventory=DEVELOPMENT_IDS,
 ) -> dict:
-    expected = selected_case_ids(tuple(case_ids))
+    expected = selected_case_ids(tuple(case_ids), inventory=inventory)
     if tuple(p["case_id"] for p in packets) != expected:
         raise ValueError("development_inventory_mismatch")
     rows = []
@@ -257,7 +271,11 @@ async def run_packets(
         }
         started = time.monotonic()
         fatal = False
-        model = AnchoredPlannerReply if profile == "literal_anchors" else PlannerReply
+        model = (
+            AnchoredPlannerReply
+            if profile in {"literal_anchors", "answer_targets"}
+            else PlannerReply
+        )
         try:
             result = await chat.complete(
                 messages, model, max_output_tokens=output_cap, budget=budget
@@ -268,10 +286,14 @@ async def run_packets(
             row["schema_valid"] = True
             try:
                 proposal = result.data
-                if profile == "literal_anchors":
+                if profile in {"literal_anchors", "answer_targets"}:
                     proposal, anchors = resolve_anchored_plan(proposal, request, packet["case_id"])
                     row["derived_proposal"] = proposal.model_dump(mode="json")
                     row["request_anchors"] = [asdict(a) for a in anchors]
+                    if profile == "answer_targets":
+                        row["answer_targets"] = [
+                            asdict(t) for t in bind_answer_targets(result.data, anchors)
+                        ]
                 bindings.validate(proposal, request, packet["case_id"], max_parts=4)
                 row["literal_bindings_valid"] = True
             except ValueError as error:
@@ -326,7 +348,7 @@ async def main() -> None:
     parser.add_argument("--execute", action="store_true")
     parser.add_argument(
         "--profile",
-        choices=("baseline", "source_types_no_reasoning", "literal_anchors"),
+        choices=("baseline", "source_types_no_reasoning", "literal_anchors", "answer_targets"),
         default="baseline",
     )
     parser.add_argument("--case-id", nargs="+", choices=DEVELOPMENT_IDS)
