@@ -6,8 +6,8 @@ from typing import Literal
 from telescope_rag.graph.bindings import SourceBindings
 from telescope_rag.graph.contracts import WorkflowRequest
 from telescope_rag.prompts.offline_v1 import PLANNER_SYSTEM, PROMPT_VERSION
-from telescope_rag.prompts.planner_anchors_v3 import PLANNER_SYSTEM as ANCHORED_SYSTEM
-from telescope_rag.prompts.planner_anchors_v3 import PROMPT_VERSION as ANCHORED_VERSION
+from telescope_rag.prompts.planner_anchors_v4 import PLANNER_SYSTEM as ANCHORED_SYSTEM
+from telescope_rag.prompts.planner_anchors_v4 import PROMPT_VERSION as ANCHORED_VERSION
 from telescope_rag.prompts.planner_candidate_v2 import (
     PLANNER_SYSTEM as CANDIDATE_SYSTEM,
 )
