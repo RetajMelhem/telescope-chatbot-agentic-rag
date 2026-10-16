@@ -12,6 +12,8 @@ The subsequent [local-constraint clarification](LOCAL_CONSTRAINTS.md) is now pre
 
 ## Ingestion, before serving
 
+The [offline HTTP service boundary](OFFLINE_SERVICE.md) now connects validated transport input to the compiled graph through explicit caller-owned dependencies. Production/mismatched configuration is refused; default chat remains 503. Original questions/history, shared graph budgets, separate owner citations and mixed candidate/unknown/excluded/clarification states reach a typed offline draft response. Invalid plans/citations/providers fail with sanitized errors; cancellation, concurrency and lifecycle are tested with actual middleware/graph/adapter and mocked transport. No model profile adoption, live retrieval, new paid request or final answer acceptance is implied. Next is the offline query-embedding/read-only dense retrieval bridge, followed by remaining planner/source and live acceptance gates.
+
 ```text
 Approved public pages -> collect snapshots -> parse source structure
   -> clean -> normalize and format typed blocks with provenance

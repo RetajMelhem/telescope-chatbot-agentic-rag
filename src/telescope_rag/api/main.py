@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
 
+from telescope_rag.api.offline_service import OfflineChatService
 from telescope_rag.api.routes import chat, health
 from telescope_rag.core.errors import ApplicationError, error_payload
 from telescope_rag.core.logging import configure_logging
@@ -19,9 +20,14 @@ from telescope_rag.retrieval.contracts import KnowledgeProbe, UnavailableKnowled
 
 
 def create_app(
-    settings: Settings | None = None, *, knowledge_probe: KnowledgeProbe | None = None
+    settings: Settings | None = None,
+    *,
+    knowledge_probe: KnowledgeProbe | None = None,
+    offline_chat_service: OfflineChatService | None = None,
 ) -> FastAPI:
     config = settings if settings is not None else load_settings()
+    if offline_chat_service is not None:
+        offline_chat_service.check_configuration(config)
     probe = knowledge_probe if knowledge_probe is not None else UnavailableKnowledgeProbe()
     logger = configure_logging(config.log_level)
 
@@ -44,7 +50,12 @@ def create_app(
     app = FastAPI(
         title="Telescope clinic chatbot",
         version="0.1.0",
-        description="M1 API foundation. Chat inference and live knowledge are not implemented yet.",
+        description=(
+            "Explicit nonproduction offline draft transport; "
+            "semantic and live acceptance unverified."
+            if offline_chat_service is not None
+            else "M1 API foundation. Chat inference and live knowledge are not implemented yet."
+        ),
         lifespan=lifespan,
         debug=False,
         docs_url="/docs" if config.app_env != "production" else None,
@@ -86,7 +97,15 @@ def create_app(
         )
 
     app.include_router(health.router)
-    app.include_router(chat.router)
+    if offline_chat_service is None:
+        app.include_router(chat.router)
+    else:
+        # Import/register the draft route only for explicit trusted construction.
+        # No environment toggle, default provider or production adoption.
+        from telescope_rag.api.routes.offline_chat import router as offline_router
+
+        app.state.offline_chat_service = offline_chat_service
+        app.include_router(offline_router)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(config.cors_allowed_origins),

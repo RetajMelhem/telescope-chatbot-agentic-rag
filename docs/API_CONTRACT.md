@@ -4,6 +4,8 @@ Status: M1 implements health routes, validated chat input, and safe HTTP errors.
 
 The current chat route is a placeholder: valid input receives `503` / `chat_not_available`; rejected input receives a sanitized `422`. It never calls a provider, searches knowledge, interprets facts, or stores the visitor's message.
 
+An explicitly injected, nonproduction [offline draft composition](OFFLINE_SERVICE.md) now connects this transport to the existing graph for contract checks. The default route above is unchanged. Trusted construction can supply `OfflineChatService` to `create_app`; production or mismatched settings are rejected. Its 200 response is the graph's `WorkflowResult` with immutable offline/unverified flags, exact per-question outcomes and quoted provenance, not the planned final answer envelope below. Invalid graph/provider/citation results return sanitized 502; timeouts return 504. This path does not select a default model client, approve sources or enable public serving. Caller-owned provider/retriever lifetime is explicit. No live compatibility or semantic acceptance is established by its mocked tests.
+
 ## Public routes
 
 | Route | Purpose |

@@ -80,7 +80,8 @@ class OfflineRagWorkflow:
     """Trusted server DI only. No key loading, default live service, streaming or persistence.
 
     Injected services retain their own capabilities; this wrapper does not prove
-    arbitrary dependencies are offline. Tests use fakes. API wiring stays absent.
+    arbitrary dependencies are offline. Tests use fakes. Explicit nonproduction
+    HTTP composition preserves offline/unverified results; public serving stays disabled.
     """
 
     def __init__(
