@@ -90,8 +90,10 @@ request ran. No real credentials were loaded into providers; additional API
 spend is $0. The last allowance observation remains $1.1424752 at
 2026-10-16 17:34:06 UTC, unrefreshed in this step.
 
-Next: offline final-response projection/rendering and its API contract, retaining
-each question, supported source quotes/citations and explicit unknown/excluded/
+The [offline response projection](OFFLINE_RESPONSE.md) is now implemented with
+question-owned citations and explicit unverified outcomes. Next is source-bound
+public-hours preparation and pure time calculations, retaining each question,
+source quotes/citations and explicit unknown/excluded/
 clarification outcomes. Earlier planner/source/ambiguity failures, time/directory
 completion, real draft compatibility and approved publication/readiness remain
 acceptance gates. The [completion budget plan](COMPLETION_BUDGET.md) continues to

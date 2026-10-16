@@ -3,6 +3,8 @@
 from typing import Literal
 from uuid import UUID
 
+from telescope_rag.api.presentation import project_response
+from telescope_rag.api.responses import OfflineChatResponse
 from telescope_rag.api.schemas import ChatRequest
 from telescope_rag.api.validation import validate_chat_limits
 from telescope_rag.core.errors import ApplicationError
@@ -12,6 +14,7 @@ from telescope_rag.graph.contracts import (
     HistoryTurn,
     WorkflowRequest,
     WorkflowResult,
+    WorkflowRun,
 )
 from telescope_rag.graph.workflow import OfflineRagWorkflow
 from telescope_rag.knowledge.source_authority import DirectoryAuthority
@@ -46,6 +49,7 @@ class OfflineChatService:
         if settings.app_env == "production":
             raise ValueError("offline_chat_requires_nonproduction")
         self._settings = settings
+        self._catalog = catalog
         self._workflow = OfflineRagWorkflow(
             settings=settings,
             chat=chat,
@@ -64,7 +68,7 @@ class OfflineChatService:
         if settings.app_env == "production" or settings != self._settings:
             raise ValueError("offline_chat_configuration_mismatch")
 
-    async def draft(self, payload: ChatRequest, *, request_id: UUID) -> WorkflowResult:
+    async def _run(self, payload: ChatRequest, *, request_id: UUID) -> WorkflowRun:
         if type(payload) is not ChatRequest or type(request_id) is not UUID:
             raise ApplicationError(422, "invalid_request", "The request payload is invalid.")
         validate_chat_limits(payload, self._settings)
@@ -85,6 +89,18 @@ class OfflineChatService:
             raise ApplicationError(
                 502, "offline_draft_failed", "The offline draft could not be validated."
             )
-        # Same application-issued UUID, formatted consistently with HTTP headers.
-        # Parts, quotes, ownership and all unverified/offline flags remain literal.
-        return result.model_copy(update={"request_id": str(request_id)})
+        return run
+
+    async def draft(self, payload: ChatRequest, *, request_id: UUID) -> WorkflowResult:
+        run = await self._run(payload, request_id=request_id)
+        # Preserve the existing draft wire for explicit offline callers.
+        return run.result.model_copy(update={"request_id": str(request_id)})
+
+    async def respond(self, payload: ChatRequest, *, request_id: UUID) -> OfflineChatResponse:
+        run = await self._run(payload, request_id=request_id)
+        try:
+            return project_response(run, catalog=self._catalog, request_id=request_id)
+        except ValueError:
+            raise ApplicationError(
+                502, "offline_response_failed", "The offline response could not be validated."
+            ) from None

@@ -31,7 +31,11 @@ normalization, rewriting, semantic routing or source reassignment. One graph-own
 settings, token counting, retries and output caps are unchanged.
 
 Successful offline responses use `WorkflowResult`, not the planned final answer
-envelope. They retain every original question and its `candidate`, `unknown`,
+envelope, by default. An explicit trusted `offline_response_format="rendered"`
+selects the [closed rendered response](OFFLINE_RESPONSE.md) instead, through the
+same service/graph. It preserves question-owned citations and literal excerpts
+without another model stage, semantic promotion or changes to the draft wire.
+Both forms retain every original question and its `candidate`, `unknown`,
 `excluded` or `clarification_required` state. Each quote preserves literal text,
 chunk/document/snapshot IDs, source URL, fetched timestamp and separate literal
 and canonical owners. No free-form final answer is claimed. Every response keeps
@@ -82,7 +86,8 @@ $1.1424752 at 2026-10-16 17:34:06 UTC; it was not refreshed in this offline step
 The [request-scoped query/retrieval bridge](REQUEST_RETRIEVAL_BRIDGE.md) is now
 implemented and mock-tested through this HTTP boundary, preserving one graph
 budget, exact cache identity and filters before top-k. Default serving remains
-disabled; the new scoped database path has not run live. Next is offline final
-response projection/rendering and its API contract. Complete remaining planner/source
+disabled; the new scoped database path has not run live. Offline final response
+projection/rendering and its contract are now implemented as an explicit option.
+Next is source-bound public-hours preparation and pure time calculations. Complete remaining planner/source
 fixes and subsequent draft/answer/API/deployment acceptance before enabling
 public serving. No paid dispatch or automatic promotion follows from mock success.

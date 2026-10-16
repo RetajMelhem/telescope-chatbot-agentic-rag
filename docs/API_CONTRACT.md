@@ -1,10 +1,12 @@
 # FastAPI contract
 
-Status: M1 implements health routes, validated chat input, and safe HTTP errors. Successful RAG response schemas below remain planned for M5.
+Status: health/input/error contracts and opt-in offline draft/rendered responses are implemented. The accepted public RAG response remains planned for M5; default serving is unavailable.
 
 The current chat route is a placeholder: valid input receives `503` / `chat_not_available`; rejected input receives a sanitized `422`. It never calls a provider, searches knowledge, interprets facts, or stores the visitor's message.
 
 An explicitly injected, nonproduction [offline draft composition](OFFLINE_SERVICE.md) now connects this transport to the existing graph for contract checks. The default route above is unchanged. Trusted construction can supply `OfflineChatService` to `create_app`; production or mismatched settings are rejected. Its 200 response is the graph's `WorkflowResult` with immutable offline/unverified flags, exact per-question outcomes and quoted provenance, not the planned final answer envelope below. Invalid graph/provider/citation results return sanitized 502; timeouts return 504. This path does not select a default model client, approve sources or enable public serving. Caller-owned provider/retriever lifetime is explicit. No live compatibility or semantic acceptance is established by its mocked tests.
+
+Trusted construction can additionally select `offline_response_format="rendered"` for the [offline response contract](OFFLINE_RESPONSE.md). Its closed `OfflineChatResponse` contains plain text, every original question/outcome and question-owned exact source citations, keeping mandatory offline/unverified flags. It never emits `answered`; unknown/excluded/ambiguous parts remain explicit. The existing injected draft wire remains the default. No client field or environment setting enables either mode, and the planned public contract below is not adopted. Invalid projection returns sanitized `502 / offline_response_failed` without another model call.
 
 ## Public routes
 
@@ -38,7 +40,7 @@ M1 enforces a 131,072-byte actual/declarative body limit, configurable downward 
 
 History is untrusted conversational context. It may resolve "his" or "that service," but prior assistant answers and client-provided URLs cannot establish clinic facts. The MVP stores no conversations on the server and needs no conversation ID.
 
-## Chat response
+## Planned accepted public chat response
 
 This example is illustrative and makes no claim about actual clinic hours:
 

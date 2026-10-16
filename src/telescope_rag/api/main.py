@@ -3,6 +3,7 @@
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Literal
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -24,8 +25,13 @@ def create_app(
     *,
     knowledge_probe: KnowledgeProbe | None = None,
     offline_chat_service: OfflineChatService | None = None,
+    offline_response_format: Literal["draft", "rendered"] = "draft",
 ) -> FastAPI:
     config = settings if settings is not None else load_settings()
+    if offline_response_format not in {"draft", "rendered"} or (
+        offline_response_format == "rendered" and offline_chat_service is None
+    ):
+        raise ValueError("offline_response_configuration_invalid")
     if offline_chat_service is not None:
         offline_chat_service.check_configuration(config)
     probe = knowledge_probe if knowledge_probe is not None else UnavailableKnowledgeProbe()
@@ -102,7 +108,10 @@ def create_app(
     else:
         # Import/register the draft route only for explicit trusted construction.
         # No environment toggle, default provider or production adoption.
-        from telescope_rag.api.routes.offline_chat import router as offline_router
+        if offline_response_format == "rendered":
+            from telescope_rag.api.routes.rendered_chat import router as offline_router
+        else:
+            from telescope_rag.api.routes.offline_chat import router as offline_router
 
         app.state.offline_chat_service = offline_chat_service
         app.include_router(offline_router)
