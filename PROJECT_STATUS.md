@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-16 (Asia/Amman).
 
-Latest preparation — **approved hours identity context, opt-in and not executed**:
+Latest result — **approved hours identity context, executed but not adopted**:
 `identity_links_v13` adds only existing admitted canonical relationships to the
 hours manifest: three confirmed people / 26 literal owner occurrences / 41 source
 metadata witnesses. All original subject handles/labels and scoped hours selection
@@ -12,12 +12,27 @@ exactly; six fresh candidate requests differ from their same-input controls only
 in version/identity-manifest metadata, with expectations outside the wire.
 **1,927 guarded offline tests**, Ruff lint/format (194 files), 65-package lock and
 source/cache preservation pass. Evidence: `artifacts/m5-hours-identity-context-v1`.
-Latest key metadata still reports about $1.1369 remaining; the six-call uncached
-planning estimate is $0.027288 assuming 25,000 input tokens per call, not a counted
-input ceiling or settled bill. **Next:** execute the authorized frozen six-case
-development confirmation once, individually review actual proposals and replay
-them offline. No candidate inference/adoption, source/index change, deployment or
-subagent has occurred at this preparation checkpoint.
+Preparation checkpoint `fb608c2` preceded **six actual HTTP 200 Luna/OpenAI planning
+requests**, one attempt each, all strict/literal-valid. Primary Codex language
+review individually accepts **six proposals / ten parts**, with explicit cautions:
+two choose valid literal aliases (broader cross-occurrence hours completeness is
+untested), and two identity clarifications render generically. Three fresh Lina
+cases avoid the earlier false ambiguity; both genuine identity controls stay
+unresolved and the two named doctors remain separate. Six actual-plan replays
+through the real catalog/Qwen assembly/presenter preserve all decisions and source
+citations. This is a small development confirmation, not a causal A/B, broad
+generalization proof or production acceptance.
+
+Usage: **140,389 input / 7,389 output**, with 5,699 reasoning tokens included in
+output. Uncached base estimate **$0.0177334**, not a bill. Latest observed key
+allowance is about **$1.1072**; the aggregate change cannot be attributed solely to
+this run. First generation GET still returns 404, so individual billing/Activity
+reconciliation remains unresolved. Four metadata GETs, zero retries, no answer
+generation/embedding/Qdrant/source/index change, deployment or subagent. `.env`,
+122 source inputs, reviewed hours plan, 924 cached vectors and prior evidence stay
+preserved. **Next:** prepare bounded broader hours acceptance for live now/local,
+unambiguous history, exact source restrictions and alias-scope contrasts, including
+earlier failure regressions plus fresh controls, before any adoption decision.
 
 Repository checkpoint rule: the user requires a scoped local Git commit after each completed and verified work step with file changes, unless explicitly told not to commit. `AGENTS.md` now records standing commit permission and mandatory staged review, secret/generated-data exclusions and commit-hash reporting. This instruction change was checked for Markdown/local-link integrity, Git whitespace and staged scope; existing pending source, benchmark and index work is preserved.
 
@@ -27,7 +42,7 @@ Hours planner development screen — **executed, not adopted**: checkpoint `d403
 
 **1,909 guarded offline tests (14 new runner checks)**, Ruff lint/format (192 files), lock (65 packages), and source/cache/history preservation pass. Actual usage: **241,280 input / 7,536 output tokens**, including 5,015 reasoning tokens within output. Uncached base-price estimate **$0.027896** is not a bill. Latest key metadata at `2026-10-16T20:14:59.019605+00:00` reports about **$1.1369 remaining**, without an observed usage increase; the first generation lookup returned 404, so individual billing/Activity reconciliation remains unresolved. Do not claim zero cost or settled remaining funds. No retry, answer generation, retrieval, embedding, Qdrant, source/index write, deployment or subagent ran. Runtime defaults, source decisions, `.env` and prior evidence remain preserved.
 
-**Next:** project already-approved canonical identity links into a separate hours-manifest candidate, preserve every literal owner and unconfirmed ambiguity, then narrowly confirm with fresh bilingual wording and identity controls. No automatic paid rerun/adoption. Broader live now/history/source-scope behavior, answer acceptance, directory completion, publication and production serving remain unverified.
+Previous follow-up (now executed above): project already-approved identity links into a separate hours-manifest candidate and confirm with fresh bilingual wording/identity controls. No automatic paid rerun/adoption. Broader live now/history/source-scope behavior, answer acceptance, directory completion, publication and production serving remain unverified.
 
 Latest step — **opt-in offline hours graph**: `HoursRagWorkflow` and `HoursChatService` now connect the previously reviewed six source-bound records to typed `schedule` / `now` / `local` inputs and the separately selected `offline-hours-response-v1` format. “When does the center open?” and Arabic/Jordanian variants request the full posted schedule without date/time clarification. The v12 prompt/schema is separate: older profiles/payloads and source-draft time behavior remain unchanged. Literal original/reference/history quotations, exact subject/source scope, server clock and request-owned receipts are preserved. All hours proof must actually be offered by counted assembly; missing/hidden/incomplete evidence stays unknown. Source/owner/language claims remain separate. No heuristic parser, new model stage, retry, fallback or token/credit guard was added.
 

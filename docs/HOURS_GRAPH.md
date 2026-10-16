@@ -96,11 +96,11 @@ typed unspecified-AM/PM input, and current presentation uses a generic clarifica
 The screen remains unadopted. Full evidence is in
 `artifacts/m5-hours-planner-screen-v1/REPORT.md` and `semantic-review.json`.
 
-Next: expose existing approved canonical identity relationships alongside literal
-hours handles, preserve every literal owner and keep unconfirmed identities separate,
-then run a narrow confirmation with new wording and identity controls. No question
-keyword rules or new name equivalences are justified by these cases. Missing links
-are a confirmed metadata gap and a plausible contributor, not a proven causal fix.
+The subsequent identity-context candidate below exposes existing approved canonical
+relationships alongside literal hours handles and preserves unconfirmed ambiguity.
+No question keyword rules or new name equivalences are justified by these cases.
+Missing links were a confirmed metadata gap and a plausible contributor; the later
+fresh-wording development confirmation does not establish a causal effect.
 Broader live now/history/source-scope tests, answer/source/model acceptance,
 directory completion, publication and deployment remain separate obligations.
 
@@ -144,5 +144,15 @@ directory, pins it in the frozen plan, then rebuilds that same profile on execut
 Six fresh bilingual development cases and their expectations are frozen in
 `artifacts/m5-hours-identity-context-v1`; they include approved aliases, separate
 doctor/facility requests, genuinely ambiguous identities/history and a two-doctor
-comparison. Offline checks establish representation/contract isolation, not live
-semantic accuracy. A separate actual-output language review is required.
+comparison. All six actual Luna planning responses are strict/literal-valid; the
+primary Codex assistant individually accepts all six proposals/ten parts under
+their frozen expectations, with literal-scope and generic-clarification cautions.
+Six exact actual-plan offline replays preserve supported facility schedules,
+missing doctor hours and both genuine identity ambiguities. Evidence and remaining
+limits are in `artifacts/m5-hours-identity-context-v1/REPORT.md` and
+`semantic-review.json`. No paid same-input control was run, so no causal effect or
+universal robustness is claimed. Default v12 and API behavior remain unchanged.
+
+Next: broader bounded hours acceptance for now/local inputs, unambiguous history,
+exact source restrictions and alias-scope contrasts, including old failures and
+fresh controls. Production adoption and wider chatbot acceptance stay separate.
