@@ -27,7 +27,8 @@ from telescope_rag.graph.contracts import (
     WorkflowResult,
     WorkflowRun,
 )
-from telescope_rag.prompts.offline_v1 import DRAFT_SYSTEM, PLANNER_SYSTEM, PROMPT_VERSION
+from telescope_rag.graph.planning import planner_messages
+from telescope_rag.prompts.offline_v1 import DRAFT_SYSTEM, PROMPT_VERSION
 from telescope_rag.providers.budget import ExecutionBudget
 from telescope_rag.providers.contracts import ChatMessage, ChatProvider, StructuredResult, T
 from telescope_rag.providers.errors import ProviderError
@@ -150,20 +151,10 @@ class OfflineRagWorkflow:
 
     async def _plan_query(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "plan_query")
-        request = state["request"]
-        body = {
-            "prompt_version": PROMPT_VERSION,
-            "original_query": request.query,
-            "requested_language": request.language,
-            "history": [h.model_dump() for h in request.history],
-            "max_parts": self._settings.max_subquestions,
-            "source_manifest": json.loads(self._bindings.manifest_json),
-        }
         try:
             result = await self._chat.complete(
-                (
-                    ChatMessage(role="system", content=PLANNER_SYSTEM),
-                    ChatMessage(role="user", content=json.dumps(body, ensure_ascii=False)),
+                planner_messages(
+                    state["request"], self._bindings, max_parts=self._settings.max_subquestions
                 ),
                 PlannerReply,
                 max_output_tokens=min(1000, self._settings.max_total_output_tokens),

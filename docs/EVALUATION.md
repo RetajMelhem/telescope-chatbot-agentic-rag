@@ -146,6 +146,14 @@ Performance targets need measurements on the chosen model/provider and deploymen
 
 ## Live compatibility screen
 
+The development-only planner runner is [run_luna_planner_screen.py](../scripts/run_luna_planner_screen.py). It shares the graph's exact [planner input builder](../src/telescope_rag/graph/planning.py), original prompt and 1,000-output-token cap. Preparation verifies sealed source/fixture/review/DOM hashes and writes a new plan binding all current runtime/script bytes. Historical fixture manifests remain unchanged; their changed code bindings are explicitly recorded. The model receives only original synthetic request/history and the server source manifest, never expected plans, witness labels or reviewer rationales.
+
+```powershell
+& .\.tools\uv\bin\uv.exe run --locked python -m scripts.run_luna_planner_screen --output artifacts/NEW_DEVELOPMENT_SCREEN
+```
+
+Only an authorized execution adds `--execute` with that same directory. Execution requires matching prepared bytes and committed code, uses the project dotenv key, and records at most six distinct development requests with zero retries/fallbacks and no embedding, index or draft call. A create-exclusive start marker prevents repeating a partially completed run. Fatal account/model/protocol errors stop the screen. Other per-case failures remain explicit. The 18 reserved evaluation cases are never dispatched. Local schema/offset/handle validation is recorded separately from root's subsequent language/source review; exact equality with one authored expected plan is not a semantic accuracy metric. No local input-token count or pre-run cost guarantee is claimed.
+
 When live requests are explicitly authorized, run a small bounded screen for Luna structured planning, answer output, Qwen batch/index mapping, actual embedding dimensions, and Arabic/English retrieval. Record selected model/provider, configuration, schema, usage, errors, and the index snapshot. Do not send patient records or retain raw visitor conversations.
 
 Separate live provider compatibility from source completeness and final production acceptance. A single minimal synthetic Luna JSON screen passed on 2026-10-16 through the actual adapter, with 70 reported input/16 output tokens and no local counter or retry. This is not the prepared bilingual planner/draft screen. Detailed receipts and limitations are in `artifacts/m5-reported-usage-v1`; Qwen's earlier screens and corpus/query runs are recorded separately in [PROVIDERS.md](PROVIDERS.md) and [PROJECT_STATUS.md](../PROJECT_STATUS.md).
