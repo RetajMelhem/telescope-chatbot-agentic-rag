@@ -10,6 +10,7 @@ from langgraph.runtime import Runtime
 from telescope_rag.core.settings import Settings
 from telescope_rag.graph.anchoring import AnchoredPlannerReply
 from telescope_rag.graph.contracts import EvidenceRetriever
+from telescope_rag.graph.hours_identity import IDENTITY_PROMPT_VERSION, identity_hours_manifest
 from telescope_rag.graph.hours_inputs import HoursBindings, HoursPlannerReply
 from telescope_rag.graph.planning import planner_messages
 from telescope_rag.graph.workflow import OfflineRagWorkflow, WorkflowError, _RunContext, _State
@@ -37,7 +38,10 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         planner_output_tokens: int = 1000,
         draft_output_tokens: int = 1000,
         clock: Callable[[], datetime] | None = None,
+        hours_profile: Literal["v12", "identity_links_v13"] = "v12",
     ) -> None:
+        if hours_profile not in {"v12", "identity_links_v13"}:
+            raise ValueError("hours_profile_invalid")
         # The old profiles and their payload builder are not changed/adopted.
         super().__init__(
             planner_profile="local_constraints",
@@ -59,6 +63,14 @@ class HoursRagWorkflow(OfflineRagWorkflow):
             max_source_age=timedelta(hours=self._settings.knowledge_max_age_hours),
         )
         self.hours_bindings = HoursBindings(plan, self._catalog, self._bindings, engine)
+        self._hours_manifest_json = (
+            identity_hours_manifest(self.hours_bindings, self._bindings)
+            if hours_profile == "identity_links_v13"
+            else self.hours_bindings.manifest_json
+        )
+        self._hours_prompt_version = (
+            IDENTITY_PROMPT_VERSION if hours_profile == "identity_links_v13" else PROMPT_VERSION
+        )
         self._clock = clock or (lambda: datetime.now(UTC))
 
     async def _plan_query(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
@@ -75,8 +87,8 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         )
         body = json.loads(old[-1].content)
         body.update(
-            prompt_version=PROMPT_VERSION,
-            hours_manifest=json.loads(self.hours_bindings.manifest_json),
+            prompt_version=self._hours_prompt_version,
+            hours_manifest=json.loads(self._hours_manifest_json),
             server_clock={
                 "now_utc": runtime.context.operation_clock.isoformat(),
                 "timezone": "Asia/Amman",

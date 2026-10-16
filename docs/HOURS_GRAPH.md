@@ -120,3 +120,29 @@ local input-counting or credit guard is added. Failed/ambiguous attempts are not
 retried, and a started run cannot repeat. Actual proposals, binding/computation
 receipts, generation IDs when supplied and usage remain in ignored evidence for
 separate semantic review. Literal success does not admit a model or production.
+
+## Opt-in approved identity context
+
+`HoursRagWorkflow(hours_profile="identity_links_v13")` projects only existing
+admitted `canonical_doctor_id/name` relationships into a separate hours manifest.
+Each group retains its canonical subject/owner handles, approved display name,
+literal member subject/owner handles, exact labels and source chunk/document
+witnesses. All original subjects and labels remain unchanged. No name, specialty
+or translation matching creates a relationship. Partial or conflicting identity
+metadata fails closed; distinct confirmed IDs stay separate even when their display
+labels match. The manifest retains its 96,000-byte bound.
+
+Identity links establish one confirmed person, never a published schedule. They do
+not transfer hours records or erase literal document/owner/language restrictions.
+The same exact binding and source-proof rules apply; missing doctor hours stay
+unknown. The candidate changes only the user body's version and hours-manifest
+metadata. System prompt, output schema, caps, reasoning and other payload fields
+remain identical to v12. The default remains v12, with no API or production adoption.
+
+The screen runner accepts `--hours-profile identity_links_v13` for a new preparation
+directory, pins it in the frozen plan, then rebuilds that same profile on execution.
+Six fresh bilingual development cases and their expectations are frozen in
+`artifacts/m5-hours-identity-context-v1`; they include approved aliases, separate
+doctor/facility requests, genuinely ambiguous identities/history and a two-doctor
+comparison. Offline checks establish representation/contract isolation, not live
+semantic accuracy. A separate actual-output language review is required.

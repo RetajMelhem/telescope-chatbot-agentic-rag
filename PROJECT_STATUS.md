@@ -2,6 +2,23 @@
 
 Last updated: 2026-10-16 (Asia/Amman).
 
+Latest preparation — **approved hours identity context, opt-in and not executed**:
+`identity_links_v13` adds only existing admitted canonical relationships to the
+hours manifest: three confirmed people / 26 literal owner occurrences / 41 source
+metadata witnesses. All original subject handles/labels and scoped hours selection
+remain intact; no new name equivalence or hours claim is created. Default v12 and
+API behavior are unchanged. All 12 historical v12 request payloads reproduce
+exactly; six fresh candidate requests differ from their same-input controls only
+in version/identity-manifest metadata, with expectations outside the wire.
+**1,927 guarded offline tests**, Ruff lint/format (194 files), 65-package lock and
+source/cache preservation pass. Evidence: `artifacts/m5-hours-identity-context-v1`.
+Latest key metadata still reports about $1.1369 remaining; the six-call uncached
+planning estimate is $0.027288 assuming 25,000 input tokens per call, not a counted
+input ceiling or settled bill. **Next:** execute the authorized frozen six-case
+development confirmation once, individually review actual proposals and replay
+them offline. No candidate inference/adoption, source/index change, deployment or
+subagent has occurred at this preparation checkpoint.
+
 Repository checkpoint rule: the user requires a scoped local Git commit after each completed and verified work step with file changes, unless explicitly told not to commit. `AGENTS.md` now records standing commit permission and mandatory staged review, secret/generated-data exclusions and commit-hash reporting. This instruction change was checked for Markdown/local-link integrity, Git whitespace and staged scope; existing pending source, benchmark and index work is preserved.
 
 Current milestone: **M3 source preparation, the frozen benchmark and the authorized corpus embedding/unpublished candidate stage have passed their scoped gates. M4's initial dense/BM25/hybrid retrieval comparison has now executed on all 90 cases; the frozen rule retains dense provisionally. Source: `data/processed/m3-llm-semantic-token-validated-v6` (107 pages / 955 chunks / 834 distinct inputs); original approval remains false. Authorized execution copy: `data/processed/m3-execution-approved-v6-v2`. Local candidate: `telescope_public_018817ac10ec05ecad92adb9` (955 points, green, no active alias, indexed vectors reported zero). An offline assembly/grouping comparison has executed, and M5 now has an initial tested offline LangGraph prototype. Verified model-driven planning, production serving evidence/source-policy enforcement, planner-driven hours acceptance, publication and chatbot acceptance remain pending; source-bound hours math and opt-in offline graph/response integration are implemented.**

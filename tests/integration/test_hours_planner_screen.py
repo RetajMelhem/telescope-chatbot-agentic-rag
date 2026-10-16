@@ -19,7 +19,7 @@ from telescope_rag.providers.openrouter import OpenRouterProviders
 NOW = datetime(2026, 10, 16, 20, tzinfo=UTC)
 
 
-def compose(config, chat, clock=NOW):
+def compose(config, chat, clock=NOW, hours_profile="v12"):
     catalog, authority, plan, _ = fixtures()
     return HoursRagWorkflow(
         settings=config,
@@ -32,6 +32,7 @@ def compose(config, chat, clock=NOW):
         expected_hours_plan_digest=hours_plan_digest(plan),
         planner_output_tokens=screen.OUTPUT_CAP,
         clock=lambda: clock,
+        hours_profile=hours_profile,
     )
 
 
@@ -52,11 +53,30 @@ def frozen(tmp_path, monkeypatch, *, text="When does the center open?", language
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        screen, "build_workflow", lambda root, config, chat, clock: compose(config, chat, clock)
+        screen,
+        "build_workflow",
+        lambda root, config, chat, clock, hours_profile="v12": compose(
+            config, chat, clock, hours_profile
+        ),
     )
     monkeypatch.setattr(screen, "source_bindings", lambda root: {"synthetic-source": "hash"})
     monkeypatch.setattr(screen, "code_bindings", lambda root: {"synthetic-code": "hash"})
     return cases, asyncio.run(screen.freeze_plan(tmp_path, cases, NOW))
+
+
+def test_opt_in_profile_is_pinned_and_default_frozen_wire_is_unchanged(tmp_path, monkeypatch):
+    cases, default = frozen(tmp_path, monkeypatch)
+    candidate = asyncio.run(
+        screen.freeze_plan(tmp_path, cases, NOW, hours_profile="identity_links_v13")
+    )
+    assert "hours_profile" not in default
+    assert candidate["hours_profile"] == "identity_links_v13"
+    old = json.loads(default["packets"][0]["payload"]["messages"][-1]["content"])
+    new = json.loads(candidate["packets"][0]["payload"]["messages"][-1]["content"])
+    assert old["hours_manifest"]["subjects"] == new["hours_manifest"]["subjects"]
+    assert old["prompt_version"] != new["prompt_version"]
+    assert new["hours_manifest"]["identity_metadata"]["groups"] == []
+    assert candidate["packets"][0]["payload_sha256"] != default["packets"][0]["payload_sha256"]
 
 
 @pytest.mark.parametrize(

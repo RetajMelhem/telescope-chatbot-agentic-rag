@@ -13,6 +13,7 @@ import time
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Literal
 from uuid import NAMESPACE_URL, uuid5
 
 from langgraph.runtime import Runtime
@@ -113,7 +114,11 @@ class _ExactChat:
 
 
 def build_workflow(
-    root: Path, config: Settings, chat: ChatProvider, clock: datetime
+    root: Path,
+    config: Settings,
+    chat: ChatProvider,
+    clock: datetime,
+    hours_profile: Literal["v12", "identity_links_v13"] = "v12",
 ) -> HoursRagWorkflow:
     documents, _ = load_corpus(root / SOURCE)
     catalog = EvidenceCatalog(documents, expected_digest=DIGEST)
@@ -135,6 +140,7 @@ def build_workflow(
         expected_hours_plan_digest=HOURS_DIGEST,
         planner_output_tokens=OUTPUT_CAP,
         clock=lambda: clock,
+        hours_profile=hours_profile,
     )
 
 
@@ -154,7 +160,12 @@ def code_bindings(root: Path) -> dict[str, str]:
     }
 
 
-async def freeze_plan(root: Path, cases_path: Path, clock: datetime) -> dict:
+async def freeze_plan(
+    root: Path,
+    cases_path: Path,
+    clock: datetime,
+    hours_profile: Literal["v12", "identity_links_v13"] = "v12",
+) -> dict:
     if clock.utcoffset() is None:
         raise ValueError("hours_screen_clock_invalid")
     cohort = ScreenCases.model_validate_json(await asyncio.to_thread(cases_path.read_bytes))
@@ -162,7 +173,7 @@ async def freeze_plan(root: Path, cases_path: Path, clock: datetime) -> dict:
         raise ValueError("hours_screen_duplicate_case")
     config = screen_settings(profile="local_constraints", output_cap=OUTPUT_CAP)
     capture = _CaptureChat()
-    workflow = build_workflow(root, config, capture, clock)
+    workflow = build_workflow(root, config, capture, clock, hours_profile)
     packets = []
     for case in cohort.cases:
         context = _RunContext(uuid5(NAMESPACE_URL, case.case_id).hex, ExecutionBudget(config))
@@ -186,6 +197,7 @@ async def freeze_plan(root: Path, cases_path: Path, clock: datetime) -> dict:
         )
     return {
         "version": "hours-planner-screen-v1",
+        **({"hours_profile": hours_profile} if hours_profile != "v12" else {}),
         "clock_utc": clock.astimezone(UTC).isoformat(),
         "clock_basis": "frozen application clock for this development screen",
         "packets": packets,
@@ -268,7 +280,8 @@ async def run_packet(packet: dict, workflow: HoursRagWorkflow, config: Settings)
 async def execute(root: Path, output: Path, cases: Path) -> dict:
     plan = json.loads((output / "plan.json").read_bytes())
     clock = datetime.fromisoformat(plan["clock_utc"])
-    rebuilt = await freeze_plan(root, cases, clock)
+    profile = plan.get("hours_profile", "v12")
+    rebuilt = await freeze_plan(root, cases, clock, profile)
     status = await asyncio.to_thread(
         subprocess.check_output, ["git", "status", "--porcelain"], cwd=root
     )
@@ -286,7 +299,8 @@ async def execute(root: Path, output: Path, cases: Path) -> dict:
                 )
             ).strip(),
             "authorization": (
-                "User requested starting the bounded bilingual v12 planner acceptance step."
+                "User requested starting the documented bounded hours-planner next step; "
+                "this exact frozen profile/cohort is a development screen without adoption."
             ),
         },
     )
@@ -302,7 +316,7 @@ async def execute(root: Path, output: Path, cases: Path) -> dict:
             async with OpenRouterProviders(config) as providers:
                 for packet in plan["packets"]:
                     workflow = build_workflow(
-                        root, config, _ExactChat(providers.chat, packet, config), clock
+                        root, config, _ExactChat(providers.chat, packet, config), clock, profile
                     )
                     row = await run_packet(packet, workflow, config)
                     write_new(output / (packet["case_id"] + ".json"), row)
@@ -354,12 +368,13 @@ async def main() -> None:
     parser.add_argument("--cases", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--hours-profile", choices=("v12", "identity_links_v13"), default="v12")
     args = parser.parse_args()
     if args.execute:
         print(json.dumps(await execute(Path.cwd(), args.output, args.cases)))
     else:
         args.output.mkdir(parents=True, exist_ok=False)
-        plan = await freeze_plan(Path.cwd(), args.cases, datetime.now(UTC))
+        plan = await freeze_plan(Path.cwd(), args.cases, datetime.now(UTC), args.hours_profile)
         write_new(args.output / "plan.json", plan)
         print(json.dumps({"prepared_requests": len(plan["packets"]), "paid_requests": 0}))
 
