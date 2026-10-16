@@ -1,8 +1,8 @@
 # Project status
 
-Last updated: 2026-10-16 (Asia/Amman).
+Last updated: 2026-10-17 (Asia/Amman).
 
-Latest preparation — **broader hours acceptance, frozen and not executed**:
+Latest result — **broader hours acceptance executed; adoption withheld**:
 `artifacts/m5-hours-broader-acceptance-v1` freezes 12 requests/criteria (two exact
 earlier failed regressions, ten fresh development contrasts) against unchanged
 `identity_links_v13`. It covers now, Friday minute/opening boundaries, midnight,
@@ -10,14 +10,35 @@ unambiguous history with an untrusted assistant assumption, unspecified AM/PM,
 exact English/Arabic FAQ restrictions, contact-only refusal to fall back and a
 confirmed alias under an exact directory restriction. Twelve explicitly authored
 oracle plans / 16 parts pass the actual catalog/Qwen/graph/presenter offline;
-these are representability checks, not actual Luna decisions. **1,927 guarded
-regressions**, Ruff lint/format (194 files), 65-package lock and preservation pass.
-No runtime, prompt, source, API or index change. Latest key metadata reports about
-**$1.1000 remaining**; the 12-call estimate is $0.054576 using 25,000 assumed input
-tokens and a 4,096-output cap per call, not a counted ceiling or settled bill.
-**Next:** execute the user-requested bounded confirmation once, read every actual
-proposal/part against frozen criteria and source evidence, then replay offline
-before any adoption decision. No inference has occurred in this preparation.
+these are representability checks, not actual Luna decisions. Checkpoint `ab9598f`
+preceded **12 actual HTTP 200 Luna/OpenAI planning requests**, one attempt each:
+12 strict-schema passes / ten literal-operation passes. Primary Codex language
+review individually accepts **nine requests / 13 parts** and rejects **three
+requests / three parts**. Both exposed Lina failures pass this run. New failures:
+H23-en emits `0/am` for midnight (safely rejected); H24-ar adds a search query to
+an hours operation (safely rejected); H25-en selects profile-only literal h93 under
+main-directory d0033 (accepted by binding but semantically wrong, masked by unknown
+doctor hours). All twelve saved proposals replay unchanged offline: ten complete,
+two reproduce validation failures. Four one-field counterfactuals isolate valid
+representations without repairing actual outputs or proving model success.
+
+**1,927 guarded regressions**, Ruff lint/format (194 files), 65-package lock,
+122 source inputs, reviewed hours plan, 924 cached vectors and prior evidence pass
+preservation checks. No runtime, prompt, source, API or index change. Usage:
+**280,822 input / 9,032 output**, including 5,974 reasoning tokens within output.
+All twelve generation records match IDs/provider/native usage and report total
+charges **$0.034974150**; the uncached catalog estimate is $0.0325982. Latest key
+metadata reports **$1.05630809 remaining** at 00:14:10 Asia/Amman on October 17;
+$0.008674975 of aggregate usage movement remains unattributed. This is not full
+account/dashboard reconciliation. Fifteen metadata GETs, zero retries, no paid
+answer/control/judge/embedding/Qdrant requests, deployment or subagents; `.env`
+stays unchanged. **Next:** repair clock representation, hours/search exclusivity
+and exact doctor-subject/source-scope linkage in a separate offline candidate,
+add focused contrasts, then freeze a small confirmation before further inference.
+Production adoption remains held. Full evidence: `REPORT.md`, `semantic-review.json`,
+`actual-plan-offline-replay.json`, `alias-scope-evidence.json`,
+`minimal-counterfactual-replay.json` and `accounting-reconciliation.json` in the
+broader-hours artifact directory. No broad generalization/whole-corpus claim.
 
 Latest result — **approved hours identity context, executed but not adopted**:
 `identity_links_v13` adds only existing admitted canonical relationships to the

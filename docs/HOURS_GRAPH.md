@@ -157,7 +157,7 @@ Next: broader bounded hours acceptance for now/local inputs, unambiguous history
 exact source restrictions and alias-scope contrasts, including old failures and
 fresh controls. Production adoption and wider chatbot acceptance stay separate.
 
-The next cohort is frozen in `artifacts/m5-hours-broader-acceptance-v1`: two exact
+The later cohort is frozen in `artifacts/m5-hours-broader-acceptance-v1`: two exact
 earlier failures plus ten fresh English/Arabic/Jordanian contrasts. The unchanged
 v13 candidate is tested for now intent, explicit Friday/midnight boundaries,
 unambiguous history, untrusted assistant assumptions, unspecified AM/PM, exact
@@ -167,5 +167,21 @@ Twelve authored oracle plans pass offline through the actual catalog, Qwen count
 graph and presenter; oracle success is not evidence of model interpretation.
 The development runner uses a captured application clock for reproducibility:
 now-intent acceptance does not establish production wall-clock behavior.
-The planned bounded screen keeps the prompt/schema/model/caps and default API
-unchanged, has no automatic retries, and requires individual actual-output review.
+The executed bounded screen keeps the prompt/schema/model/caps and default API
+unchanged and has no automatic retries. All twelve actual proposals/sixteen parts
+were individually reviewed: nine requests/thirteen parts accepted with cautions,
+three failed. Two failures are safely rejected (`0/am` midnight representation,
+non-null search query on an hours operation). The third selects profile-only
+literal h93 under the main-directory d0033 restriction; with no owner filter, binding
+accepts the subject without source-membership verification, yielding a safe but
+scope-masked unknown. This blocks adoption. Exact actual-plan offline replay
+reproduces ten completed requests and both validation failures; four explicitly
+authored one-field counterfactuals demonstrate valid representations, not model
+repair. The AM/PM case safely asks direct clarification and still does not establish
+live typed-unspecified coverage. The report and individual ledger retain all limits.
+
+Next: offline repair of clock representation, hours/search exclusivity and exact
+doctor-subject/source-scope linkage in a separate candidate, with focused regressions
+and contrasts. Preserve approved identities, literal provenance and unknown outcomes;
+do not add automatic normalization, fuzzy matching or question-specific routing.
+Freeze further confirmation before paid dispatch; production adoption remains held.
