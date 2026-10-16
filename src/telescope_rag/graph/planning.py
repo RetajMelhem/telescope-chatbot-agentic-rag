@@ -14,6 +14,8 @@ from telescope_rag.prompts.planner_candidate_v2 import (
 from telescope_rag.prompts.planner_candidate_v2 import (
     PROMPT_VERSION as CANDIDATE_VERSION,
 )
+from telescope_rag.prompts.planner_constraints_v11 import PLANNER_SYSTEM as CONSTRAINT_SYSTEM
+from telescope_rag.prompts.planner_constraints_v11 import PROMPT_VERSION as CONSTRAINT_VERSION
 from telescope_rag.prompts.planner_contract_v8 import PLANNER_SYSTEM as CONTRACT_SYSTEM
 from telescope_rag.prompts.planner_contract_v8 import PROMPT_VERSION as CONTRACT_VERSION
 from telescope_rag.prompts.planner_dependencies_v10 import PLANNER_SYSTEM as DEPENDENCY_SYSTEM
@@ -44,6 +46,7 @@ def planner_messages(
         "purpose_contract",
         "referent_context",
         "dependency_context",
+        "local_constraints",
     ] = "baseline",
 ) -> tuple[ChatMessage, ...]:
     if profile not in {
@@ -56,20 +59,25 @@ def planner_messages(
         "purpose_contract",
         "referent_context",
         "dependency_context",
+        "local_constraints",
     }:
         raise ValueError("unknown_planner_profile")
     if profile == "source_scoped" and bindings.directory_authority is None:
         raise ValueError("source_scoped_requires_directory_authority")
     if (
-        profile in {"purpose_contract", "referent_context", "dependency_context"}
+        profile
+        in {"purpose_contract", "referent_context", "dependency_context", "local_constraints"}
     ) != bindings.purpose_contract or (
-        profile in {"purpose_contract", "referent_context", "dependency_context"}
+        profile
+        in {"purpose_contract", "referent_context", "dependency_context", "local_constraints"}
         and bindings.directory_authority is None
     ):
         raise ValueError("planner_purpose_contract_configuration_mismatch")
     candidate = profile == "source_types_no_reasoning"
     body = {
-        "prompt_version": DEPENDENCY_VERSION
+        "prompt_version": CONSTRAINT_VERSION
+        if profile == "local_constraints"
+        else DEPENDENCY_VERSION
         if profile == "dependency_context"
         else REFERENT_VERSION
         if profile == "referent_context"
@@ -95,7 +103,9 @@ def planner_messages(
     return (
         ChatMessage(
             role="system",
-            content=DEPENDENCY_SYSTEM
+            content=CONSTRAINT_SYSTEM
+            if profile == "local_constraints"
+            else DEPENDENCY_SYSTEM
             if profile == "dependency_context"
             else REFERENT_SYSTEM
             if profile == "referent_context"

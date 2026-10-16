@@ -1,6 +1,7 @@
 """Cross-stage isolation and fail-closed dispatch/tracing tests; synthetic inputs only."""
 
 import asyncio
+from types import SimpleNamespace
 from uuid import UUID
 
 import httpx2
@@ -18,6 +19,7 @@ from test_offline_workflow import (
 )
 
 from telescope_rag.core.settings import Settings
+from telescope_rag.graph import workflow as workflow_module
 from telescope_rag.graph.contracts import PlannerReply, WorkflowRequest
 from telescope_rag.graph.workflow import OfflineRagWorkflow, WorkflowError
 from telescope_rag.providers.openrouter import OpenRouterProviders
@@ -115,26 +117,48 @@ def test_concurrent_runs_share_no_request_ids_budget_or_evidence_assignments():
     asyncio.run(scenario())
 
 
-def test_retrieval_deadline_terminates_before_assembly_and_generation():
+def test_retrieval_deadline_terminates_before_assembly_and_generation(monkeypatch):
     async def scenario():
         flow, chat, retriever = workflow(
             catalog(source(1)),
             single_plan(),
-            request_timeout_seconds=0.05,
+            request_timeout_seconds=5,
             provider_timeout_seconds=0.01,
             readiness_timeout_seconds=0.01,
         )
         original = retriever.retrieve
         entered = asyncio.Event()
+        cancelled = asyncio.Event()
+        timeouts = []
+
+        def record_timeout(delay):
+            # Use the real timeout/cancellation path. Expire it only once the
+            # stage under test has entered, not during machine-dependent setup.
+            timeout = asyncio.timeout(delay)
+            timeouts.append(timeout)
+            return timeout
+
+        monkeypatch.setattr(
+            workflow_module,
+            "asyncio",
+            SimpleNamespace(timeout=record_timeout, to_thread=asyncio.to_thread),
+        )
 
         async def delayed(*args, **kwargs):
             await original(*args, **kwargs)
             entered.set()
-            await asyncio.Event().wait()
+            assert len(timeouts) == 1
+            timeouts[0].reschedule(asyncio.get_running_loop().time())
+            try:
+                await asyncio.Event().wait()
+            except asyncio.CancelledError:
+                cancelled.set()
+                raise
 
         retriever.retrieve = delayed
         run = await flow.run(WorkflowRequest(query="Synthetic slow retrieval"))
         assert entered.is_set()
+        assert cancelled.is_set() and timeouts[0].expired()
         assert run.result.error_code == "deadline_exceeded"
         assert len(chat.calls) == 1
         assert "assemble_evidence" not in run.stages

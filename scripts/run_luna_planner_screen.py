@@ -111,6 +111,7 @@ def planner_payload(
             "purpose_contract",
             "referent_context",
             "dependency_context",
+            "local_constraints",
         }
         else PlannerReply
     )
@@ -308,6 +309,7 @@ async def run_packets(
                 "purpose_contract",
                 "referent_context",
                 "dependency_context",
+                "local_constraints",
             }
             else PlannerReply
         )
@@ -329,6 +331,7 @@ async def run_packets(
                     "purpose_contract",
                     "referent_context",
                     "dependency_context",
+                    "local_constraints",
                 }:
                     proposal, anchors = resolve_anchored_plan(proposal, request, packet["case_id"])
                     row["derived_proposal"] = proposal.model_dump(mode="json")
@@ -340,6 +343,7 @@ async def run_packets(
                         "purpose_contract",
                         "referent_context",
                         "dependency_context",
+                        "local_constraints",
                     }:
                         row["answer_targets"] = [
                             asdict(t) for t in bind_answer_targets(result.data, anchors)
