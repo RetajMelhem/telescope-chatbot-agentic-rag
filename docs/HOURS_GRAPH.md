@@ -156,3 +156,16 @@ universal robustness is claimed. Default v12 and API behavior remain unchanged.
 Next: broader bounded hours acceptance for now/local inputs, unambiguous history,
 exact source restrictions and alias-scope contrasts, including old failures and
 fresh controls. Production adoption and wider chatbot acceptance stay separate.
+
+The next cohort is frozen in `artifacts/m5-hours-broader-acceptance-v1`: two exact
+earlier failures plus ten fresh English/Arabic/Jordanian contrasts. The unchanged
+v13 candidate is tested for now intent, explicit Friday/midnight boundaries,
+unambiguous history, untrusted assistant assumptions, unspecified AM/PM, exact
+FAQ document/language restrictions, contact-only missing proof and a confirmed
+alias under a directory restriction. Expectations stay outside provider payloads.
+Twelve authored oracle plans pass offline through the actual catalog, Qwen counter,
+graph and presenter; oracle success is not evidence of model interpretation.
+The development runner uses a captured application clock for reproducibility:
+now-intent acceptance does not establish production wall-clock behavior.
+The planned bounded screen keeps the prompt/schema/model/caps and default API
+unchanged, has no automatic retries, and requires individual actual-output review.

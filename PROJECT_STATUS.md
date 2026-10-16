@@ -2,6 +2,23 @@
 
 Last updated: 2026-10-16 (Asia/Amman).
 
+Latest preparation — **broader hours acceptance, frozen and not executed**:
+`artifacts/m5-hours-broader-acceptance-v1` freezes 12 requests/criteria (two exact
+earlier failed regressions, ten fresh development contrasts) against unchanged
+`identity_links_v13`. It covers now, Friday minute/opening boundaries, midnight,
+unambiguous history with an untrusted assistant assumption, unspecified AM/PM,
+exact English/Arabic FAQ restrictions, contact-only refusal to fall back and a
+confirmed alias under an exact directory restriction. Twelve explicitly authored
+oracle plans / 16 parts pass the actual catalog/Qwen/graph/presenter offline;
+these are representability checks, not actual Luna decisions. **1,927 guarded
+regressions**, Ruff lint/format (194 files), 65-package lock and preservation pass.
+No runtime, prompt, source, API or index change. Latest key metadata reports about
+**$1.1000 remaining**; the 12-call estimate is $0.054576 using 25,000 assumed input
+tokens and a 4,096-output cap per call, not a counted ceiling or settled bill.
+**Next:** execute the user-requested bounded confirmation once, read every actual
+proposal/part against frozen criteria and source evidence, then replay offline
+before any adoption decision. No inference has occurred in this preparation.
+
 Latest result — **approved hours identity context, executed but not adopted**:
 `identity_links_v13` adds only existing admitted canonical relationships to the
 hours manifest: three confirmed people / 26 literal owner occurrences / 41 source
