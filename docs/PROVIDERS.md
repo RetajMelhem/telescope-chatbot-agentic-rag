@@ -4,6 +4,8 @@ Status: M2 contracts were implemented offline on 2026-10-14. M3's Qwen embedding
 
 ## Interfaces and ownership
 
+The opt-in [request-scoped dense bridge](REQUEST_RETRIEVAL_BRIDGE.md) now passes the existing graph budget into one uncached query-embedding batch; it never constructs another ledger or changes provider settings. Complete hosted query prefixes are counted by an explicitly supplied pinned Qwen counter. Exact cache hits avoid dispatch; new vectors remain request-local. Receipt validation preserves unknown optional usage/model/provider metadata and rejects supplied mismatches. Construction/binding is offline and default serving remains unavailable. The separate evaluation embedding runner retains its historical per-batch behavior; no paid comparison, source approval or production adoption is implied.
+
 | Surface | Contract |
 | --- | --- |
 | `OpenRouterProviders` | Owns one async HTTPX2 client; exposes `chat` and `embeddings`; supports async context management and bounded `aclose()`. Construction/cleanup do not infer. |

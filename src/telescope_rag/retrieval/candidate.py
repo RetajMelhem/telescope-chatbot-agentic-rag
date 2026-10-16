@@ -169,8 +169,27 @@ class CandidateDenseReader:
             raise ValueError("candidate_reader_invalid_aliases")
         return aliases
 
+    def check_inventory(
+        self, chunks: Mapping[str, PreparedChunk], *, settings: Settings | None = None
+    ) -> None:
+        """Pure preflight: bind the caller's complete catalog before embedding dispatch."""
+        if settings is not None and settings != self._settings:
+            raise ValueError("candidate_reader_configuration_mismatch")
+        try:
+            if set(chunks) != set(self._chunks) or any(
+                _canonical_payload(chunk.model_dump(mode="json")) != self._payloads[point_id]
+                for point_id, chunk in chunks.items()
+            ):
+                raise ValueError
+        except Exception:
+            raise ValueError("candidate_reader_inventory_mismatch") from None
+
     async def search(
-        self, vector: Sequence[float], *, limit: int = _MAX_HITS
+        self,
+        vector: Sequence[float],
+        *,
+        limit: int = _MAX_HITS,
+        point_ids: Sequence[str] | None = None,
     ) -> tuple[DenseHit, ...]:
         if type(limit) is not int or not 1 <= limit <= _MAX_HITS:
             raise ValueError("candidate_reader_invalid_limit")
@@ -184,17 +203,28 @@ class CandidateDenseReader:
                 raise ValueError("invalid_vector")
         except (ValueError, TypeError, OverflowError):
             raise ValueError("candidate_reader_invalid_vector") from None
-        result = await self._request(
-            "POST",
-            f"collections/{self._collection}/points/query",
-            {
-                "query": list(vector),
-                "params": {"exact": True},
-                "with_payload": True,
-                "with_vector": False,
-                "limit": limit,
-            },
-        )
+        allowed_points = None
+        if point_ids is not None:
+            if (
+                not isinstance(point_ids, (tuple, list))
+                or len(point_ids) > _MAX_EXPECTED_POINTS
+                or any(type(p) is not str or p not in self._chunks for p in point_ids)
+                or len(set(point_ids)) != len(point_ids)
+            ):
+                raise ValueError("candidate_reader_invalid_point_scope")
+            allowed_points = frozenset(point_ids)
+            if not allowed_points:
+                return ()
+        body = {
+            "query": list(vector),
+            "params": {"exact": True},
+            "with_payload": True,
+            "with_vector": False,
+            "limit": limit,
+        }
+        if allowed_points is not None:
+            body["filter"] = {"must": [{"has_id": sorted(allowed_points)}]}
+        result = await self._request("POST", f"collections/{self._collection}/points/query", body)
         points = result.get("points") if isinstance(result, dict) else None
         if not isinstance(points, list) or len(points) > limit:
             raise ValueError("candidate_reader_invalid_points")
@@ -205,6 +235,8 @@ class CandidateDenseReader:
             point_id = point.get("id") if isinstance(point, dict) else None
             if not isinstance(point_id, str) or point_id not in self._chunks or point_id in seen:
                 raise ValueError("candidate_reader_point_mapping_mismatch")
+            if allowed_points is not None and point_id not in allowed_points:
+                raise ValueError("candidate_reader_point_outside_scope")
             score = point.get("score")
             try:
                 if type(score) not in {int, float} or not math.isfinite(score):

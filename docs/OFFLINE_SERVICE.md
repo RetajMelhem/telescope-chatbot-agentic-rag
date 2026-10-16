@@ -79,8 +79,10 @@ subagent or deployment ran. The [completion budget plan](COMPLETION_BUDGET.md)
 still defers broad paid comparisons. The last observed allowance was
 $1.1424752 at 2026-10-16 17:34:06 UTC; it was not refreshed in this offline step.
 
-Next: implement the request-scoped query embedding/read-only dense retrieval
-bridge behind this injected boundary, with verified format and exact cache
-identity, bounded scopes and offline tests. Complete remaining planner/source
+The [request-scoped query/retrieval bridge](REQUEST_RETRIEVAL_BRIDGE.md) is now
+implemented and mock-tested through this HTTP boundary, preserving one graph
+budget, exact cache identity and filters before top-k. Default serving remains
+disabled; the new scoped database path has not run live. Next is offline final
+response projection/rendering and its API contract. Complete remaining planner/source
 fixes and subsequent draft/answer/API/deployment acceptance before enabling
 public serving. No paid dispatch or automatic promotion follows from mock success.

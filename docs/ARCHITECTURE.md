@@ -73,6 +73,8 @@ The implemented app entry point is `telescope_rag.api.main:create_app` with Uvic
 
 ## Two execution paths
 
+The [request-scoped dense bridge](REQUEST_RETRIEVAL_BRIDGE.md) now implements the injected retrieval contract using verified query formatting, optional exact read-only cache reuse and pinned candidate point filters before top-k. It shares the graph budget and never writes knowledge/cache data, creates a second ledger or interprets source ownership by similarity. Its HTTP-to-reader integration and cancellation/scope contracts are tested with mocked providers/database transport; an actual immutable corpus/tokenizer binding passes with dispatch forbidden. Production/default serving and source/index publication remain unavailable.
+
 An explicit nonproduction [HTTP draft service](OFFLINE_SERVICE.md) now composes the existing offline graph with caller-injected chat/retrieval/catalog/counter/authority dependencies. `create_app` selects it only through a trusted Python argument; default chat remains unavailable and production configuration is refused. The boundary returns source-linked per-question drafts with offline/unverified flags, preserves request-owned budgets and keeps resources caller-owned. The actual HTTP/graph/provider adapter path is tested with synthetic data and mocked transport; live retrieval, model acceptance, final answer rendering and production composition remain pending. It performs no automatic credential loading, client creation, source approval or index publication.
 
 ```mermaid
