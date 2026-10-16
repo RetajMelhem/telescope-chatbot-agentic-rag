@@ -285,3 +285,38 @@ The frozen unexecuted proposal is
 outside model payloads. Next is the separately requested bounded six-case broader
 acceptance after allowance/pricing refresh, then individual actual-output review
 and unchanged replay. Production adoption and whole-system readiness remain held.
+
+That proposed broader screen subsequently executed once at checkpoint `e5ee6fa`:
+six actual HTTP 200 Luna/OpenAI responses, all strict-schema/literal-valid. Primary
+Codex language reasoning individually accepts six complete actual proposals/12
+parts against the frozen criteria and saved official sources, with explicit cautions.
+The full weekly opening response, Arabic pharmacy/confirmed canonical Lina/excluded
+booking, two independent now comparisons plus the optical opening boundary, native
+English/Arabic FAQ restrictions and two genuine clarifications with a retained
+pharmacy answer all satisfy their scoped expectations. All six actual proposals
+replay unchanged through the catalog/Qwen/graph/presenter. Eight supported parts
+retain 14 exact question-owned citations; one doctor unknown, one booking exclusion
+and two direct clarifications remain safe. The runner's original pending flags
+stay unchanged; the later individual review is separately hash-bound.
+
+Evidence: `artifacts/m5-hours-v14-broader-acceptance-v1/REPORT.md`, individual ledger,
+replay, source/owner checks, coverage update and accounting receipts. The combined
+two v14 screens contain 12 actual proposals/18 parts with development acceptance;
+this is not an independent holdout, broad accuracy estimate or production approval.
+The new screen has two exact exposed requests and four fresh compositions. Direct
+AM/PM clarification remains acceptable; no live typed-unspecified example is claimed
+or required by paid retries. Both direct visitor clarifications render generically;
+the fixed Arabic presenter does not establish Jordanian style quality. Now uses
+the frozen clock, not a tested production clock. Previous 253 focused/1,986 full
+guarded test passes and exact code/source/cache bytes stay preserved without a
+new full-suite run; no runtime/source/index/default change occurred.
+
+The inspected integration gap is concrete: `HoursRagWorkflow` accepts
+`hours_profile`, while `HoursChatService` neither exposes nor forwards it and
+therefore constructs v12. Next is explicit trusted constructor selection for the
+nonproduction service, retaining v12 default and unchanged public request schemas,
+then offline FastAPI tests using saved actual v14 outputs. Preserve default API
+unavailability, production refusal, per-question proof and the one-budget/no-retry
+contract. No additional paid planner micro-screen is recommended first. This
+integration is not implemented by the screen and does not authorize production
+adoption, generated-answer acceptance, index publication or deployment.

@@ -2,6 +2,47 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
+Latest result — **broader v14 hours screen passed; nonproduction integration next**:
+At checkpoint `e5ee6fa`, the six frozen requests ran once: **six HTTP 200 exact
+Luna/OpenAI planner responses**, six strict-schema and six literal/binding passes.
+Primary Codex language reasoning individually accepts **six actual proposals /
+12 parts**, with explicit presentation/coverage cautions. The simple opening
+question returns the full weekly listing; Arabic pharmacy/canonical-Lina/booking
+stays supported/unknown/excluded; two now subjects and the optical opening boundary
+remain distinct; English/Arabic FAQ-only restrictions survive; both genuine
+clarifications retain a clear pharmacy answer. Six verbatim actual-plan replays
+complete through the real catalog/Qwen/graph/presenter: eight supported parts,
+one doctor unknown, one excluded booking and two direct clarifications. Fourteen
+exact question-owned source citations and both native scope restrictions verify.
+
+Evidence: `artifacts/m5-hours-v14-broader-acceptance-v1/REPORT.md`, individual
+`semantic-review.json`, source/scope checks, replay, coverage/accounting receipts
+and final seal. Actual receipts remain with the immutable frozen plan in
+`artifacts/m5-hours-consolidation-v1/proposed-run`. The runner's pending semantic
+flags are preserved; the separate review binds every actual output by hash.
+Combined current-v14 evidence is **12 requests / 18 parts** across the two screens,
+not an independent holdout, causal A/B or general accuracy estimate. Direct AM/PM
+clarification is safe; live typed-unspecified remains unobserved. Generic visitor
+clarifications and standard-Arabic presentation remain explicit limitations.
+
+Usage: **165,543 input / 5,305 output**, including 3,218 reasoning tokens already
+within output; uncached catalog estimate **$0.0192068**, not a settled bill. The
+02:51:43 Amman October 17 key GET reports about **$1.03277619 remaining** with no
+counter movement during this run; first generation lookup returns 404, so exact
+charges and Activity/account reconciliation remain unresolved. Four metadata GETs,
+zero retries/polling, no paid answer/judge/embedding/Qdrant request or subagent.
+Prior **253 focused / 1,986 full guarded test passes**, unchanged code/test bytes,
+509-entry seal, source/hours plan, 924 vectors and credentials are preserved; no
+unnecessary suite rerun occurred. No runtime, prompt, source, index or API change.
+
+**Next:** expose explicit trusted v14 profile selection through the nonproduction
+`HoursChatService` constructor, which currently constructs default v12; verify the
+opt-in FastAPI hours route with saved actual plans and mocked transport. Keep v12
+default, public request schemas and production refusal unchanged. No additional
+paid planner screen is recommended before this offline integration. General answer
+acceptance, directory completion, serving admission and production readiness remain
+separate unverified gates; this result does not adopt or deploy v14.
+
 Latest step — **hours evidence consolidated offline; broader v14 acceptance prepared**:
 All **36 saved proposals / 50 parts** across four cohorts (31 distinct request
 contents) retain their original individual semantic verdicts, authenticated by
