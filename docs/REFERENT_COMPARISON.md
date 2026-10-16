@@ -27,3 +27,13 @@ chat still uses provider-reported usage without a local input-token guard. An
 estimate is not an invoice or guaranteed input bound. Report actual usage and any
 billing lag explicitly. There are no draft, embedding, Qdrant, reserved-case,
 deployment or paid judge calls in this experiment.
+
+The first authorized run completed at `8c6726d` with 96 HTTP-200 exact Luna/OpenAI
+attempts and no retries. All 96 proposals/136 parts were individually reviewed by
+primary language reasoning. Conservative admission is 40/48 control versus 42/48
+v9: three gains, one regression, five shared failures. Both original English and
+Jordanian pore-refinement antecedent failures remain. V9 stays opt-in and withheld;
+reserved evaluation remains closed. The full local evidence is
+`artifacts/m5-referent-comparison-v1/REPORT.md`. The next step is offline diagnosis
+of inherited source/context loss and genuine reference ambiguity, not another
+unapproved paid experiment. See [current status](../PROJECT_STATUS.md).
