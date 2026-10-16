@@ -10,6 +10,7 @@ from telescope_rag.graph.contracts import (
     ValidatedPlan,
     WorkflowRequest,
 )
+from telescope_rag.graph.purpose_contract import purpose_contract_manifest
 from telescope_rag.knowledge.source_authority import DirectoryAuthority
 from telescope_rag.retrieval.assembly import (
     AssemblyRequest,
@@ -19,6 +20,10 @@ from telescope_rag.retrieval.assembly import (
 )
 
 
+class SourceFilterError(ValueError):
+    """An impossible declared filter, distinct from an unsuccessful search."""
+
+
 class SourceBindings:
     def __init__(
         self,
@@ -26,13 +31,17 @@ class SourceBindings:
         *,
         include_block_types: bool = False,
         directory_authority: DirectoryAuthority | None = None,
+        purpose_contract: bool = False,
     ):
         documents = {}
         owners = defaultdict(set)
         block_types = defaultdict(set)
+        source_languages = defaultdict(set)
         doctor_documents = set()
         derivative_documents = set()
         for chunk in catalog.chunks.values():
+            if purpose_contract:
+                source_languages[chunk.document_id].add(chunk.language)
             documents.setdefault(chunk.document_id, (chunk.canonical_url, chunk.page_title))
             if include_block_types:
                 block_types[chunk.document_id].add(chunk.block_type)
@@ -62,6 +71,8 @@ class SourceBindings:
             ):
                 raise ValueError("directory_authority_catalog_mismatch")
         self.directory_authority = directory_authority
+        self.purpose_contract = purpose_contract
+        self._catalog = catalog
         self.documents = MappingProxyType(
             {f"d{i:04}": identity for i, identity in enumerate(sorted(documents), 1)}
         )
@@ -78,6 +89,11 @@ class SourceBindings:
                     **(
                         {"available_block_types": sorted(block_types[identity])}
                         if include_block_types
+                        else {}
+                    ),
+                    **(
+                        {"available_source_languages": sorted(source_languages[identity])}
+                        if purpose_contract
                         else {}
                     ),
                     **(
@@ -103,6 +119,8 @@ class SourceBindings:
                 for handle, identity in self.owners.items()
             ],
         }
+        if purpose_contract:
+            manifest["purpose_contract"] = purpose_contract_manifest()
         if directory_authority is not None:
             manifest["source_role_basis"] = {
                 "prepared_digest": directory_authority.prepared_digest,
@@ -184,6 +202,14 @@ class SourceBindings:
                 language=proposal.source_language,
                 complete=proposal.state == "public" and proposal.operation == "read_source",
             )
+            if (
+                self.purpose_contract
+                and proposal.state == "public"
+                and scope.document_ids
+                and (scope.owner_id is not None or scope.block_types or scope.language is not None)
+                and not self._catalog.scope_members(scope)
+            ):
+                raise SourceFilterError("planner_source_filters_have_empty_intersection")
             part_id = f"{request_id}-p{index}"
             parts.append(
                 RequestPart(

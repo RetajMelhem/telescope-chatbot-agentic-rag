@@ -14,7 +14,7 @@ from pydantic import ValidationError
 
 from telescope_rag.core.settings import Settings
 from telescope_rag.graph.anchoring import AnchoredPlannerReply, AnchorError, resolve_anchored_plan
-from telescope_rag.graph.bindings import SourceBindings
+from telescope_rag.graph.bindings import SourceBindings, SourceFilterError
 from telescope_rag.graph.contracts import (
     AnswerDraft,
     BudgetSummary,
@@ -34,6 +34,8 @@ from telescope_rag.graph.planning import planner_messages
 from telescope_rag.graph.target_context import bind_answer_targets
 from telescope_rag.knowledge.source_authority import DirectoryAuthority
 from telescope_rag.prompts.offline_v1 import DRAFT_SYSTEM, PROMPT_VERSION
+from telescope_rag.prompts.planner_contract_v8 import DRAFT_APPEND as CONTRACT_DRAFT_APPEND
+from telescope_rag.prompts.planner_contract_v8 import PROMPT_VERSION as CONTRACT_VERSION
 from telescope_rag.prompts.planner_policy_v6 import DRAFT_APPEND as POLICY_DRAFT_APPEND
 from telescope_rag.prompts.planner_policy_v6 import PROMPT_VERSION as POLICY_VERSION
 from telescope_rag.prompts.planner_sources_v7 import DRAFT_APPEND as SOURCE_DRAFT_APPEND
@@ -88,7 +90,12 @@ class OfflineRagWorkflow:
         counter: AssemblyCounter,
         token_basis: Literal["qwen_retrieval_only", "synthetic_test"] = "qwen_retrieval_only",
         planner_profile: Literal[
-            "baseline", "literal_anchors", "answer_targets", "policy_targets", "source_scoped"
+            "baseline",
+            "literal_anchors",
+            "answer_targets",
+            "policy_targets",
+            "source_scoped",
+            "purpose_contract",
         ] = "baseline",
         directory_authority: DirectoryAuthority | None = None,
         planner_output_tokens: int = 1000,
@@ -102,12 +109,14 @@ class OfflineRagWorkflow:
                 "answer_targets",
                 "policy_targets",
                 "source_scoped",
+                "purpose_contract",
             }
             or any(
                 type(cap) is not int or cap < 16
                 for cap in (planner_output_tokens, draft_output_tokens)
             )
-            or (planner_profile == "source_scoped") != (directory_authority is not None)
+            or (planner_profile in {"source_scoped", "purpose_contract"})
+            != (directory_authority is not None)
             or settings.app_env == "production"
             or token_basis
             not in {
@@ -127,6 +136,7 @@ class OfflineRagWorkflow:
             catalog,
             include_block_types=planner_profile != "baseline",
             directory_authority=directory_authority,
+            purpose_contract=planner_profile == "purpose_contract",
         )
         self._snapshot = next(iter(catalog.chunks.values())).snapshot_id
         builder = StateGraph(_State, context_schema=_RunContext)
@@ -225,7 +235,12 @@ class OfflineRagWorkflow:
                 proposal, anchors = resolve_anchored_plan(
                     proposal, state["request"], runtime.context.request_id
                 )
-                if self._planner_profile in {"answer_targets", "policy_targets", "source_scoped"}:
+                if self._planner_profile in {
+                    "answer_targets",
+                    "policy_targets",
+                    "source_scoped",
+                    "purpose_contract",
+                }:
                     targets = bind_answer_targets(state["proposal"], anchors)
             plan = self._bindings.validate(
                 proposal,
@@ -234,6 +249,8 @@ class OfflineRagWorkflow:
                 max_parts=self._settings.max_subquestions,
             )
         except AnchorError as error:
+            raise WorkflowError(str(error)) from None
+        except SourceFilterError as error:
             raise WorkflowError(str(error)) from None
         except (ValueError, TypeError, ValidationError):
             raise WorkflowError("invalid_plan") from None
@@ -350,7 +367,9 @@ class OfflineRagWorkflow:
     async def _generate_draft(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "generate_draft")
         body = {
-            "prompt_version": SOURCE_VERSION
+            "prompt_version": CONTRACT_VERSION
+            if self._planner_profile == "purpose_contract"
+            else SOURCE_VERSION
             if self._planner_profile == "source_scoped"
             else POLICY_VERSION
             if self._planner_profile == "policy_targets"
@@ -389,7 +408,7 @@ class OfflineRagWorkflow:
                             },
                         }
                         if self._planner_profile
-                        in {"answer_targets", "policy_targets", "source_scoped"}
+                        in {"answer_targets", "policy_targets", "source_scoped", "purpose_contract"}
                         else {}
                     ),
                     "eligible_quote_chunk_ids": list(
@@ -408,6 +427,17 @@ class OfflineRagWorkflow:
                 for i, part in enumerate(state["plan"].assembly_request.parts)
             ],
             "untrusted_candidate_rendering": state["evidence"].rendered_text,
+            **(
+                {
+                    "source_manifest": {
+                        "purpose_contract": json.loads(self._bindings.manifest_json)[
+                            "purpose_contract"
+                        ]
+                    }
+                }
+                if self._planner_profile == "purpose_contract"
+                else {}
+            ),
             # The rendering has one complete body and a separately valid citation
             # per part/group. All other occurrences stay in the provenance sidecar;
             # duplicating their bodies here would crowd the model input again.
@@ -419,7 +449,9 @@ class OfflineRagWorkflow:
                         role="system",
                         content=DRAFT_SYSTEM
                         + (
-                            SOURCE_DRAFT_APPEND
+                            CONTRACT_DRAFT_APPEND
+                            if self._planner_profile == "purpose_contract"
+                            else SOURCE_DRAFT_APPEND
                             if self._planner_profile == "source_scoped"
                             else POLICY_DRAFT_APPEND
                             if self._planner_profile == "policy_targets"
