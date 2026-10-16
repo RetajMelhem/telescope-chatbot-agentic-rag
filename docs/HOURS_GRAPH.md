@@ -87,11 +87,21 @@ HTTP schema, default 503 and production refusal. The ignored
 historical replay and the final seal. These are contract tests, not new whole-corpus
 semantic review or live model accuracy.
 
-Next: a bounded bilingual v12 schema and request-to-hours planner screen before
-adoption. Author expected decisions before dispatch, include rephrased and mixed
-questions, inspect subject/intent/date/AM/PM/constraint/source interpretation, and
-record actual usage without automatic repair. Paid calls need authorization; none
-ran for this offline implementation. Broader source/model/answer acceptance,
+The later bounded v12 development screen made 12 actual Luna planning requests:
+all returned valid schema/literal bindings, but semantic review accepted 10 and
+rejected two Arabic/Jordanian mixed doctor-hours identity clarifications. The
+general opening questions and explicit evening-time cases passed in each language.
+Three ambiguous-time cases directly requested clarification; they did not exercise
+typed unspecified-AM/PM input, and current presentation uses a generic clarification.
+The screen remains unadopted. Full evidence is in
+`artifacts/m5-hours-planner-screen-v1/REPORT.md` and `semantic-review.json`.
+
+Next: expose existing approved canonical identity relationships alongside literal
+hours handles, preserve every literal owner and keep unconfirmed identities separate,
+then run a narrow confirmation with new wording and identity controls. No question
+keyword rules or new name equivalences are justified by these cases. Missing links
+are a confirmed metadata gap and a plausible contributor, not a proven causal fix.
+Broader live now/history/source-scope tests, answer/source/model acceptance,
 directory completion, publication and deployment remain separate obligations.
 
 ## Bounded development screen runner

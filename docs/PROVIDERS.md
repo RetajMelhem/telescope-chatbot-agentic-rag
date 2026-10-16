@@ -1,8 +1,11 @@
 # Provider contracts and verified scope
 
 The separate [offline hours graph](HOURS_GRAPH.md) supplies a v12 planner schema
-only through trusted nonproduction injection. Its live wire/semantic compatibility
-is unverified. It uses the existing chat adapter and shared request ledger: one
+only through trusted nonproduction injection. Twelve actual development requests
+passed its strict schema/literal bindings; semantic acceptance failed on two
+Arabic/Jordanian doctor-identity clarifications. The profile stays unadopted; see
+[HOURS_GRAPH.md](HOURS_GRAPH.md). It uses the existing chat adapter and shared
+request ledger: one
 planner call for pure hours, up to the existing second draft call for mixed public
 parts. Calculations/projection make no provider call or new counting guard.
 Earlier payloads, retry policy and usage accounting remain unchanged.
