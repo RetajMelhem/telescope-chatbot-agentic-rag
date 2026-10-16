@@ -36,6 +36,7 @@ from telescope_rag.knowledge.source_authority import DirectoryAuthority
 from telescope_rag.prompts.offline_v1 import DRAFT_SYSTEM, PROMPT_VERSION
 from telescope_rag.prompts.planner_contract_v8 import DRAFT_APPEND as CONTRACT_DRAFT_APPEND
 from telescope_rag.prompts.planner_contract_v8 import PROMPT_VERSION as CONTRACT_VERSION
+from telescope_rag.prompts.planner_dependencies_v10 import PROMPT_VERSION as DEPENDENCY_VERSION
 from telescope_rag.prompts.planner_policy_v6 import DRAFT_APPEND as POLICY_DRAFT_APPEND
 from telescope_rag.prompts.planner_policy_v6 import PROMPT_VERSION as POLICY_VERSION
 from telescope_rag.prompts.planner_referents_v9 import PROMPT_VERSION as REFERENT_VERSION
@@ -98,6 +99,7 @@ class OfflineRagWorkflow:
             "source_scoped",
             "purpose_contract",
             "referent_context",
+            "dependency_context",
         ] = "baseline",
         directory_authority: DirectoryAuthority | None = None,
         planner_output_tokens: int = 1000,
@@ -113,12 +115,16 @@ class OfflineRagWorkflow:
                 "source_scoped",
                 "purpose_contract",
                 "referent_context",
+                "dependency_context",
             }
             or any(
                 type(cap) is not int or cap < 16
                 for cap in (planner_output_tokens, draft_output_tokens)
             )
-            or (planner_profile in {"source_scoped", "purpose_contract", "referent_context"})
+            or (
+                planner_profile
+                in {"source_scoped", "purpose_contract", "referent_context", "dependency_context"}
+            )
             != (directory_authority is not None)
             or settings.app_env == "production"
             or token_basis
@@ -139,7 +145,8 @@ class OfflineRagWorkflow:
             catalog,
             include_block_types=planner_profile != "baseline",
             directory_authority=directory_authority,
-            purpose_contract=planner_profile in {"purpose_contract", "referent_context"},
+            purpose_contract=planner_profile
+            in {"purpose_contract", "referent_context", "dependency_context"},
         )
         self._snapshot = next(iter(catalog.chunks.values())).snapshot_id
         builder = StateGraph(_State, context_schema=_RunContext)
@@ -244,6 +251,7 @@ class OfflineRagWorkflow:
                     "source_scoped",
                     "purpose_contract",
                     "referent_context",
+                    "dependency_context",
                 }:
                     targets = bind_answer_targets(state["proposal"], anchors)
             plan = self._bindings.validate(
@@ -371,7 +379,9 @@ class OfflineRagWorkflow:
     async def _generate_draft(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "generate_draft")
         body = {
-            "prompt_version": REFERENT_VERSION
+            "prompt_version": DEPENDENCY_VERSION
+            if self._planner_profile == "dependency_context"
+            else REFERENT_VERSION
             if self._planner_profile == "referent_context"
             else CONTRACT_VERSION
             if self._planner_profile == "purpose_contract"
@@ -420,6 +430,7 @@ class OfflineRagWorkflow:
                             "source_scoped",
                             "purpose_contract",
                             "referent_context",
+                            "dependency_context",
                         }
                         else {}
                     ),
@@ -447,7 +458,8 @@ class OfflineRagWorkflow:
                         ]
                     }
                 }
-                if self._planner_profile in {"purpose_contract", "referent_context"}
+                if self._planner_profile
+                in {"purpose_contract", "referent_context", "dependency_context"}
                 else {}
             ),
             # The rendering has one complete body and a separately valid citation
@@ -462,7 +474,8 @@ class OfflineRagWorkflow:
                         content=DRAFT_SYSTEM
                         + (
                             CONTRACT_DRAFT_APPEND
-                            if self._planner_profile in {"purpose_contract", "referent_context"}
+                            if self._planner_profile
+                            in {"purpose_contract", "referent_context", "dependency_context"}
                             else SOURCE_DRAFT_APPEND
                             if self._planner_profile == "source_scoped"
                             else POLICY_DRAFT_APPEND

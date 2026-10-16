@@ -4,6 +4,8 @@ Status: an initial offline LangGraph prototype is implemented and tested on 2026
 
 LangGraph can express both fixed workflows and dynamic agents. This MVP is a bounded adaptive RAG workflow: Luna plans the questions and the graph chooses answer, partial-answer, clarification, or refusal paths. It is not an unrestricted tool-selection loop. See [LangGraph's workflow and agent guide](https://docs.langchain.com/oss/python/langgraph/workflows-agents).
 
+The latest offline preparation adds the opt-in [dependency-context candidate](DEPENDENCY_CONTEXT.md), carrying a dependent target's subject/group and governing source context while preserving explicit overrides and genuine ambiguity. It replaces v9's append on unchanged v8 instructions, with the same schema, source restrictions and draft instructions. Sixty frozen development pairs produce 120 unexecuted packets; 240 historical payloads reproduce exactly and all 96 saved-plan traces remain unchanged. All 1,486 guarded offline tests pass (24 new). This verifies wiring and representability, not improved Luna understanding or retrieval quality. V10 remains unadopted; default serving stays unavailable. Next: a separately authorized, budget-checked bounded comparison and individual semantic review before actual retrieval/draft acceptance. No provider, embedding, index or source-fetch request ran in this preparation.
+
 ## Ingestion, before serving
 
 ```text
