@@ -89,9 +89,9 @@ source/cache preservation and secret/staging checks are recorded under
 request, index change, deployment or subagent ran; this step spent $0. The last
 observed allowance remains $1.1424752 at 2026-10-16 17:34:06 UTC, unrefreshed.
 
-Next: prepare source-bound public-hours records and pure time calculations,
-preserving AM/PM ambiguity, missing doctor hours, dated exceptions and closing
-boundaries. Remaining planner/source failures, actual draft compatibility,
+The [source-bound public-hours records/calculations](PUBLIC_HOURS.md) are now
+implemented offline. Next is their explicit source/owner-bound graph input
+contract, preserving literal date/time/reference constraints. Remaining planner/source failures, actual draft compatibility,
 directory/time completion, live acceptance, readiness/publication and deployment
 still block production readiness. Follow the [completion spending plan](COMPLETION_BUDGET.md);
 no automatic paid experiment or serving promotion follows.
