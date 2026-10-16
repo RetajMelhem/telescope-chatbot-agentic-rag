@@ -471,3 +471,68 @@ def test_concurrent_anchor_receipts_and_reported_budgets_stay_request_owned():
         assert retriever.calls[0][1] is not retriever.calls[1][1]
 
     asyncio.run(run())
+
+
+@pytest.mark.parametrize("missing_usage", [False, True])
+def test_explicit_graph_output_capacity_supports_reasoning_without_disabling_it(missing_usage):
+    async def run():
+        item = source(1, "Synthetic source for declared capacity.")
+        evidence = catalog(item)
+        retriever = FakeRetriever(lambda i, q: (item.chunk_id,))
+        config = Settings(
+            _env_file=None,
+            app_env="test",
+            openrouter_api_key="synthetic-only",
+            max_total_output_tokens=6144,
+            request_timeout_seconds=60,
+            provider_timeout_seconds=30,
+        )
+        query = "Keep this original question and its qualifier."
+        caps = []
+
+        def handle(request):
+            payload = json.loads(request.read())
+            body = json.loads(payload["messages"][-1]["content"])
+            caps.append(payload["max_completion_tokens"])
+            assert "reasoning" not in payload
+            if len(caps) == 1:
+                value = AnchoredPlannerReply(language="en", parts=(part(query),))
+            else:
+                value = AnswerDraft(
+                    parts=(
+                        PartDraft(
+                            part_id=body["parts"][0]["part_id"],
+                            status="candidate",
+                            quotes=(QuoteDraft(chunk_id=item.chunk_id, quote=item.retrieval_text),),
+                            reason_code=None,
+                        ),
+                    )
+                )
+            data = wire(value, missing_usage=missing_usage).json()
+            if not missing_usage and len(caps) == 1:
+                data["usage"] = {
+                    "prompt_tokens": 20,
+                    "completion_tokens": 1500,
+                    "completion_tokens_details": {"reasoning_tokens": 1000},
+                }
+            return httpx.Response(200, json=data)
+
+        async with OpenRouterProviders(config, transport=httpx.MockTransport(handle)) as p:
+            flow = OfflineRagWorkflow(
+                settings=config,
+                chat=p.chat,
+                retriever=retriever,
+                catalog=evidence,
+                counter=SyntheticCounter(),
+                token_basis="synthetic_test",
+                planner_profile="literal_anchors",
+                planner_output_tokens=4096,
+                draft_output_tokens=2048,
+            )
+            result = await flow.run(WorkflowRequest(query=query))
+        assert caps == [4096, 2048] and result.result.outcome == "draft_ready"
+        assert result.usage.charged_output == (6144 if missing_usage else 1512)
+        assert result.usage.charged_chat_input == (None if missing_usage else 40)
+        assert result.usage.physical_chat_attempts == 2 and len(result.request_anchors) == 1
+
+    asyncio.run(run())

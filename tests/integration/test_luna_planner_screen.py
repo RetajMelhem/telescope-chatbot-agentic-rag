@@ -196,3 +196,113 @@ def test_manifest_types_come_from_literal_source_structure_without_inventing_con
     assert candidate["documents"][0]["available_block_types"] == ["section"]
     candidate["documents"][0].pop("available_block_types")
     assert candidate == baseline and item.model_dump_json() == original
+
+
+@pytest.mark.parametrize("identities", [(), ("PL02-en",), ("PL05-en", "PL05-en")])
+def test_declared_subset_refuses_empty_reserved_or_repeated_cases(identities):
+    with pytest.raises(ValueError, match="development_inventory_mismatch"):
+        screen.selected_case_ids(identities)
+
+
+def test_three_case_capacity_screen_does_not_repeat_successful_cases_or_disable_reasoning(tmp_path):
+    bindings, packets = preparation("literal_anchors")
+    identities = tuple(i for i in screen.DEVELOPMENT_IDS if i.startswith("PL05-"))
+    cases = [
+        SimpleNamespace(
+            case_id=p["case_id"],
+            split="development",
+            request=screen.WorkflowRequest.model_validate_json(json.dumps(p["request"])),
+        )
+        for p in packets
+    ]
+    selected = screen.development_packets(
+        cases, bindings, profile="literal_anchors", case_ids=identities, output_cap=4096
+    )
+    config = screen.screen_settings(profile="literal_anchors", output_cap=4096)
+    assert config.provider_timeout_seconds == config.request_timeout_seconds == 30
+    assert config.max_total_output_tokens == 4096 and config.max_llm_calls == 1
+    seen = []
+
+    def handler(request):
+        payload = json.loads(request.read())
+        assert payload == selected[len(seen)]["payload"]
+        assert payload["max_completion_tokens"] == 4096 and "reasoning" not in payload
+        seen.append(payload)
+        data = reply(request).json()
+        data["usage"]["completion_tokens"] = 1500
+        return httpx.Response(200, json=data)
+
+    async def run():
+        async with OpenRouterProviders(config, transport=httpx.MockTransport(handler)) as p:
+            return await screen.run_packets(
+                selected,
+                bindings,
+                config,
+                p.chat,
+                tmp_path,
+                profile="literal_anchors",
+                case_ids=identities,
+                output_cap=4096,
+            )
+
+    summary = asyncio.run(run())
+    assert summary["cases_planned"] == summary["cases_attempted"] == len(seen) == 3
+    assert summary["schema_valid"] == summary["literal_bindings_valid"] == 3
+    assert {r["case_id"] for r in summary["case_results"]} == set(identities)
+    for identity in identities:
+        saved = json.loads((tmp_path / f"{identity}.json").read_bytes())
+        assert saved["charged_output_tokens"] == 1500
+        assert saved["receipts"][0]["output_reserved"] == 4096
+        assert saved["receipts"][0]["input_reserved"] is None
+
+
+def test_prepared_subset_survives_source_binding_inventory_iteration(tmp_path, monkeypatch):
+    import hashlib
+
+    bindings, packets = preparation("literal_anchors")
+    code = tmp_path / "src/telescope_rag/synthetic.py"
+    code.parent.mkdir(parents=True)
+    code.write_text("# Synthetic binding only.\n", encoding="utf-8")
+    digest = hashlib.sha256(code.read_bytes()).hexdigest()
+    sources = {}
+    for i in range(122):
+        path = tmp_path / f"data/synthetic-{i}.json"
+        path.parent.mkdir(exist_ok=True)
+        path.write_text("{}", encoding="utf-8")
+        sources[path.relative_to(tmp_path).as_posix()] = hashlib.sha256(
+            path.read_bytes()
+        ).hexdigest()
+    inventory = tmp_path / screen.SOURCE_HASHES
+    inventory.parent.mkdir(parents=True)
+    inventory.write_text(json.dumps(sources), encoding="utf-8")
+    fixtures = tmp_path / screen.FIXTURES
+    fixtures.mkdir(parents=True)
+    (fixtures / "independent-reviews.json").write_text("[]", encoding="utf-8")
+    cases = [
+        SimpleNamespace(
+            case_id=p["case_id"],
+            split="development",
+            request=screen.WorkflowRequest.model_validate_json(json.dumps(p["request"])),
+        )
+        for p in packets
+    ]
+    evidence = catalog(source(1))
+    manifest = {
+        "bindings": {"src/telescope_rag/synthetic.py": digest},
+        "source_bundle": "data/synthetic",
+        "prepared_digest": evidence.prepared_digest,
+    }
+    monkeypatch.setattr(screen, "verify_inventory", lambda *a: manifest)
+    monkeypatch.setattr(screen, "load_corpus", lambda *a: ((), {}))
+    monkeypatch.setattr(screen, "EvidenceCatalog", lambda *a, **k: evidence)
+    monkeypatch.setattr(screen, "load_fixtures", lambda *a: cases)
+    monkeypatch.setattr(screen, "validate_cohort", lambda *a, **k: None)
+    monkeypatch.setattr(screen, "validate_reviews", lambda *a, **k: None)
+    monkeypatch.setattr(screen, "validate_source_evidence", lambda *a, **k: {})
+    identities = tuple(i for i in screen.DEVELOPMENT_IDS if i.startswith("PL05-"))
+    plan, _ = screen.build_plan(
+        tmp_path, profile="literal_anchors", case_ids=identities, output_cap=4096
+    )
+    assert tuple(plan["case_ids"]) == identities and plan["requests_max"] == 3
+    assert plan["per_request_output_cap"] == 4096 and plan["per_request_timeout_seconds"] == 30
+    assert {p["case_id"] for p in plan["packets"]} == set(identities)

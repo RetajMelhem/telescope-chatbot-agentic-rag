@@ -78,9 +78,15 @@ class OfflineRagWorkflow:
         counter: AssemblyCounter,
         token_basis: Literal["qwen_retrieval_only", "synthetic_test"] = "qwen_retrieval_only",
         planner_profile: Literal["baseline", "literal_anchors"] = "baseline",
+        planner_output_tokens: int = 1000,
+        draft_output_tokens: int = 1000,
     ) -> None:
         if (
             planner_profile not in {"baseline", "literal_anchors"}
+            or any(
+                type(cap) is not int or cap < 16
+                for cap in (planner_output_tokens, draft_output_tokens)
+            )
             or settings.app_env == "production"
             or token_basis
             not in {
@@ -92,6 +98,10 @@ class OfflineRagWorkflow:
         self._settings, self._chat, self._retriever = settings, chat, retriever
         self._catalog, self._counter, self._token_basis = catalog, counter, token_basis
         self._planner_profile = planner_profile
+        self._planner_output_tokens, self._draft_output_tokens = (
+            planner_output_tokens,
+            draft_output_tokens,
+        )
         self._bindings = SourceBindings(
             catalog, include_block_types=planner_profile == "literal_anchors"
         )
@@ -173,7 +183,9 @@ class OfflineRagWorkflow:
                     profile=self._planner_profile,
                 ),
                 model,
-                max_output_tokens=min(1000, self._settings.max_total_output_tokens),
+                max_output_tokens=min(
+                    self._planner_output_tokens, self._settings.max_total_output_tokens
+                ),
                 budget=runtime.context.budget,
             )
         except ProviderError:
@@ -363,7 +375,7 @@ class OfflineRagWorkflow:
                 max_output_tokens=max(
                     1,
                     min(
-                        1000,
+                        self._draft_output_tokens,
                         self._settings.max_total_output_tokens
                         - runtime.context.budget.output_charged,
                     ),

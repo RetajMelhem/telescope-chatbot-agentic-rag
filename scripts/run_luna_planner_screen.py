@@ -41,6 +41,17 @@ DEVELOPMENT_IDS = tuple(
     f"{family}-{lang}" for family in ("PL01", "PL05") for lang in ("ar", "ar-JO", "en")
 )
 OUTPUT_CAP = 1000  # Exactly the graph's current planning cap; no tuning in this screen.
+OUTPUT_CAP_CHOICES = (1000, 4096)
+
+
+def selected_case_ids(case_ids: tuple[str, ...]) -> tuple[str, ...]:
+    if (
+        not case_ids
+        or len(set(case_ids)) != len(case_ids)
+        or not set(case_ids) <= set(DEVELOPMENT_IDS)
+    ):
+        raise ValueError("development_inventory_mismatch")
+    return tuple(i for i in DEVELOPMENT_IDS if i in case_ids)
 
 
 def file_hash(path: Path) -> str:
@@ -54,8 +65,13 @@ def write_new(path: Path, value: dict) -> None:
 
 
 def screen_settings(
-    *, key: str = "synthetic-screen-preparation", profile: str = "baseline"
+    *,
+    key: str = "synthetic-screen-preparation",
+    profile: str = "baseline",
+    output_cap: int = OUTPUT_CAP,
 ) -> Settings:
+    if output_cap not in OUTPUT_CAP_CHOICES:
+        raise ValueError("unsupported_screen_output_cap")
     values = {n: f.get_default(call_default_factory=True) for n, f in Settings.model_fields.items()}
     values.update(
         openrouter_api_key=key,
@@ -64,18 +80,25 @@ def screen_settings(
         max_llm_calls=1,
         chat_reasoning_effort="none" if profile == "source_types_no_reasoning" else None,
     )
+    if output_cap > OUTPUT_CAP:
+        # Only the explicit one-call screen changes; serving defaults stay intact.
+        values.update(max_total_output_tokens=output_cap, provider_timeout_seconds=30)
     return Settings(_env_file=None, **values)
 
 
 def planner_payload(
-    messages: tuple[ChatMessage, ...], settings: Settings, *, profile="baseline"
+    messages: tuple[ChatMessage, ...],
+    settings: Settings,
+    *,
+    profile="baseline",
+    output_cap=OUTPUT_CAP,
 ) -> dict:
     model = AnchoredPlannerReply if profile == "literal_anchors" else PlannerReply
     payload = {
         "model": settings.openrouter_chat_model,
         "messages": [m.model_dump() for m in messages],
         "response_format": {"type": "json_schema", "json_schema": output_schema(model)},
-        "max_completion_tokens": OUTPUT_CAP,
+        "max_completion_tokens": output_cap,
         "stream": False,
         "provider": {"require_parameters": True, "allow_fallbacks": False},
     }
@@ -90,17 +113,29 @@ def payload_hash(payload: dict) -> str:
     ).hexdigest()
 
 
-def development_packets(cases, bindings: SourceBindings, *, profile="baseline") -> list[dict]:
-    selected = sorted((c for c in cases if c.split == "development"), key=lambda c: c.case_id)
-    if tuple(c.case_id for c in selected) != DEVELOPMENT_IDS:
+def development_packets(
+    cases,
+    bindings: SourceBindings,
+    *,
+    profile="baseline",
+    case_ids=DEVELOPMENT_IDS,
+    output_cap=OUTPUT_CAP,
+) -> list[dict]:
+    expected = selected_case_ids(tuple(case_ids))
+    selected = sorted(
+        (c for c in cases if c.split == "development" and c.case_id in expected),
+        key=lambda c: c.case_id,
+    )
+    if tuple(c.case_id for c in selected) != expected:
         raise ValueError("development_inventory_mismatch")
-    config = screen_settings(profile=profile)
+    config = screen_settings(profile=profile, output_cap=output_cap)
     packets = []
     for case in selected:
         payload = planner_payload(
             planner_messages(case.request, bindings, max_parts=4, profile=profile),
             config,
             profile=profile,
+            output_cap=output_cap,
         )
         packets.append(
             {
@@ -113,21 +148,28 @@ def development_packets(cases, bindings: SourceBindings, *, profile="baseline") 
     return packets
 
 
-def build_plan(root: Path, *, profile="baseline") -> tuple[dict, SourceBindings]:
+def build_plan(
+    root: Path, *, profile="baseline", case_ids=DEVELOPMENT_IDS, output_cap=OUTPUT_CAP
+) -> tuple[dict, SourceBindings]:
     if profile not in {"baseline", "source_types_no_reasoning", "literal_anchors"}:
         raise ValueError("unknown_planner_profile")
+    expected = selected_case_ids(tuple(case_ids))
+    config = screen_settings(profile=profile, output_cap=output_cap)
     directory = root / FIXTURES
     manifest = verify_inventory(directory, MANIFEST)
     source_hashes = json.loads((root / SOURCE_HASHES).read_bytes())
     if len(source_hashes) != 122 or any(file_hash(root / p) != h for p, h in source_hashes.items()):
         raise ValueError("sealed_source_input_changed")
     historical_changes = {}
-    for name, expected in manifest["bindings"].items():
+    for name, expected_hash in manifest["bindings"].items():
         actual = file_hash(root / name)
-        if actual != expected:
+        if actual != expected_hash:
             if not name.endswith(".py") or not name.startswith(("src/", "scripts/")):
                 raise ValueError("frozen_noncode_binding_changed")
-            historical_changes[name] = {"historical_sha256": expected, "current_sha256": actual}
+            historical_changes[name] = {
+                "historical_sha256": expected_hash,
+                "current_sha256": actual,
+            }
     bundle = root / manifest["source_bundle"]
     documents, _ = load_corpus(bundle)
     catalog = EvidenceCatalog(documents, expected_digest=manifest["prepared_digest"])
@@ -155,8 +197,10 @@ def build_plan(root: Path, *, profile="baseline") -> tuple[dict, SourceBindings]
         "code_sha256": {p.relative_to(root).as_posix(): file_hash(p) for p in code},
         "historical_code_binding_changes": historical_changes,
         "model": "openai/gpt-6-luna",
-        "requests_max": 6,
-        "per_request_output_cap": OUTPUT_CAP,
+        "requests_max": len(expected),
+        "case_ids": list(expected),
+        "per_request_output_cap": output_cap,
+        "per_request_timeout_seconds": config.provider_timeout_seconds,
         "retries": 0,
         "screen_timeout_seconds": 180,
         "local_input_count_required": False,
@@ -166,16 +210,27 @@ def build_plan(root: Path, *, profile="baseline") -> tuple[dict, SourceBindings]
         "embedding_calls": 0,
         "qdrant_calls": 0,
         "answer_generation_calls": 0,
-        "packets": development_packets(cases, bindings, profile=profile),
+        "packets": development_packets(
+            cases, bindings, profile=profile, case_ids=expected, output_cap=output_cap
+        ),
         "semantic_scoring": "Actual root language review required after execution; "
         "no exact-gold or keyword semantic judge.",
     }, bindings
 
 
 async def run_packets(
-    packets, bindings, settings, chat: ChatProvider, directory: Path, *, profile="baseline"
+    packets,
+    bindings,
+    settings,
+    chat: ChatProvider,
+    directory: Path,
+    *,
+    profile="baseline",
+    case_ids=DEVELOPMENT_IDS,
+    output_cap=OUTPUT_CAP,
 ) -> dict:
-    if tuple(p["case_id"] for p in packets) != DEVELOPMENT_IDS:
+    expected = selected_case_ids(tuple(case_ids))
+    if tuple(p["case_id"] for p in packets) != expected:
         raise ValueError("development_inventory_mismatch")
     rows = []
     for packet in packets:
@@ -184,7 +239,9 @@ async def run_packets(
             request, bindings, max_parts=settings.max_subquestions, profile=profile
         )
         if (
-            payload_hash(planner_payload(messages, settings, profile=profile))
+            payload_hash(
+                planner_payload(messages, settings, profile=profile, output_cap=output_cap)
+            )
             != packet["payload_sha256"]
         ):
             raise ValueError("screen_payload_changed")
@@ -203,7 +260,7 @@ async def run_packets(
         model = AnchoredPlannerReply if profile == "literal_anchors" else PlannerReply
         try:
             result = await chat.complete(
-                messages, model, max_output_tokens=OUTPUT_CAP, budget=budget
+                messages, model, max_output_tokens=output_cap, budget=budget
             )
             if type(result.data) is not model:
                 raise ValueError("screen_reply_type_invalid")
@@ -244,7 +301,7 @@ async def run_packets(
             break
     summary = {
         "cases_attempted": len(rows),
-        "cases_planned": 6,
+        "cases_planned": len(expected),
         "physical_attempts": sum(r["physical_attempts"] for r in rows),
         "schema_valid": sum(r["schema_valid"] for r in rows),
         "literal_bindings_valid": sum(r["literal_bindings_valid"] for r in rows),
@@ -272,13 +329,26 @@ async def main() -> None:
         choices=("baseline", "source_types_no_reasoning", "literal_anchors"),
         default="baseline",
     )
+    parser.add_argument("--case-id", nargs="+", choices=DEVELOPMENT_IDS)
+    parser.add_argument("--output-tokens", type=int, choices=OUTPUT_CAP_CHOICES, default=OUTPUT_CAP)
     args = parser.parse_args()
     root = Path.cwd()
-    plan, bindings = build_plan(root, profile=args.profile)
+    case_ids = selected_case_ids(tuple(args.case_id or DEVELOPMENT_IDS))
+    plan, bindings = build_plan(
+        root, profile=args.profile, case_ids=case_ids, output_cap=args.output_tokens
+    )
     if not args.execute:
         args.output.mkdir(parents=True, exist_ok=False)
         write_new(args.output / "plan.json", plan)
-        print(json.dumps({"prepared_requests": 6, "paid_requests": 0, "output": str(args.output)}))
+        print(
+            json.dumps(
+                {
+                    "prepared_requests": len(plan["packets"]),
+                    "paid_requests": 0,
+                    "output": str(args.output),
+                }
+            )
+        )
         return
     if json.loads((args.output / "plan.json").read_bytes()) != plan:
         raise ValueError("screen_plan_or_current_code_changed")
@@ -297,13 +367,15 @@ async def main() -> None:
                     subprocess.check_output, ["git", "rev-parse", "HEAD"], text=True
                 )
             ).strip(),
-            "requests_allowed": 6,
+            "requests_allowed": len(plan["packets"]),
         },
     )
     env = root / ".env"
     before = file_hash(env)
     config = screen_settings(
-        key=load_settings().openrouter_api_key.get_secret_value(), profile=args.profile
+        key=load_settings().openrouter_api_key.get_secret_value(),
+        profile=args.profile,
+        output_cap=args.output_tokens,
     )
     try:
         async with asyncio.timeout(plan["screen_timeout_seconds"]):
@@ -315,6 +387,8 @@ async def main() -> None:
                     providers.chat,
                     args.output,
                     profile=args.profile,
+                    case_ids=case_ids,
+                    output_cap=args.output_tokens,
                 )
         print(json.dumps(summary))
     finally:
