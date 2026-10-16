@@ -1,5 +1,12 @@
 # Provider contracts and verified scope
 
+The separate [offline hours graph](HOURS_GRAPH.md) supplies a v12 planner schema
+only through trusted nonproduction injection. Its live wire/semantic compatibility
+is unverified. It uses the existing chat adapter and shared request ledger: one
+planner call for pure hours, up to the existing second draft call for mixed public
+parts. Calculations/projection make no provider call or new counting guard.
+Earlier payloads, retry policy and usage accounting remain unchanged.
+
 Status: M2 contracts were implemented offline on 2026-10-14. M3's Qwen embedding preparation and the separately authorized 834-input corpus run passed on 2026-10-15; see the dated evidence below. Initial M5 offline stage schemas/prompts and LangGraph orchestration are implemented. Normal chat uses provider-reported usage, while embeddings retain verified counting. Actual Luna planner development screens have now run and exposed coverage/semantic failures; planner/draft acceptance and serving integration remain pending. FastAPI chat still returns `503`.
 
 ## Interfaces and ownership

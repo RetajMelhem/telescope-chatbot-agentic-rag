@@ -73,7 +73,7 @@ The implemented app entry point is `telescope_rag.api.main:create_app` with Uvic
 
 ## Two execution paths
 
-The [public-hours layer](PUBLIC_HOURS.md) now supplies source-bound reviewed schedule records and pure typed comparisons under `knowledge/`. It distinguishes facility/doctor owners, separate language claims, weekly/date scope and actual attendance, with explicit uncertainty for missing evidence and ambiguous clocks. Trusted callers must authenticate the review plan and exact catalog. It is not wired to question interpretation or public serving; the existing graph time operation remains unavailable pending its typed input contract.
+The [public-hours layer](PUBLIC_HOURS.md) now supplies source-bound reviewed schedule records and pure typed comparisons under `knowledge/`. It distinguishes facility/doctor owners, separate language claims, weekly/date scope and actual attendance, with explicit uncertainty for missing evidence and ambiguous clocks. Trusted callers must authenticate the review plan and exact catalog. The separate [hours graph](HOURS_GRAPH.md) now supplies opt-in typed question inputs and computation receipts. Earlier profiles retain unavailable time behavior; live question interpretation and public serving are unverified.
 
 The [offline response presenter](OFFLINE_RESPONSE.md) now projects actual graph runs into a closed plain-text/citation envelope through explicit `offline_response_format="rendered"` construction. Every question, status/reason, exact selected quotation and separate owner remains visible; source bindings are rechecked without semantic promotion, translation, another model call or prompt changes. The previous draft wire remains the default for injected services, and default/production serving remains unavailable. Live acceptance and the accepted public answer contract are still pending.
 
@@ -124,10 +124,17 @@ The M4 comparison reader is explicitly supplied the complete pinned candidate po
 
 The initial API accepts bounded conversation history and does not persist conversations on the server. Compile the graph without a durable conversation checkpointer for this phase. Preserve knowledge snapshots and ingestion manifests independently of chat state.
 
-The implemented `graph/workflow.py` compiles an acyclic offline graph with no checkpointer/retry policy. Provider/retrieval/catalog dependencies stay on the service, while the per-run budget stays in runtime context outside state. The public API does not construct or call this graph. `graph/bindings.py` issues exact source handles and validates literal spans/history links; `graph/contracts.py` separates strict provider wire models from convenience assembly models. `prompts/offline_v1.py` defines planner and full-passage extractive-draft instructions. Every final part remains explicit, and candidate quotations have per-part source identity/provenance. Semantic interpretation, quote relevance, Luna compatibility and serving admission are still unverified; see [the implemented offline scope](PIPELINE.md#implemented-offline-prototype).
+The implemented `graph/workflow.py` compiles an acyclic offline graph with no checkpointer/retry policy. Provider/retrieval/catalog dependencies stay on the service, while the per-run budget stays in runtime context outside state. The default public API does not construct or call this graph; explicit nonproduction services can inject it. `graph/bindings.py` issues exact source handles and validates literal spans/history links; `graph/contracts.py` separates strict provider wire models from convenience assembly models. `prompts/offline_v1.py` defines planner and full-passage extractive-draft instructions. Every final part remains explicit, and candidate quotations have per-part source identity/provenance. Semantic interpretation, quote relevance, Luna compatibility and serving admission are still unverified; see [the implemented offline scope](PIPELINE.md#implemented-offline-prototype).
 
 If server-side memory becomes necessary, define ownership, retention, deletion, and multi-worker behavior first. An arbitrary client-supplied conversation ID must never expose another visitor's messages.
 
 ## Grounding limitation
+
+`graph/hours_workflow.py` supplies a separate nonproduction typed-hours variant.
+A request-owned sidecar retains the clock, literal bindings and computed records;
+it is not added to the old provider/source-draft wire. The hours presenter rebinds
+those receipts and offered proof before rendering a versioned response. There is
+no default plan/provider, environment toggle, parsing heuristic or persistence.
+See [HOURS_GRAPH.md](HOURS_GRAPH.md) for the contract and unverified model gate.
 
 Source admission, citation validation, exact entity ownership, and deterministic time calculations reduce errors. Structural checks alone cannot prove that every free-text paraphrase is supported. Source-based bilingual evaluation and clinic review remain necessary before release.

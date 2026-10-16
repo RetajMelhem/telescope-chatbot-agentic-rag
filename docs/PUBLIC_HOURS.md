@@ -4,7 +4,8 @@
 `PublicHoursCatalog` in `knowledge/time_calculations.py` binds a supplied plan to
 an exact evidence catalog and calculates against published intervals. It has no
 question parser, provider, database client, source fetch, persistence or default
-data loading. This completes the offline data/math layer, not graph time answers.
+data loading. The data/math layer is now connected by the separate
+[opt-in offline hours graph](HOURS_GRAPH.md); production adoption remains pending.
 
 ## Reviewed source candidate
 
@@ -101,10 +102,8 @@ page read/find operations across two URLs, no paid/provider metadata/inference,
 embedding, Qdrant, source/index write, deployment or subagent request. New API
 spend is $0; the last $1.1424752 allowance observation remains unrefreshed.
 
-Next: prepare an explicit, source/owner-bound graph time-operation input contract
-that preserves original date/time/negation/reference text, then wire these results
-without another model stage or heuristic parser. The current planner has no typed
-date/time fields; `time_comparison` therefore still returns
-`unknown / operation_unavailable`. Existing prompts/payloads, graph, response
-formats, readiness and default 503 behavior are unchanged. Planner/source/model
-acceptance, directory completion, publication and deployment remain pending.
+The later [hours graph step](HOURS_GRAPH.md) adds a separate v12 typed input
+contract and versioned nonproduction response. Earlier planner profiles and
+source-stage contracts retain `unknown / operation_unavailable` on the old time
+path. The new presenter uses a request-owned calculation receipt. Default
+readiness/chat stay 503. Next: bounded bilingual v12 planner/schema acceptance.

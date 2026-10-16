@@ -1,6 +1,13 @@
 # FastAPI contract
 
-Status: health/input/error contracts and opt-in offline draft/rendered responses are implemented. The accepted public RAG response remains planned for M5; default serving is unavailable.
+The separately injected [offline hours response](HOURS_GRAPH.md) uses
+`offline-hours-response-v1`, the same chat request and a nullable per-question
+`hours` summary. It requires `HoursChatService` and explicit nonproduction
+`offline_response_format="hours"`; old draft/rendered modes cannot silently drop
+the hours receipt. Default serving and the production contract remain unadopted.
+Semantic/model compatibility flags stay false.
+
+Status: health/input/error contracts and opt-in offline draft/rendered/hours responses are implemented. The accepted public RAG response remains planned for M5; default serving is unavailable.
 
 The current chat route is a placeholder: valid input receives `503` / `chat_not_available`; rejected input receives a sanitized `422`. It never calls a provider, searches knowledge, interprets facts, or stores the visitor's message.
 

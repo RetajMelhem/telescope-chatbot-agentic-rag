@@ -4,6 +4,7 @@ import asyncio
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Literal, TypedDict
 from uuid import UUID, uuid4
 
@@ -30,6 +31,7 @@ from telescope_rag.graph.contracts import (
     WorkflowResult,
     WorkflowRun,
 )
+from telescope_rag.graph.hours_records import ComputedHours
 from telescope_rag.graph.planning import planner_messages
 from telescope_rag.graph.target_context import bind_answer_targets
 from telescope_rag.knowledge.source_authority import DirectoryAuthority
@@ -64,6 +66,8 @@ class _RunContext:
     stages: list[str] = field(default_factory=list)
     request_anchors: tuple[PartAnchorBinding, ...] = field(default=(), repr=False)
     answer_targets: tuple[PartAnswerTarget, ...] = field(default=(), repr=False)
+    operation_clock: datetime | None = None
+    computed_hours: tuple[ComputedHours, ...] = field(default=(), repr=False)
 
 
 class _State(TypedDict, total=False):
@@ -706,6 +710,8 @@ class OfflineRagWorkflow:
             ),
             context.request_anchors,
             context.answer_targets,
+            context.computed_hours,
+            context.operation_clock,
         )
 
     def _failure(self, request: WorkflowRequest, context: _RunContext, code: str) -> WorkflowResult:

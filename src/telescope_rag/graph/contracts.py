@@ -7,6 +7,7 @@ from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from telescope_rag.graph.hours_records import ComputedHours
 from telescope_rag.ingestion.models import BlockKind
 from telescope_rag.providers.budget import ExecutionBudget
 from telescope_rag.providers.contracts import AttemptReceipt
@@ -206,3 +207,5 @@ class WorkflowRun:
     usage: BudgetSummary
     request_anchors: tuple[PartAnchorBinding, ...] = field(default=(), repr=False)
     answer_targets: tuple[PartAnswerTarget, ...] = field(default=(), repr=False)
+    computed_hours: tuple[ComputedHours, ...] = field(default=(), repr=False)
+    operation_clock: datetime | None = field(default=None, repr=False)

@@ -150,16 +150,36 @@ class PublicHoursCatalog:
                     raise ValueError("hours_source_owner_or_scope_invalid")
         self._plan, self._catalog, self._max_age = plan, catalog, max_source_age
 
-    def evaluate(self, query: HoursQuery, *, now: datetime) -> HoursAssessment:
+    @property
+    def max_source_age(self) -> timedelta:
+        return self._max_age
+
+    def records_for(
+        self, subject: HoursSubject | None, *, record_ids: tuple[str, ...] | None = None
+    ) -> tuple[PublishedHours, ...]:
+        known = {r.record_id for r in self._plan.schedules}
+        if record_ids is not None and (
+            type(record_ids) is not tuple
+            or any(type(i) is not str or i not in known for i in record_ids)
+            or len(set(record_ids)) != len(record_ids)
+        ):
+            raise ValueError("hours_record_selection_invalid")
+        return tuple(
+            r
+            for r in self._plan.schedules
+            if subject is not None
+            and _subject_key(r.subject) == _subject_key(subject)
+            and (record_ids is None or r.record_id in record_ids)
+        )
+
+    def evaluate(
+        self, query: HoursQuery, *, now: datetime, record_ids: tuple[str, ...] | None = None
+    ) -> HoursAssessment:
         if type(query) is not HoursQuery or type(now) is not datetime or now.utcoffset() is None:
             raise ValueError("hours_evaluation_input_invalid")
         query = HoursQuery.model_validate_json(query.model_dump_json())
         now = now.astimezone(UTC)
-        records = tuple(
-            r
-            for r in self._plan.schedules
-            if query.subject is not None and _subject_key(r.subject) == _subject_key(query.subject)
-        )
+        records = self.records_for(query.subject, record_ids=record_ids)
         ids = tuple(dict.fromkeys(e.chunk_id for r in records for e in r.evidence))
         sources = tuple(self._catalog.chunks[i] for i in ids)
         candidates, ambiguous = (), query.mode == "local" and query.clock_basis == "unspecified"
