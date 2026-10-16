@@ -324,7 +324,7 @@ def test_authored_distinct_purposes_keep_context_only_public_and_excluded_siblin
 
 
 @pytest.mark.parametrize("swap_citations", [False, True])
-@pytest.mark.parametrize("planner_profile", ["literal_anchors", "answer_targets"])
+@pytest.mark.parametrize("planner_profile", ["literal_anchors", "answer_targets", "policy_targets"])
 def test_same_field_doctors_retain_distinct_owners_and_sibling_citation_boundaries(
     swap_citations, planner_profile
 ):
@@ -413,7 +413,7 @@ def test_same_field_doctors_retain_distinct_owners_and_sibling_citation_boundari
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("planner_profile", ["literal_anchors", "answer_targets"])
+@pytest.mark.parametrize("planner_profile", ["literal_anchors", "answer_targets", "policy_targets"])
 def test_concurrent_anchor_receipts_and_reported_budgets_stay_request_owned(planner_profile):
     async def run():
         item = source(1, "Synthetic concurrent source.")

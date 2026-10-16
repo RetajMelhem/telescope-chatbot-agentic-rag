@@ -14,6 +14,8 @@ from telescope_rag.prompts.planner_candidate_v2 import (
 from telescope_rag.prompts.planner_candidate_v2 import (
     PROMPT_VERSION as CANDIDATE_VERSION,
 )
+from telescope_rag.prompts.planner_policy_v6 import PLANNER_SYSTEM as POLICY_SYSTEM
+from telescope_rag.prompts.planner_policy_v6 import PROMPT_VERSION as POLICY_VERSION
 from telescope_rag.prompts.planner_targets_v5 import PLANNER_SYSTEM as TARGET_SYSTEM
 from telescope_rag.prompts.planner_targets_v5 import PROMPT_VERSION as TARGET_VERSION
 from telescope_rag.providers.contracts import ChatMessage
@@ -25,7 +27,11 @@ def planner_messages(
     *,
     max_parts: int,
     profile: Literal[
-        "baseline", "source_types_no_reasoning", "literal_anchors", "answer_targets"
+        "baseline",
+        "source_types_no_reasoning",
+        "literal_anchors",
+        "answer_targets",
+        "policy_targets",
     ] = "baseline",
 ) -> tuple[ChatMessage, ...]:
     if profile not in {
@@ -33,11 +39,14 @@ def planner_messages(
         "source_types_no_reasoning",
         "literal_anchors",
         "answer_targets",
+        "policy_targets",
     }:
         raise ValueError("unknown_planner_profile")
     candidate = profile == "source_types_no_reasoning"
     body = {
-        "prompt_version": TARGET_VERSION
+        "prompt_version": POLICY_VERSION
+        if profile == "policy_targets"
+        else TARGET_VERSION
         if profile == "answer_targets"
         else ANCHORED_VERSION
         if profile == "literal_anchors"
@@ -53,7 +62,9 @@ def planner_messages(
     return (
         ChatMessage(
             role="system",
-            content=TARGET_SYSTEM
+            content=POLICY_SYSTEM
+            if profile == "policy_targets"
+            else TARGET_SYSTEM
             if profile == "answer_targets"
             else ANCHORED_SYSTEM
             if profile == "literal_anchors"

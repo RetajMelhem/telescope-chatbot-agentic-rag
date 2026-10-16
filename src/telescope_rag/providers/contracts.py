@@ -64,6 +64,10 @@ class AttemptReceipt:
     count_profile: str
     count_basis: str
     usage: UsageReport
+    generation_id: str | None = None
+    request_id: str | None = None
+    started_at_utc: str | None = None
+    finished_at_utc: str | None = None
 
 
 @dataclass(frozen=True)

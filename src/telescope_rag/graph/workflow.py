@@ -33,6 +33,8 @@ from telescope_rag.graph.contracts import (
 from telescope_rag.graph.planning import planner_messages
 from telescope_rag.graph.target_context import bind_answer_targets
 from telescope_rag.prompts.offline_v1 import DRAFT_SYSTEM, PROMPT_VERSION
+from telescope_rag.prompts.planner_policy_v6 import DRAFT_APPEND as POLICY_DRAFT_APPEND
+from telescope_rag.prompts.planner_policy_v6 import PROMPT_VERSION as POLICY_VERSION
 from telescope_rag.prompts.planner_targets_v5 import DRAFT_APPEND
 from telescope_rag.prompts.planner_targets_v5 import PROMPT_VERSION as TARGET_VERSION
 from telescope_rag.providers.budget import ExecutionBudget
@@ -82,12 +84,15 @@ class OfflineRagWorkflow:
         catalog: EvidenceCatalog,
         counter: AssemblyCounter,
         token_basis: Literal["qwen_retrieval_only", "synthetic_test"] = "qwen_retrieval_only",
-        planner_profile: Literal["baseline", "literal_anchors", "answer_targets"] = "baseline",
+        planner_profile: Literal[
+            "baseline", "literal_anchors", "answer_targets", "policy_targets"
+        ] = "baseline",
         planner_output_tokens: int = 1000,
         draft_output_tokens: int = 1000,
     ) -> None:
         if (
-            planner_profile not in {"baseline", "literal_anchors", "answer_targets"}
+            planner_profile
+            not in {"baseline", "literal_anchors", "answer_targets", "policy_targets"}
             or any(
                 type(cap) is not int or cap < 16
                 for cap in (planner_output_tokens, draft_output_tokens)
@@ -205,7 +210,7 @@ class OfflineRagWorkflow:
                 proposal, anchors = resolve_anchored_plan(
                     proposal, state["request"], runtime.context.request_id
                 )
-                if self._planner_profile == "answer_targets":
+                if self._planner_profile in {"answer_targets", "policy_targets"}:
                     targets = bind_answer_targets(state["proposal"], anchors)
             plan = self._bindings.validate(
                 proposal,
@@ -330,7 +335,9 @@ class OfflineRagWorkflow:
     async def _generate_draft(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "generate_draft")
         body = {
-            "prompt_version": TARGET_VERSION
+            "prompt_version": POLICY_VERSION
+            if self._planner_profile == "policy_targets"
+            else TARGET_VERSION
             if self._planner_profile == "answer_targets"
             else PROMPT_VERSION,
             "original_query": state["request"].query,
@@ -364,7 +371,7 @@ class OfflineRagWorkflow:
                                 "role": "interpretation_only",
                             },
                         }
-                        if self._planner_profile == "answer_targets"
+                        if self._planner_profile in {"answer_targets", "policy_targets"}
                         else {}
                     ),
                     "eligible_quote_chunk_ids": list(
@@ -393,7 +400,13 @@ class OfflineRagWorkflow:
                     ChatMessage(
                         role="system",
                         content=DRAFT_SYSTEM
-                        + (DRAFT_APPEND if self._planner_profile == "answer_targets" else ""),
+                        + (
+                            POLICY_DRAFT_APPEND
+                            if self._planner_profile == "policy_targets"
+                            else DRAFT_APPEND
+                            if self._planner_profile == "answer_targets"
+                            else ""
+                        ),
                     ),
                     ChatMessage(role="user", content=json.dumps(body, ensure_ascii=False)),
                 ),

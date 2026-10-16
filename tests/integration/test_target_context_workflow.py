@@ -41,8 +41,9 @@ CASES = (
 
 @pytest.mark.parametrize("language,eligibility,fee,clinical,reference", CASES)
 @pytest.mark.parametrize("missing_usage", [False, True])
+@pytest.mark.parametrize("profile", ["answer_targets", "policy_targets"])
 def test_targets_context_source_policy_and_citations_stay_part_owned(
-    language, eligibility, fee, clinical, reference, missing_usage
+    language, eligibility, fee, clinical, reference, missing_usage, profile
 ):
     async def run():
         item = source(
@@ -61,7 +62,11 @@ def test_targets_context_source_policy_and_citations_stay_part_owned(
             seen.append(body)
             assert "reasoning" not in payload
             if len(seen) == 1:
-                assert body["prompt_version"] == "offline-rag-planner-answer-targets-v5"
+                assert body["prompt_version"] == (
+                    "offline-rag-planner-policy-targets-v6"
+                    if profile == "policy_targets"
+                    else "offline-rag-planner-answer-targets-v5"
+                )
                 reply = AnchoredPlannerReply(
                     language=language,
                     parts=(
@@ -124,7 +129,7 @@ def test_targets_context_source_policy_and_citations_stay_part_owned(
                 catalog=evidence,
                 counter=SyntheticCounter(),
                 token_basis="synthetic_test",
-                planner_profile="answer_targets",
+                planner_profile=profile,
             )
             run = await flow.run(WorkflowRequest(query=eligibility + fee + clinical))
         assert [p.status for p in run.result.parts] == ["unknown", "candidate", "excluded"]

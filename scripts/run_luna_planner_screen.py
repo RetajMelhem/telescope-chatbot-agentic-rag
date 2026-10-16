@@ -99,7 +99,9 @@ def planner_payload(
     output_cap=OUTPUT_CAP,
 ) -> dict:
     model = (
-        AnchoredPlannerReply if profile in {"literal_anchors", "answer_targets"} else PlannerReply
+        AnchoredPlannerReply
+        if profile in {"literal_anchors", "answer_targets", "policy_targets"}
+        else PlannerReply
     )
     payload = {
         "model": settings.openrouter_chat_model,
@@ -164,6 +166,7 @@ def build_plan(
         "source_types_no_reasoning",
         "literal_anchors",
         "answer_targets",
+        "policy_targets",
     }:
         raise ValueError("unknown_planner_profile")
     expected = selected_case_ids(tuple(case_ids))
@@ -273,7 +276,7 @@ async def run_packets(
         fatal = False
         model = (
             AnchoredPlannerReply
-            if profile in {"literal_anchors", "answer_targets"}
+            if profile in {"literal_anchors", "answer_targets", "policy_targets"}
             else PlannerReply
         )
         try:
@@ -286,11 +289,11 @@ async def run_packets(
             row["schema_valid"] = True
             try:
                 proposal = result.data
-                if profile in {"literal_anchors", "answer_targets"}:
+                if profile in {"literal_anchors", "answer_targets", "policy_targets"}:
                     proposal, anchors = resolve_anchored_plan(proposal, request, packet["case_id"])
                     row["derived_proposal"] = proposal.model_dump(mode="json")
                     row["request_anchors"] = [asdict(a) for a in anchors]
-                    if profile == "answer_targets":
+                    if profile in {"answer_targets", "policy_targets"}:
                         row["answer_targets"] = [
                             asdict(t) for t in bind_answer_targets(result.data, anchors)
                         ]
@@ -348,7 +351,13 @@ async def main() -> None:
     parser.add_argument("--execute", action="store_true")
     parser.add_argument(
         "--profile",
-        choices=("baseline", "source_types_no_reasoning", "literal_anchors", "answer_targets"),
+        choices=(
+            "baseline",
+            "source_types_no_reasoning",
+            "literal_anchors",
+            "answer_targets",
+            "policy_targets",
+        ),
         default="baseline",
     )
     parser.add_argument("--case-id", nargs="+", choices=DEVELOPMENT_IDS)

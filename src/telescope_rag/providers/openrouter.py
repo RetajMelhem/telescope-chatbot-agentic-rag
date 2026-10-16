@@ -4,6 +4,7 @@ import asyncio
 import json
 import math
 from collections.abc import Callable, Sequence
+from datetime import UTC, datetime
 from typing import Any, Literal, TypeVar
 
 import httpx2 as httpx
@@ -153,6 +154,8 @@ class _Client:
         usage = UsageReport()
         status = None
         reported_model = provider = None
+        generation_id = request_id = None
+        started_at = datetime.now(UTC).isoformat()
         outcome = "provider_protocol_error"
         try:
             timeout = min(self.settings.provider_timeout_seconds, budget.remaining_seconds())
@@ -176,6 +179,8 @@ class _Client:
                     if media_type != "application/json" and not media_type.endswith("+json"):
                         raise ProviderError("invalid_provider_media_type")
                     body = load_json(raw)
+                    generation_id = self._trace_id(body.get("id"), prefix="gen-")
+                    request_id = self._trace_id(body.get("request_id"), prefix="req-")
                     if "error" in body:
                         raise ProviderError("provider_error_response")
                     usage = parse_usage(body.get("usage"), kind)
@@ -234,6 +239,10 @@ class _Client:
                         else "luna-reported-usage-v1",
                         count_basis=count.basis if count is not None else "reported_usage_only",
                         usage=usage,
+                        generation_id=generation_id,
+                        request_id=request_id,
+                        started_at_utc=started_at,
+                        finished_at_utc=datetime.now(UTC).isoformat(),
                     )
                 )
 
@@ -254,6 +263,22 @@ class _Client:
                 raise ProviderError("provider_response_too_large")
             result.extend(chunk)
         return bytes(result)
+
+    @staticmethod
+    def _trace_id(value: Any, *, prefix: str) -> str | None:
+        # Optional correlation metadata must neither reject valid answers nor
+        # copy arbitrary provider text into content-free receipts.
+        if (
+            not isinstance(value, str)
+            or not value.startswith(prefix)
+            or not len(prefix) < len(value) <= 128
+            or any(
+                c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
+                for c in value
+            )
+        ):
+            return None
+        return value
 
     @staticmethod
     def _metadata(value: Any) -> str | None:

@@ -67,7 +67,14 @@ def reply(request, *, usage=True, invalid_binding=False):
 
 @pytest.mark.parametrize("usage", [True, False])
 @pytest.mark.parametrize(
-    "profile", ["baseline", "source_types_no_reasoning", "literal_anchors", "answer_targets"]
+    "profile",
+    [
+        "baseline",
+        "source_types_no_reasoning",
+        "literal_anchors",
+        "answer_targets",
+        "policy_targets",
+    ],
 )
 def test_exact_six_development_inputs_match_actual_adapter_and_have_no_gold(
     tmp_path, usage, profile
@@ -83,7 +90,7 @@ def test_exact_six_development_inputs_match_actual_adapter_and_have_no_gold(
         assert actual == packets[len(seen)]["payload"]
         assert actual["response_format"]["json_schema"]["name"] == (
             "AnchoredPlannerReply"
-            if profile in {"literal_anchors", "answer_targets"}
+            if profile in {"literal_anchors", "answer_targets", "policy_targets"}
             else "PlannerReply"
         )
         assert actual["max_completion_tokens"] == 1000
@@ -114,10 +121,10 @@ def test_exact_six_development_inputs_match_actual_adapter_and_have_no_gold(
         assert saved["reported_input_tokens"] == (20 if usage else None)
         assert saved["receipts"][0]["input_reserved"] is None
         assert "synthetic-screen-preparation" not in json.dumps(saved)
-        if profile in {"literal_anchors", "answer_targets"}:
+        if profile in {"literal_anchors", "answer_targets", "policy_targets"}:
             assert saved["derived_proposal"]["parts"][0]["start"] == 0
             assert saved["request_anchors"][0]["original"]["quote"] == packet["request"]["query"]
-            if profile == "answer_targets":
+            if profile in {"answer_targets", "policy_targets"}:
                 assert saved["answer_targets"][0]["target"]["quote"] == packet["request"]["query"]
 
 
