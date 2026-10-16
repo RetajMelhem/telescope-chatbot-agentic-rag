@@ -24,7 +24,7 @@ from scripts.planner_review import (
 from scripts.retrieval_benchmark import load_corpus
 from telescope_rag.core.settings import Settings, load_settings
 from telescope_rag.graph.anchoring import AnchoredPlannerReply, AnchorError, resolve_anchored_plan
-from telescope_rag.graph.bindings import SourceBindings
+from telescope_rag.graph.bindings import SourceBindings, SourceFilterError
 from telescope_rag.graph.contracts import PlannerReply, WorkflowRequest
 from telescope_rag.graph.planning import planner_messages
 from telescope_rag.graph.target_context import bind_answer_targets
@@ -102,7 +102,14 @@ def planner_payload(
 ) -> dict:
     model = (
         AnchoredPlannerReply
-        if profile in {"literal_anchors", "answer_targets", "policy_targets", "source_scoped"}
+        if profile
+        in {
+            "literal_anchors",
+            "answer_targets",
+            "policy_targets",
+            "source_scoped",
+            "purpose_contract",
+        }
         else PlannerReply
     )
     payload = {
@@ -290,7 +297,14 @@ async def run_packets(
         fatal = False
         model = (
             AnchoredPlannerReply
-            if profile in {"literal_anchors", "answer_targets", "policy_targets", "source_scoped"}
+            if profile
+            in {
+                "literal_anchors",
+                "answer_targets",
+                "policy_targets",
+                "source_scoped",
+                "purpose_contract",
+            }
             else PlannerReply
         )
         try:
@@ -308,11 +322,17 @@ async def run_packets(
                     "answer_targets",
                     "policy_targets",
                     "source_scoped",
+                    "purpose_contract",
                 }:
                     proposal, anchors = resolve_anchored_plan(proposal, request, packet["case_id"])
                     row["derived_proposal"] = proposal.model_dump(mode="json")
                     row["request_anchors"] = [asdict(a) for a in anchors]
-                    if profile in {"answer_targets", "policy_targets", "source_scoped"}:
+                    if profile in {
+                        "answer_targets",
+                        "policy_targets",
+                        "source_scoped",
+                        "purpose_contract",
+                    }:
                         row["answer_targets"] = [
                             asdict(t) for t in bind_answer_targets(result.data, anchors)
                         ]
@@ -321,7 +341,8 @@ async def run_packets(
             except ValueError as error:
                 row["error_code"] = (
                     str(error)
-                    if type(error) is ValueError or isinstance(error, AnchorError)
+                    if type(error) is ValueError
+                    or isinstance(error, (AnchorError, SourceFilterError))
                     else "invalid_plan"
                 )
         except ProviderError as error:
