@@ -2,6 +2,32 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
+Latest implementation — **hours contract repair, offline and not adopted**:
+`contracts_v14` adds a separate closed planner schema/prompt, explicit clock-pair
+and hours/search rules, 134 exact doctor source-membership tuples and joint
+subject/document/type/language/owner validation, independently rechecked by the
+presenter. Invalid outputs are rejected without normalization, source fallback or
+automatic identity upgrades. Valid scoped missing-hours/ambiguous outcomes remain.
+Default v12, earlier v13 and production/API behavior are unchanged; all 30 older
+request packets reproduce exactly. **1,986 guarded offline tests (59 new)**, Ruff
+lint/format (197 files), 65-package lock and source/cache preservation pass.
+Twelve saved actual broader-screen plans replay under the candidate: nine complete,
+all three known failures are rejected. Four explicit one-field desired variants
+work; these are authored diagnostics, not repaired model outputs or live success.
+
+Evidence: `artifacts/m5-hours-contract-repair-v1/REPORT.md`, actual-bundle and
+confirmation-oracle receipts, JUnit and final verification/seal. Six confirmation
+requests are frozen (three exact failures / three fresh contrasts); all six desired
+oracle plans pass exact-wire/catalog/Qwen/graph/presenter checks. No actual API or
+metadata request, embedding/index change, deployment or subagent ran: **new spend
+$0**. `.env`, 122 source inputs, reviewed hours plan, 924 vectors and prior evidence
+are preserved. Last observed allowance remains **$1.05630809** at 00:14:10 Amman
+on October 17, unrefreshed; the dated six-call planning estimate is $0.030288 using
+30,000 assumed input tokens per call, not counted input or a billing cap. **Next:**
+refresh allowance/pricing read-only, execute the separately requested six-case
+confirmation once, individually review/replay actual outputs. Hosted schema
+compatibility, model compliance, broader acceptance and adoption remain unverified.
+
 Latest result — **broader hours acceptance executed; adoption withheld**:
 `artifacts/m5-hours-broader-acceptance-v1` freezes 12 requests/criteria (two exact
 earlier failed regressions, ten fresh development contrasts) against unchanged

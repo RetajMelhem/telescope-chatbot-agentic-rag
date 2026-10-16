@@ -185,3 +185,37 @@ doctor-subject/source-scope linkage in a separate candidate, with focused regres
 and contrasts. Preserve approved identities, literal provenance and unknown outcomes;
 do not add automatic normalization, fuzzy matching or question-specific routing.
 Freeze further confirmation before paid dispatch; production adoption remains held.
+
+## Separate hours contract candidate
+
+`hours_profile="contracts_v14"` selects `ContractHoursPlannerReply`, explicit
+clock/operation descriptions and a versioned prompt. Local validators require
+0–23 with 24h and 1–12 with am/pm/unspecified, and non-null hours exactly for public
+time_comparison with a null retrieval query and general_excerpt purpose. Invalid
+combinations are rejected without conversion or another provider request. The
+provider boundary may reject a bad plan before the graph's older validators.
+
+The candidate hours manifest adds exact doctor source-membership tuples for each
+existing handle. It preserves literal/canonical owners and labels and retains
+the 96,000-byte bound. `ContractHoursBindings` intersects a selected doctor with
+all declared document/type/language/owner restrictions; an impossible occurrence
+is rejected rather than silently changed to another alias. The independent
+presenter rechecks the same relationship. Canonical preference is an explicit
+model instruction using already-approved links; it never overrides an explicit
+literal-owner restriction or transfers a schedule between owners. Valid scoped
+missing hours and facility contact-only unknowns remain unchanged.
+
+All 30 earlier v12/v13 payloads reconstruct exactly. Default graph/API selection
+remains v12. The runner's `--hours-profile contracts_v14` option freezes the new
+schema; execution uses the frozen profile and exact payload, with no automatic
+retry/repair. The candidate is not exposed by default API injection or adopted
+for production. New runtime/schema/prompt behavior is offline-tested only.
+
+The real-bundle audit replays twelve saved proposals under v14: nine complete and
+all three known bad plans are rejected. Four explicitly authored valid variants
+and six frozen confirmation oracle plans work through the actual catalog/Qwen/
+graph/presenter with mocked transport. These checks do not establish Luna behavior.
+Evidence: `artifacts/m5-hours-contract-repair-v1/REPORT.md`. **1,986 guarded tests**
+pass, including 59 new contrasts. Next is the bounded six-case live schema/planner
+confirmation after allowance/pricing refresh, followed by individual actual-output
+review and unchanged replay. No candidate inference or adoption has run yet.

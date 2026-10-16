@@ -13,7 +13,6 @@ import time
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
 from uuid import NAMESPACE_URL, uuid5
 
 from langgraph.runtime import Runtime
@@ -23,6 +22,7 @@ from scripts.retrieval_benchmark import load_corpus
 from scripts.run_luna_planner_screen import file_hash, payload_hash, screen_settings, write_new
 from telescope_rag.core.settings import Settings, load_settings
 from telescope_rag.graph.contracts import WorkflowRequest
+from telescope_rag.graph.hours_contract import HoursProfile, hours_reply_model
 from telescope_rag.graph.hours_inputs import HoursPlannerReply
 from telescope_rag.graph.hours_workflow import HoursRagWorkflow
 from telescope_rag.graph.workflow import WorkflowError, _RunContext
@@ -67,11 +67,15 @@ class _NoDownstream:
         raise AssertionError("planner_screen_must_not_retrieve")
 
 
-def wire_payload(messages: tuple[ChatMessage, ...], settings: Settings) -> dict:
+def wire_payload(
+    messages: tuple[ChatMessage, ...],
+    settings: Settings,
+    reply_model: type[HoursPlannerReply] = HoursPlannerReply,
+) -> dict:
     return {
         "model": settings.openrouter_chat_model,
         "messages": [m.model_dump() for m in messages],
-        "response_format": {"type": "json_schema", "json_schema": output_schema(HoursPlannerReply)},
+        "response_format": {"type": "json_schema", "json_schema": output_schema(reply_model)},
         "max_completion_tokens": OUTPUT_CAP,
         "stream": False,
         "provider": {"require_parameters": True, "allow_fallbacks": False},
@@ -85,23 +89,33 @@ class _Captured(Exception):
 class _CaptureChat:
     messages: tuple[ChatMessage, ...] | None = None
 
+    def __init__(self, reply_model: type[HoursPlannerReply] = HoursPlannerReply):
+        self.reply_model = reply_model
+
     async def complete(self, messages, output_model, *, max_output_tokens, budget):
-        if output_model is not HoursPlannerReply or max_output_tokens != OUTPUT_CAP:
+        if output_model is not self.reply_model or max_output_tokens != OUTPUT_CAP:
             raise ValueError("hours_screen_contract_changed")
         self.messages = tuple(messages)
         raise _Captured
 
 
 class _ExactChat:
-    def __init__(self, delegate: ChatProvider, packet: dict, settings: Settings):
+    def __init__(
+        self,
+        delegate: ChatProvider,
+        packet: dict,
+        settings: Settings,
+        reply_model: type[HoursPlannerReply] = HoursPlannerReply,
+    ):
         self.delegate, self.packet, self.settings = delegate, packet, settings
+        self.reply_model = reply_model
         self.used = False
 
     async def complete(self, messages, output_model, *, max_output_tokens, budget):
-        actual = wire_payload(tuple(messages), self.settings)
+        actual = wire_payload(tuple(messages), self.settings, self.reply_model)
         if (
             self.used
-            or output_model is not HoursPlannerReply
+            or output_model is not self.reply_model
             or max_output_tokens != OUTPUT_CAP
             or actual != self.packet["payload"]
             or payload_hash(actual) != self.packet["payload_sha256"]
@@ -118,7 +132,7 @@ def build_workflow(
     config: Settings,
     chat: ChatProvider,
     clock: datetime,
-    hours_profile: Literal["v12", "identity_links_v13"] = "v12",
+    hours_profile: HoursProfile = "v12",
 ) -> HoursRagWorkflow:
     documents, _ = load_corpus(root / SOURCE)
     catalog = EvidenceCatalog(documents, expected_digest=DIGEST)
@@ -164,7 +178,7 @@ async def freeze_plan(
     root: Path,
     cases_path: Path,
     clock: datetime,
-    hours_profile: Literal["v12", "identity_links_v13"] = "v12",
+    hours_profile: HoursProfile = "v12",
 ) -> dict:
     if clock.utcoffset() is None:
         raise ValueError("hours_screen_clock_invalid")
@@ -172,7 +186,8 @@ async def freeze_plan(
     if len({c.case_id for c in cohort.cases}) != len(cohort.cases):
         raise ValueError("hours_screen_duplicate_case")
     config = screen_settings(profile="local_constraints", output_cap=OUTPUT_CAP)
-    capture = _CaptureChat()
+    reply_model = hours_reply_model(hours_profile)
+    capture = _CaptureChat(reply_model)
     workflow = build_workflow(root, config, capture, clock, hours_profile)
     packets = []
     for case in cohort.cases:
@@ -185,7 +200,7 @@ async def freeze_plan(
             pass
         if capture.messages is None:
             raise ValueError("hours_screen_capture_failed")
-        payload = wire_payload(capture.messages, config)
+        payload = wire_payload(capture.messages, config, reply_model)
         packets.append(
             {
                 "case_id": case.case_id,
@@ -316,7 +331,11 @@ async def execute(root: Path, output: Path, cases: Path) -> dict:
             async with OpenRouterProviders(config) as providers:
                 for packet in plan["packets"]:
                     workflow = build_workflow(
-                        root, config, _ExactChat(providers.chat, packet, config), clock, profile
+                        root,
+                        config,
+                        _ExactChat(providers.chat, packet, config, hours_reply_model(profile)),
+                        clock,
+                        profile,
                     )
                     row = await run_packet(packet, workflow, config)
                     write_new(output / (packet["case_id"] + ".json"), row)
@@ -368,7 +387,9 @@ async def main() -> None:
     parser.add_argument("--cases", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--hours-profile", choices=("v12", "identity_links_v13"), default="v12")
+    parser.add_argument(
+        "--hours-profile", choices=("v12", "identity_links_v13", "contracts_v14"), default="v12"
+    )
     args = parser.parse_args()
     if args.execute:
         print(json.dumps(await execute(Path.cwd(), args.output, args.cases)))

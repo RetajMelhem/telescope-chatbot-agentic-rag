@@ -10,13 +10,21 @@ from langgraph.runtime import Runtime
 from telescope_rag.core.settings import Settings
 from telescope_rag.graph.anchoring import AnchoredPlannerReply
 from telescope_rag.graph.contracts import EvidenceRetriever
+from telescope_rag.graph.hours_contract import (
+    ContractHoursBindings,
+    HoursProfile,
+    contract_hours_manifest,
+    hours_reply_model,
+)
 from telescope_rag.graph.hours_identity import IDENTITY_PROMPT_VERSION, identity_hours_manifest
-from telescope_rag.graph.hours_inputs import HoursBindings, HoursPlannerReply
+from telescope_rag.graph.hours_inputs import HoursBindings
 from telescope_rag.graph.planning import planner_messages
 from telescope_rag.graph.workflow import OfflineRagWorkflow, WorkflowError, _RunContext, _State
 from telescope_rag.knowledge.hours import PublicHoursPlan
 from telescope_rag.knowledge.source_authority import DirectoryAuthority
 from telescope_rag.knowledge.time_calculations import PublicHoursCatalog
+from telescope_rag.prompts.planner_hours_contract_v14 import PLANNER_SYSTEM as CONTRACT_SYSTEM
+from telescope_rag.prompts.planner_hours_contract_v14 import PROMPT_VERSION as CONTRACT_VERSION
 from telescope_rag.prompts.planner_hours_v12 import PLANNER_SYSTEM, PROMPT_VERSION
 from telescope_rag.providers.contracts import ChatMessage, ChatProvider
 from telescope_rag.retrieval.assembly import AssemblyCounter, EvidenceCatalog
@@ -38,10 +46,9 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         planner_output_tokens: int = 1000,
         draft_output_tokens: int = 1000,
         clock: Callable[[], datetime] | None = None,
-        hours_profile: Literal["v12", "identity_links_v13"] = "v12",
+        hours_profile: HoursProfile = "v12",
     ) -> None:
-        if hours_profile not in {"v12", "identity_links_v13"}:
-            raise ValueError("hours_profile_invalid")
+        self._hours_reply_model = hours_reply_model(hours_profile)
         # The old profiles and their payload builder are not changed/adopted.
         super().__init__(
             planner_profile="local_constraints",
@@ -62,15 +69,23 @@ class HoursRagWorkflow(OfflineRagWorkflow):
             expected_plan_digest=expected_hours_plan_digest,
             max_source_age=timedelta(hours=self._settings.knowledge_max_age_hours),
         )
-        self.hours_bindings = HoursBindings(plan, self._catalog, self._bindings, engine)
+        bindings_type = ContractHoursBindings if hours_profile == "contracts_v14" else HoursBindings
+        self.hours_bindings = bindings_type(plan, self._catalog, self._bindings, engine)
         self._hours_manifest_json = (
-            identity_hours_manifest(self.hours_bindings, self._bindings)
+            contract_hours_manifest(self.hours_bindings, self._bindings)
+            if hours_profile == "contracts_v14"
+            else identity_hours_manifest(self.hours_bindings, self._bindings)
             if hours_profile == "identity_links_v13"
             else self.hours_bindings.manifest_json
         )
         self._hours_prompt_version = (
-            IDENTITY_PROMPT_VERSION if hours_profile == "identity_links_v13" else PROMPT_VERSION
+            CONTRACT_VERSION
+            if hours_profile == "contracts_v14"
+            else IDENTITY_PROMPT_VERSION
+            if hours_profile == "identity_links_v13"
+            else PROMPT_VERSION
         )
+        self._hours_system = CONTRACT_SYSTEM if hours_profile == "contracts_v14" else PLANNER_SYSTEM
         self._clock = clock or (lambda: datetime.now(UTC))
 
     async def _plan_query(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
@@ -96,20 +111,20 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         )
         result = await self._chat.complete(
             (
-                ChatMessage(role="system", content=PLANNER_SYSTEM),
+                ChatMessage(role="system", content=self._hours_system),
                 ChatMessage(role="user", content=json.dumps(body, ensure_ascii=False)),
             ),
-            HoursPlannerReply,
+            self._hours_reply_model,
             max_output_tokens=min(
                 self._planner_output_tokens, self._settings.max_total_output_tokens
             ),
             budget=runtime.context.budget,
         )
-        return {"proposal": self._typed(result, HoursPlannerReply, "invalid_hours_plan")}
+        return {"proposal": self._typed(result, self._hours_reply_model, "invalid_hours_plan")}
 
     async def _validate_plan(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         proposal = state["proposal"]
-        if type(proposal) is not HoursPlannerReply:
+        if type(proposal) is not self._hours_reply_model:
             raise WorkflowError("invalid_hours_plan")
         # Project the old fields byte-for-byte into their existing validators;
         # keep the new typed input and its literal receipts separately.
