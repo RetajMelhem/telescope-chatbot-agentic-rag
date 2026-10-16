@@ -38,6 +38,7 @@ from telescope_rag.prompts.planner_contract_v8 import DRAFT_APPEND as CONTRACT_D
 from telescope_rag.prompts.planner_contract_v8 import PROMPT_VERSION as CONTRACT_VERSION
 from telescope_rag.prompts.planner_policy_v6 import DRAFT_APPEND as POLICY_DRAFT_APPEND
 from telescope_rag.prompts.planner_policy_v6 import PROMPT_VERSION as POLICY_VERSION
+from telescope_rag.prompts.planner_referents_v9 import PROMPT_VERSION as REFERENT_VERSION
 from telescope_rag.prompts.planner_sources_v7 import DRAFT_APPEND as SOURCE_DRAFT_APPEND
 from telescope_rag.prompts.planner_sources_v7 import PROMPT_VERSION as SOURCE_VERSION
 from telescope_rag.prompts.planner_targets_v5 import DRAFT_APPEND
@@ -96,6 +97,7 @@ class OfflineRagWorkflow:
             "policy_targets",
             "source_scoped",
             "purpose_contract",
+            "referent_context",
         ] = "baseline",
         directory_authority: DirectoryAuthority | None = None,
         planner_output_tokens: int = 1000,
@@ -110,12 +112,13 @@ class OfflineRagWorkflow:
                 "policy_targets",
                 "source_scoped",
                 "purpose_contract",
+                "referent_context",
             }
             or any(
                 type(cap) is not int or cap < 16
                 for cap in (planner_output_tokens, draft_output_tokens)
             )
-            or (planner_profile in {"source_scoped", "purpose_contract"})
+            or (planner_profile in {"source_scoped", "purpose_contract", "referent_context"})
             != (directory_authority is not None)
             or settings.app_env == "production"
             or token_basis
@@ -136,7 +139,7 @@ class OfflineRagWorkflow:
             catalog,
             include_block_types=planner_profile != "baseline",
             directory_authority=directory_authority,
-            purpose_contract=planner_profile == "purpose_contract",
+            purpose_contract=planner_profile in {"purpose_contract", "referent_context"},
         )
         self._snapshot = next(iter(catalog.chunks.values())).snapshot_id
         builder = StateGraph(_State, context_schema=_RunContext)
@@ -240,6 +243,7 @@ class OfflineRagWorkflow:
                     "policy_targets",
                     "source_scoped",
                     "purpose_contract",
+                    "referent_context",
                 }:
                     targets = bind_answer_targets(state["proposal"], anchors)
             plan = self._bindings.validate(
@@ -367,7 +371,9 @@ class OfflineRagWorkflow:
     async def _generate_draft(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "generate_draft")
         body = {
-            "prompt_version": CONTRACT_VERSION
+            "prompt_version": REFERENT_VERSION
+            if self._planner_profile == "referent_context"
+            else CONTRACT_VERSION
             if self._planner_profile == "purpose_contract"
             else SOURCE_VERSION
             if self._planner_profile == "source_scoped"
@@ -408,7 +414,13 @@ class OfflineRagWorkflow:
                             },
                         }
                         if self._planner_profile
-                        in {"answer_targets", "policy_targets", "source_scoped", "purpose_contract"}
+                        in {
+                            "answer_targets",
+                            "policy_targets",
+                            "source_scoped",
+                            "purpose_contract",
+                            "referent_context",
+                        }
                         else {}
                     ),
                     "eligible_quote_chunk_ids": list(
@@ -435,7 +447,7 @@ class OfflineRagWorkflow:
                         ]
                     }
                 }
-                if self._planner_profile == "purpose_contract"
+                if self._planner_profile in {"purpose_contract", "referent_context"}
                 else {}
             ),
             # The rendering has one complete body and a separately valid citation
@@ -450,7 +462,7 @@ class OfflineRagWorkflow:
                         content=DRAFT_SYSTEM
                         + (
                             CONTRACT_DRAFT_APPEND
-                            if self._planner_profile == "purpose_contract"
+                            if self._planner_profile in {"purpose_contract", "referent_context"}
                             else SOURCE_DRAFT_APPEND
                             if self._planner_profile == "source_scoped"
                             else POLICY_DRAFT_APPEND

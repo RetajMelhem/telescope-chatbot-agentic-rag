@@ -109,6 +109,7 @@ def planner_payload(
             "policy_targets",
             "source_scoped",
             "purpose_contract",
+            "referent_context",
         }
         else PlannerReply
     )
@@ -304,6 +305,7 @@ async def run_packets(
                 "policy_targets",
                 "source_scoped",
                 "purpose_contract",
+                "referent_context",
             }
             else PlannerReply
         )
@@ -323,6 +325,7 @@ async def run_packets(
                     "policy_targets",
                     "source_scoped",
                     "purpose_contract",
+                    "referent_context",
                 }:
                     proposal, anchors = resolve_anchored_plan(proposal, request, packet["case_id"])
                     row["derived_proposal"] = proposal.model_dump(mode="json")
@@ -332,6 +335,7 @@ async def run_packets(
                         "policy_targets",
                         "source_scoped",
                         "purpose_contract",
+                        "referent_context",
                     }:
                         row["answer_targets"] = [
                             asdict(t) for t in bind_answer_targets(result.data, anchors)

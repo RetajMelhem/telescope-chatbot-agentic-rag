@@ -18,6 +18,8 @@ from telescope_rag.prompts.planner_contract_v8 import PLANNER_SYSTEM as CONTRACT
 from telescope_rag.prompts.planner_contract_v8 import PROMPT_VERSION as CONTRACT_VERSION
 from telescope_rag.prompts.planner_policy_v6 import PLANNER_SYSTEM as POLICY_SYSTEM
 from telescope_rag.prompts.planner_policy_v6 import PROMPT_VERSION as POLICY_VERSION
+from telescope_rag.prompts.planner_referents_v9 import PLANNER_SYSTEM as REFERENT_SYSTEM
+from telescope_rag.prompts.planner_referents_v9 import PROMPT_VERSION as REFERENT_VERSION
 from telescope_rag.prompts.planner_sources_v7 import PLANNER_SYSTEM as SOURCE_SYSTEM
 from telescope_rag.prompts.planner_sources_v7 import PROMPT_VERSION as SOURCE_VERSION
 from telescope_rag.prompts.planner_targets_v5 import PLANNER_SYSTEM as TARGET_SYSTEM
@@ -38,6 +40,7 @@ def planner_messages(
         "policy_targets",
         "source_scoped",
         "purpose_contract",
+        "referent_context",
     ] = "baseline",
 ) -> tuple[ChatMessage, ...]:
     if profile not in {
@@ -48,17 +51,20 @@ def planner_messages(
         "policy_targets",
         "source_scoped",
         "purpose_contract",
+        "referent_context",
     }:
         raise ValueError("unknown_planner_profile")
     if profile == "source_scoped" and bindings.directory_authority is None:
         raise ValueError("source_scoped_requires_directory_authority")
-    if (profile == "purpose_contract") != bindings.purpose_contract or (
-        profile == "purpose_contract" and bindings.directory_authority is None
+    if (profile in {"purpose_contract", "referent_context"}) != bindings.purpose_contract or (
+        profile in {"purpose_contract", "referent_context"} and bindings.directory_authority is None
     ):
         raise ValueError("planner_purpose_contract_configuration_mismatch")
     candidate = profile == "source_types_no_reasoning"
     body = {
-        "prompt_version": CONTRACT_VERSION
+        "prompt_version": REFERENT_VERSION
+        if profile == "referent_context"
+        else CONTRACT_VERSION
         if profile == "purpose_contract"
         else SOURCE_VERSION
         if profile == "source_scoped"
@@ -80,7 +86,9 @@ def planner_messages(
     return (
         ChatMessage(
             role="system",
-            content=CONTRACT_SYSTEM
+            content=REFERENT_SYSTEM
+            if profile == "referent_context"
+            else CONTRACT_SYSTEM
             if profile == "purpose_contract"
             else SOURCE_SYSTEM
             if profile == "source_scoped"
