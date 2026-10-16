@@ -19,8 +19,10 @@ sys.path.insert(0, str(Path(__file__).parents[2]))
 from scripts import run_luna_planner_screen as screen
 
 
-def preparation():
-    bindings = SourceBindings(catalog(source(1)))
+def preparation(profile="baseline"):
+    bindings = SourceBindings(
+        catalog(source(1)), include_block_types=profile == "source_types_no_reasoning"
+    )
     cases = [
         SimpleNamespace(
             case_id=identity,
@@ -31,7 +33,7 @@ def preparation():
     ]
     # A reserved case must never enter the exported inputs, even with tempting gold.
     cases.append(SimpleNamespace(case_id="PL02-en", split="reserved_evaluation"))
-    return bindings, screen.development_packets(cases, bindings)
+    return bindings, screen.development_packets(cases, bindings, profile=profile)
 
 
 def reply(request, *, usage=True, invalid_binding=False):
@@ -59,11 +61,14 @@ def reply(request, *, usage=True, invalid_binding=False):
 
 
 @pytest.mark.parametrize("usage", [True, False])
-def test_exact_six_development_inputs_match_actual_adapter_and_have_no_gold(tmp_path, usage):
-    bindings, packets = preparation()
+@pytest.mark.parametrize("profile", ["baseline", "source_types_no_reasoning"])
+def test_exact_six_development_inputs_match_actual_adapter_and_have_no_gold(
+    tmp_path, usage, profile
+):
+    bindings, packets = preparation(profile)
     assert tuple(p["case_id"] for p in packets) == screen.DEVELOPMENT_IDS
     assert all(set(p) == {"case_id", "request", "payload", "payload_sha256"} for p in packets)
-    config = screen.screen_settings()
+    config = screen.screen_settings(profile=profile)
     seen = []
 
     def handler(request):
@@ -71,12 +76,20 @@ def test_exact_six_development_inputs_match_actual_adapter_and_have_no_gold(tmp_
         assert actual == packets[len(seen)]["payload"]
         assert actual["response_format"]["json_schema"]["name"] == "PlannerReply"
         assert actual["max_completion_tokens"] == 1000
+        if profile == "source_types_no_reasoning":
+            assert actual["reasoning"] == {"effort": "none"}
+            manifest = json.loads(actual["messages"][-1]["content"])["source_manifest"]
+            assert all(d["available_block_types"] == ["section"] for d in manifest["documents"])
+        else:
+            assert "reasoning" not in actual
         seen.append(actual)
         return reply(request, usage=usage)
 
     async def run():
         async with OpenRouterProviders(config, transport=httpx.MockTransport(handler)) as p:
-            return await screen.run_packets(packets, bindings, config, p.chat, tmp_path)
+            return await screen.run_packets(
+                packets, bindings, config, p.chat, tmp_path, profile=profile
+            )
 
     summary = asyncio.run(run())
     assert len(seen) == summary["physical_attempts"] == summary["cases_attempted"] == 6
@@ -151,7 +164,7 @@ def test_started_screen_cannot_dispatch_again(tmp_path, monkeypatch):
     plan = {"packets": packets}
     (tmp_path / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
     (tmp_path / "started.json").write_text("{}", encoding="utf-8")
-    monkeypatch.setattr(screen, "build_plan", lambda root: (plan, bindings))
+    monkeypatch.setattr(screen, "build_plan", lambda root, **kwargs: (plan, bindings))
     monkeypatch.setattr(screen.subprocess, "check_output", lambda *a, **k: "")
     monkeypatch.setattr("sys.argv", ["screen", "--output", str(tmp_path), "--execute"])
 
@@ -161,3 +174,14 @@ def test_started_screen_cannot_dispatch_again(tmp_path, monkeypatch):
     monkeypatch.setattr(screen, "load_settings", forbidden)
     with pytest.raises(FileExistsError):
         asyncio.run(screen.main())
+
+
+def test_manifest_types_come_from_literal_source_structure_without_inventing_contact_type():
+    item = source(1).model_copy(update={"page_title": "Contact details", "block_type": "section"})
+    original = item.model_dump_json()
+    evidence = catalog(item)
+    baseline = json.loads(SourceBindings(evidence).manifest_json)
+    candidate = json.loads(SourceBindings(evidence, include_block_types=True).manifest_json)
+    assert candidate["documents"][0]["available_block_types"] == ["section"]
+    candidate["documents"][0].pop("available_block_types")
+    assert candidate == baseline and item.model_dump_json() == original

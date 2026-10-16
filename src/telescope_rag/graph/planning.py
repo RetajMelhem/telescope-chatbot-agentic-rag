@@ -1,18 +1,32 @@
 """One planner input builder shared by the graph and bounded compatibility screens."""
 
 import json
+from typing import Literal
 
 from telescope_rag.graph.bindings import SourceBindings
 from telescope_rag.graph.contracts import WorkflowRequest
 from telescope_rag.prompts.offline_v1 import PLANNER_SYSTEM, PROMPT_VERSION
+from telescope_rag.prompts.planner_candidate_v2 import (
+    PLANNER_SYSTEM as CANDIDATE_SYSTEM,
+)
+from telescope_rag.prompts.planner_candidate_v2 import (
+    PROMPT_VERSION as CANDIDATE_VERSION,
+)
 from telescope_rag.providers.contracts import ChatMessage
 
 
 def planner_messages(
-    request: WorkflowRequest, bindings: SourceBindings, *, max_parts: int
+    request: WorkflowRequest,
+    bindings: SourceBindings,
+    *,
+    max_parts: int,
+    profile: Literal["baseline", "source_types_no_reasoning"] = "baseline",
 ) -> tuple[ChatMessage, ...]:
+    if profile not in {"baseline", "source_types_no_reasoning"}:
+        raise ValueError("unknown_planner_profile")
+    candidate = profile == "source_types_no_reasoning"
     body = {
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": CANDIDATE_VERSION if candidate else PROMPT_VERSION,
         "original_query": request.query,
         "requested_language": request.language,
         "history": [h.model_dump() for h in request.history],
@@ -20,6 +34,6 @@ def planner_messages(
         "source_manifest": json.loads(bindings.manifest_json),
     }
     return (
-        ChatMessage(role="system", content=PLANNER_SYSTEM),
+        ChatMessage(role="system", content=CANDIDATE_SYSTEM if candidate else PLANNER_SYSTEM),
         ChatMessage(role="user", content=json.dumps(body, ensure_ascii=False)),
     )

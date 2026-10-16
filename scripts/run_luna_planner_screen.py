@@ -52,19 +52,22 @@ def write_new(path: Path, value: dict) -> None:
         stream.write("\n")
 
 
-def screen_settings(*, key: str = "synthetic-screen-preparation") -> Settings:
+def screen_settings(
+    *, key: str = "synthetic-screen-preparation", profile: str = "baseline"
+) -> Settings:
     values = {n: f.get_default(call_default_factory=True) for n, f in Settings.model_fields.items()}
     values.update(
         openrouter_api_key=key,
         chat_input_accounting="reported_usage",
         provider_max_retries=0,
         max_llm_calls=1,
+        chat_reasoning_effort="none" if profile == "source_types_no_reasoning" else None,
     )
     return Settings(_env_file=None, **values)
 
 
 def planner_payload(messages: tuple[ChatMessage, ...], settings: Settings) -> dict:
-    return {
+    payload = {
         "model": settings.openrouter_chat_model,
         "messages": [m.model_dump() for m in messages],
         "response_format": {"type": "json_schema", "json_schema": output_schema(PlannerReply)},
@@ -72,6 +75,9 @@ def planner_payload(messages: tuple[ChatMessage, ...], settings: Settings) -> di
         "stream": False,
         "provider": {"require_parameters": True, "allow_fallbacks": False},
     }
+    if settings.chat_reasoning_effort is not None:
+        payload["reasoning"] = {"effort": settings.chat_reasoning_effort}
+    return payload
 
 
 def payload_hash(payload: dict) -> str:
@@ -80,14 +86,16 @@ def payload_hash(payload: dict) -> str:
     ).hexdigest()
 
 
-def development_packets(cases, bindings: SourceBindings) -> list[dict]:
+def development_packets(cases, bindings: SourceBindings, *, profile="baseline") -> list[dict]:
     selected = sorted((c for c in cases if c.split == "development"), key=lambda c: c.case_id)
     if tuple(c.case_id for c in selected) != DEVELOPMENT_IDS:
         raise ValueError("development_inventory_mismatch")
-    config = screen_settings()
+    config = screen_settings(profile=profile)
     packets = []
     for case in selected:
-        payload = planner_payload(planner_messages(case.request, bindings, max_parts=4), config)
+        payload = planner_payload(
+            planner_messages(case.request, bindings, max_parts=4, profile=profile), config
+        )
         packets.append(
             {
                 "case_id": case.case_id,
@@ -99,7 +107,9 @@ def development_packets(cases, bindings: SourceBindings) -> list[dict]:
     return packets
 
 
-def build_plan(root: Path) -> tuple[dict, SourceBindings]:
+def build_plan(root: Path, *, profile="baseline") -> tuple[dict, SourceBindings]:
+    if profile not in {"baseline", "source_types_no_reasoning"}:
+        raise ValueError("unknown_planner_profile")
     directory = root / FIXTURES
     manifest = verify_inventory(directory, MANIFEST)
     source_hashes = json.loads((root / SOURCE_HASHES).read_bytes())
@@ -125,12 +135,13 @@ def build_plan(root: Path) -> tuple[dict, SourceBindings]:
     reviews = json.loads((directory / "independent-reviews.json").read_bytes())
     validate_reviews(cases, reviews)
     source_checks = validate_source_evidence(reviews, catalog, bundle=bundle, packet_root=directory)
-    bindings = SourceBindings(catalog)
+    bindings = SourceBindings(catalog, include_block_types=profile == "source_types_no_reasoning")
     code = sorted(
         p for parent in (root / "src/telescope_rag", root / "scripts") for p in parent.rglob("*.py")
     )
     return {
         "version": "luna-development-planner-screen-v1",
+        "profile": profile,
         "fixture_manifest_sha256": MANIFEST,
         "prepared_digest": catalog.prepared_digest,
         "sealed_source_hash_inventory_sha256": file_hash(root / SOURCE_HASHES),
@@ -149,19 +160,23 @@ def build_plan(root: Path) -> tuple[dict, SourceBindings]:
         "embedding_calls": 0,
         "qdrant_calls": 0,
         "answer_generation_calls": 0,
-        "packets": development_packets(cases, bindings),
+        "packets": development_packets(cases, bindings, profile=profile),
         "semantic_scoring": "Actual root language review required after execution; "
         "no exact-gold or keyword semantic judge.",
     }, bindings
 
 
-async def run_packets(packets, bindings, settings, chat: ChatProvider, directory: Path) -> dict:
+async def run_packets(
+    packets, bindings, settings, chat: ChatProvider, directory: Path, *, profile="baseline"
+) -> dict:
     if tuple(p["case_id"] for p in packets) != DEVELOPMENT_IDS:
         raise ValueError("development_inventory_mismatch")
     rows = []
     for packet in packets:
         request = WorkflowRequest.model_validate_json(json.dumps(packet["request"]))
-        messages = planner_messages(request, bindings, max_parts=settings.max_subquestions)
+        messages = planner_messages(
+            request, bindings, max_parts=settings.max_subquestions, profile=profile
+        )
         if payload_hash(planner_payload(messages, settings)) != packet["payload_sha256"]:
             raise ValueError("screen_payload_changed")
         budget = ExecutionBudget(settings)
@@ -233,9 +248,12 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument(
+        "--profile", choices=("baseline", "source_types_no_reasoning"), default="baseline"
+    )
     args = parser.parse_args()
     root = Path.cwd()
-    plan, bindings = build_plan(root)
+    plan, bindings = build_plan(root, profile=args.profile)
     if not args.execute:
         args.output.mkdir(parents=True, exist_ok=False)
         write_new(args.output / "plan.json", plan)
@@ -263,12 +281,19 @@ async def main() -> None:
     )
     env = root / ".env"
     before = file_hash(env)
-    config = screen_settings(key=load_settings().openrouter_api_key.get_secret_value())
+    config = screen_settings(
+        key=load_settings().openrouter_api_key.get_secret_value(), profile=args.profile
+    )
     try:
         async with asyncio.timeout(plan["screen_timeout_seconds"]):
             async with OpenRouterProviders(config) as providers:
                 summary = await run_packets(
-                    plan["packets"], bindings, config, providers.chat, args.output
+                    plan["packets"],
+                    bindings,
+                    config,
+                    providers.chat,
+                    args.output,
+                    profile=args.profile,
                 )
         print(json.dumps(summary))
     finally:

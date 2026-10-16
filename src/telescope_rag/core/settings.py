@@ -80,6 +80,8 @@ class Settings(BaseSettings):
     # Normal Luna calls use actual provider usage after dispatch. Strict local
     # counting remains available explicitly; embeddings always require counting.
     chat_input_accounting: Literal["reported_usage", "strict"] = "reported_usage"
+    # Optional experiment control; omission preserves the provider default.
+    chat_reasoning_effort: Literal["none"] | None = None
     provider_timeout_seconds: float = Field(default=15, gt=0)
     provider_max_retries: int = Field(default=1, ge=0, le=1)
     provider_max_request_bytes: int = Field(default=262144, gt=0)

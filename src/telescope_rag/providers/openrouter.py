@@ -323,6 +323,8 @@ class OpenRouterChatProvider:
             "stream": False,
             "provider": {"require_parameters": True, "allow_fallbacks": False},
         }
+        if self._client.settings.chat_reasoning_effort is not None:
+            payload["reasoning"] = {"effort": self._client.settings.chat_reasoning_effort}
         data, receipts = await self._client.execute(
             "chat/completions",
             "chat",

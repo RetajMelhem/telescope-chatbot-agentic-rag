@@ -19,11 +19,14 @@ from telescope_rag.retrieval.assembly import (
 
 
 class SourceBindings:
-    def __init__(self, catalog: EvidenceCatalog):
+    def __init__(self, catalog: EvidenceCatalog, *, include_block_types: bool = False):
         documents = {}
         owners = defaultdict(set)
+        block_types = defaultdict(set)
         for chunk in catalog.chunks.values():
             documents.setdefault(chunk.document_id, (chunk.canonical_url, chunk.page_title))
+            if include_block_types:
+                block_types[chunk.document_id].add(chunk.block_type)
             if chunk.doctor_id is not None:
                 owners[("literal", chunk.doctor_id)].add(chunk.doctor_name)
             if chunk.canonical_doctor_id is not None:
@@ -41,6 +44,11 @@ class SourceBindings:
                     "handle": handle,
                     "source_url": documents[identity][0],
                     "untrusted_title": documents[identity][1],
+                    **(
+                        {"available_block_types": sorted(block_types[identity])}
+                        if include_block_types
+                        else {}
+                    ),
                 }
                 for handle, identity in self.documents.items()
             ],

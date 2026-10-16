@@ -57,6 +57,8 @@ The embedding adapter still refuses dispatch unless a counter is explicitly supp
 
 Chat uses `POST https://openrouter.ai/api/v1/chat/completions`, selected model, unchanged message text, `response_format.type=json_schema`, `strict=true`, `max_completion_tokens`, and `stream=false`. Embeddings use `POST /api/v1/embeddings`, selected Qwen model, a text array, configured dimensions, and `encoding_format=float`. Both require parameter support and disable provider fallbacks. There is no SDK retry, model fallback list, tool call, response-healing plugin, repair call, or extra judge. Injected transports are trusted test/dependency surfaces and must not implement hidden retries.
 
+`CHAT_REASONING_EFFORT` defaults to unset, preserving the original wire. The explicit experimental value `none` adds `reasoning={"effort":"none"}` to chat only; embedding requests remain unchanged. [OpenRouter documents](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens) that reasoning and visible output share the completion cap and exposes that control; [OpenAI's Luna model page](https://developers.openai.com/api/docs/models/gpt-6-luna) lists `none` support. Five of six initial actual development planner responses truncated with most output spent reasoning. A separately frozen development candidate tests this control alongside literal source-type metadata with the same 1,000-output-token cap. Neither documentation nor fewer reasoning tokens establishes semantic quality; default graph behavior is unchanged until reviewed adoption.
+
 Responses must be JSON objects within the byte cap. Duplicate keys, malformed/nonfinite JSON, unexpected content types, embedded provider errors, and inconsistent usage fail. Chat requires one assistant choice with `finish_reason=stop`, nonempty JSON content, and strict local schema validation. Refusals, truncation, tool output, missing fields, extra fields, and type mismatches fail without repair/retry.
 
 Embeddings require exactly one result for each submitted input, unique integer indices in range, the exact configured dimension, finite numeric values, and nonzero vectors. Booleans/strings are not numbers. Results may arrive out of order; indices restore original input order. Cleaning, structural chunking, provenance and per-chunk ceiling checks happen before this adapter in M3; batch protocol validation cannot prove source quality.
@@ -78,6 +80,7 @@ Receipts contain operation/attempt ordinals, requested/reported model and provid
 | Setting | Default |
 | --- | --- |
 | `CHAT_INPUT_ACCOUNTING` | `reported_usage` |
+| `CHAT_REASONING_EFFORT` | Unset; optional experimental `none` |
 | `PROVIDER_MAX_REQUEST_BYTES` | 262,144 |
 | `PROVIDER_MAX_RESPONSE_BYTES` | 2,000,000 |
 | `PROVIDER_RETRY_DELAY_SECONDS` | 0.1 |
