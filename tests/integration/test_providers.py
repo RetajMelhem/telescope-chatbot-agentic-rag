@@ -45,6 +45,7 @@ class SyntheticCounter:
 def config(**overrides: Any) -> Settings:
     values = {
         "app_env": "test",
+        "chat_input_accounting": "strict",  # Exercise the retained counted-input contract.
         "openrouter_api_key": "synthetic-model-key",
         "embedding_dimensions": 32,
         "provider_retry_delay_seconds": 0,

@@ -168,7 +168,7 @@ class BudgetSummary:
     logical_embedding_calls: int
     physical_chat_attempts: int
     physical_embedding_attempts: int
-    charged_chat_input: int
+    charged_chat_input: int | None
     charged_embedding_input: int
     charged_output: int
     receipts: tuple[AttemptReceipt, ...]

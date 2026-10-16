@@ -59,7 +59,7 @@ class AttemptReceipt:
     provider: str | None
     status_code: int | None
     outcome: str
-    input_reserved: int
+    input_reserved: int | None
     output_reserved: int
     count_profile: str
     count_basis: str

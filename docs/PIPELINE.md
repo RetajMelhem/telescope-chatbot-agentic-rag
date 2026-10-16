@@ -1,6 +1,6 @@
 # LangGraph pipeline
 
-Status: an initial offline LangGraph prototype is implemented and tested on 2026-10-16. Live Luna execution, semantic admission, serving retrieval, time calculations and API integration remain pending. The serving graph below remains the target design.
+Status: an initial offline LangGraph prototype is implemented and tested on 2026-10-16. Model-driven planner/draft execution, semantic admission, serving retrieval, time calculations and API integration remain pending. A minimal Luna JSON screen passed separately; see [PROVIDERS.md](PROVIDERS.md). The serving graph below remains the target design.
 
 LangGraph can express both fixed workflows and dynamic agents. This MVP is a bounded adaptive RAG workflow: Luna plans the questions and the graph chooses answer, partial-answer, clarification, or refusal paths. It is not an unrestricted tool-selection loop. See [LangGraph's workflow and agent guide](https://docs.langchain.com/oss/python/langgraph/workflows-agents).
 
@@ -38,7 +38,7 @@ Search parts use one injected batch retrieval interface with exact snapshot/dige
 
 Outputs use `draft_ready`, `not_found`, `out_of_scope`, `clarification_required` or `failed`, with each original part explicit. They never use `answered` or declare supported clinical claims. `offline_only=true`, `semantic_grounding_verified=false` and `luna_compatibility_verified=false` remain mandatory. The full provenance sidecar, stage events and content-free budget receipts accompany the offline result. Construction refuses production settings. Trusted injected services retain their own capabilities; dependency injection alone does not prove an arbitrary service is offline.
 
-The normal path has one planning and one draft logical chat stage; all-nonpublic/no-eligible-evidence paths stop earlier. The existing provider counter must count the complete messages/schema/history/render/metadata for each dispatch; the assembler's Qwen count is only a retrieval-render ceiling. No synthetic count authorizes Luna. FastAPI still returns `503`; mock successes do not enable chat or establish production readiness.
+The normal path has one planning and one draft logical chat stage; all-nonpublic/no-eligible-evidence paths stop earlier. Normal Luna chat records provider usage after dispatch without requiring a local count. Explicit strict chat still requires complete messages/schema/history/render/metadata counting; the assembler's Qwen count is only a retrieval-render ceiling. No synthetic count is presented as Luna usage. FastAPI still returns `503`; mock successes do not enable chat or establish production readiness.
 
 ## Planned serving request graph
 
@@ -125,18 +125,18 @@ Graph state excludes keys, provider client objects, private records, hidden reas
 | Query embeddings | One bounded batch, at most four eligible questions |
 | Candidate chunks | Five per question |
 | Final evidence | At most 16 chunks and 6,000 tokens |
-| Cumulative Luna input | 16,000 tokens including prompts, history, original question, and evidence |
+| Cumulative Luna input | Reported after dispatch in normal chat; 16,000 counted tokens only in explicit strict mode |
 | Cumulative output | 2,000 provider output tokens, including reasoning where billed/reported |
 | Embedding input | 16,000 tokens across attempts, separately accounted from Luna input |
 | Embedding batch | One logical batch of at most 32 texts; graph queries remain bounded to four |
 | Overall request deadline | 30 seconds |
 | Provider attempt timeout | At most 15 seconds and never beyond remaining deadline |
-| Transient retries | At most one per provider operation, only within remaining budgets |
+| Transient retries | Zero for normal chat; at most one for strict chat/embeddings within remaining budgets |
 
-`MAX_LLM_CALLS=2` counts logical stages. A transport retry can add a physical request: at most four Luna attempts and two embedding attempts, including retries. Reserve tokens for every attempt; retries do not bypass cumulative limits. Do not retry a potentially billed ambiguous timeout automatically. Schema-invalid output has no extra LLM repair stage in this phase.
+`MAX_LLM_CALLS=2` counts logical stages. Normal reported-usage chat permits at most two physical Luna attempts. Explicit strict chat permits at most four attempts with its counted retry policy; one embedding operation permits at most two attempts. Reserve output for every attempt and input for counted operations. Do not retry a potentially billed ambiguous timeout automatically. Schema-invalid output has no extra LLM repair stage in this phase.
 
-Use provider-compatible token accounting and fail conservatively if the tokenizer/count is uncertain. Oversized evidence or history must not displace the current question or silently erase unresolved parts. If sufficient context cannot fit, return clarification or an explicit partial/unknown result. These defaults need evaluation; they are not measured latency or cost guarantees.
+Normal Luna chat uses provider-reported usage after each response and does not require local input-token counting. The 16,000-token input ceiling applies to explicit strict chat, not normal reported-usage chat. Embeddings retain verified counting. Reported-mode chat has no automatic retries; it retains bounded calls/output/deadlines and transport bytes. Missing usage remains unknown and does not stop an otherwise valid answer. Oversized evidence or history must not displace the current question or silently erase unresolved parts. Provider context/truncation errors remain explicit failures. These defaults need evaluation; they are not measured latency or cost guarantees.
 
-M2 implements the provider budget/validation boundary in [PROVIDERS.md](PROVIDERS.md). Share one budget across graph stages; initialization is not permission to infer. Default counting refuses dispatch until a verified compatible profile is supplied, and embedding formatting must be explicitly verified/versioned. Unknown usage retains full attempt reservations; client attempt receipts do not establish hidden upstream activity.
+M2 implements the provider budget/validation boundary in [PROVIDERS.md](PROVIDERS.md). Share one budget across graph stages; initialization is not permission to infer. Unavailable counting blocks explicit strict chat and embeddings; embedding formatting must be verified/versioned. Unknown normal-chat input remains null, while unknown output and counted operations retain their reservations. Client attempt receipts do not establish hidden upstream activity.
 
 Citation/schema validation does not establish semantic entailment of arbitrary generated prose. See [EVALUATION.md](EVALUATION.md) for the source-grounding review requirement.

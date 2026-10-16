@@ -131,7 +131,10 @@ def capture_settings() -> Settings:
         for name, field in Settings.model_fields.items()
     }
     values.update(
-        app_env="test", openrouter_api_key="synthetic-capture-only", provider_max_retries=0
+        app_env="test",
+        openrouter_api_key="synthetic-capture-only",
+        provider_max_retries=0,
+        chat_input_accounting="strict",
     )
     return Settings(_env_file=None, **values)
 

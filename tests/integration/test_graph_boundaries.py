@@ -23,7 +23,7 @@ from telescope_rag.graph.workflow import OfflineRagWorkflow, WorkflowError
 from telescope_rag.providers.openrouter import OpenRouterProviders
 
 
-def test_actual_provider_default_count_gate_blocks_graph_before_any_http_dispatch():
+def test_actual_provider_explicit_strict_count_gate_blocks_graph_before_any_http_dispatch():
     async def scenario():
         dispatched = []
 
@@ -31,7 +31,12 @@ def test_actual_provider_default_count_gate_blocks_graph_before_any_http_dispatc
             dispatched.append(request)
             raise AssertionError("No provider request is authorized in this test")
 
-        settings = Settings(_env_file=None, app_env="test", openrouter_api_key="synthetic-only")
+        settings = Settings(
+            _env_file=None,
+            app_env="test",
+            openrouter_api_key="synthetic-only",
+            chat_input_accounting="strict",
+        )
         evidence = catalog(source(1))
         async with OpenRouterProviders(
             settings, transport=httpx2.MockTransport(forbidden)

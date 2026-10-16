@@ -2,7 +2,7 @@
 
 On 2026-10-16 (Asia/Amman), the cache-only comparison completed all 90 frozen bilingual/Jordanian Arabic requests. Exact grouping before the candidate limit repairs the observed contact-information crowding in three development cases. **Eligible evaluation recall does not improve.** Dense remains the provisional retrieval baseline; no production adoption or data/answer readiness is established.
 
-The verified implementation is checkpoint `4fff7f9`. It adds an offline evidence catalog, bounded assembly contracts, an exact cached cosine ranker, and a reproducible comparison runner. It leaves corpus chunks, original sources, approved source decisions, cached embeddings, Qdrant, the public API and frozen gold unchanged. There were zero provider/index calls and no incremental external API charge from this experiment. Local computation has a resource cost that was not monetized.
+The verified implementation is checkpoint `4fff7f9`. It adds an offline evidence catalog, bounded assembly contracts, an exact cached cosine ranker, and a reproducible comparison runner. It leaves corpus chunks, original sources, approved source decisions, cached embeddings, Qdrant, the public API and frozen gold unchanged. There were zero provider/index calls and no incremental external API charge from this experiment. Local computation has a resource cost that was not monetized. This is a historical experiment report: its later-step Luna counting prerequisite was subsequently superseded for normal chat by the user's reported-usage policy; see [current provider contracts](PROVIDERS.md).
 
 ## What changed
 

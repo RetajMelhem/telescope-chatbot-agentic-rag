@@ -83,16 +83,19 @@ class _Client:
             raise ProviderError("invalid_provider_request") from None
         if len(encoded) > self.settings.provider_max_request_bytes:
             raise ProviderError("provider_request_too_large")
-        try:
-            count = self.counter.count(kind, payload)
-        except ProviderError:
-            raise
-        except Exception:
-            raise ProviderError("token_count_unavailable") from None
-        if not isinstance(count, TokenCount) or count.model != payload["model"]:
-            raise ProviderError("incompatible_token_count")
+        count = None
+        if kind != "chat" or self.settings.chat_input_accounting == "strict":
+            try:
+                count = self.counter.count(kind, payload)
+            except ProviderError:
+                raise
+            except Exception:
+                raise ProviderError("token_count_unavailable") from None
+            if not isinstance(count, TokenCount) or count.model != payload["model"]:
+                raise ProviderError("incompatible_token_count")
         operation = budget.begin(kind)
-        for attempt in range(1, self.settings.provider_max_retries + 2):
+        retries = self.settings.provider_max_retries if count is not None else 0
+        for attempt in range(1, retries + 2):
             try:
                 value = await self._attempt(
                     path,
@@ -115,7 +118,7 @@ class _Client:
                 )
                 return value, receipts
             except ProviderError as error:
-                if not error.retryable or attempt > self.settings.provider_max_retries:
+                if not error.retryable or attempt > retries:
                     raise
                 delay = (
                     error.retry_after_seconds
@@ -134,7 +137,7 @@ class _Client:
         model: str,
         encoded: bytes,
         key: str,
-        count: TokenCount,
+        count: TokenCount | None,
         output: int,
         budget: ExecutionBudget,
         operation: int,
@@ -142,7 +145,11 @@ class _Client:
         decode: Callable[[dict[str, Any]], V],
         reported_model_alias: str | None,
     ) -> V:
-        reservation = budget.reserve(kind, count, output)
+        reservation = (
+            budget.reserve(kind, count, output)
+            if count is not None
+            else budget.reserve_reported_chat(output)
+        )
         usage = UsageReport()
         status = None
         reported_model = provider = None
@@ -220,10 +227,12 @@ class _Client:
                         provider=provider,
                         status_code=status,
                         outcome=outcome,
-                        input_reserved=count.units,
+                        input_reserved=count.units if count is not None else None,
                         output_reserved=output,
-                        count_profile=count.profile,
-                        count_basis=count.basis,
+                        count_profile=count.profile
+                        if count is not None
+                        else "luna-reported-usage-v1",
+                        count_basis=count.basis if count is not None else "reported_usage_only",
                         usage=usage,
                     )
                 )
@@ -373,7 +382,7 @@ class OpenRouterEmbeddingProvider:
 
 
 class OpenRouterProviders:
-    """Own the shared client. Inject a verified counter/format before inference."""
+    """Own the shared client; embeddings and strict chat require a counter."""
 
     def __init__(
         self,

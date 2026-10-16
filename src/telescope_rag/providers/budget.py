@@ -12,7 +12,7 @@ from telescope_rag.providers.errors import ProviderError
 @dataclass
 class Reservation:
     kind: OperationKind
-    count: TokenCount
+    count: TokenCount | None
     output: int
     settled: bool = False
 
@@ -36,9 +36,14 @@ class ExecutionBudget:
             "embedding": settings.max_embedding_input_tokens,
         }
         self._output_limit = settings.max_total_output_tokens
+        self._reported_chat = settings.chat_input_accounting == "reported_usage"
+        self._chat_reservation_mode: str | None = None
+        self._reported_chat_pending = 0
+        self._reported_chat_known = 0
+        self._reported_chat_unknown = False
         self.operations = {"chat": 0, "embedding": 0}
         self.attempts = {"chat": 0, "embedding": 0}
-        self.input_charged = {"chat": 0, "embedding": 0}
+        self.input_charged: dict[OperationKind, int | None] = {"chat": 0, "embedding": 0}
         self.output_charged = 0
         self.blocked = False
         self._receipts: list[AttemptReceipt] = []
@@ -62,21 +67,72 @@ class ExecutionBudget:
 
     def reserve(self, kind: OperationKind, count: TokenCount, output: int) -> Reservation:
         self.remaining_seconds()
+        if kind == "chat" and self._chat_reservation_mode == "reported_usage":
+            raise ProviderError("mixed_chat_accounting_modes")
+        charged = self.input_charged[kind]
         if (
-            self.attempts[kind] >= self._attempt_limits[kind]
-            or self.input_charged[kind] + count.units > self._input_limits[kind]
+            charged is None
+            or self.attempts[kind] >= self._attempt_limits[kind]
+            or charged + count.units > self._input_limits[kind]
             or self.output_charged + output > self._output_limit
         ):
             raise ProviderError("token_or_attempt_budget_exhausted")
         self.attempts[kind] += 1
-        self.input_charged[kind] += count.units
+        if kind == "chat":
+            self._chat_reservation_mode = "strict"
+        self.input_charged[kind] = charged + count.units
         self.output_charged += output
         return Reservation(kind, count, output)
+
+    def reserve_reported_chat(self, output: int) -> Reservation:
+        """Reserve output/attempts, honestly leaving input unknown until usage.
+
+        There is no input-token ceiling enforcement in this mode. Request bytes
+        are bounded by the adapter, never converted into invented token units.
+        """
+        self.remaining_seconds()
+        if not self._reported_chat:
+            raise ProviderError("reported_chat_accounting_not_enabled")
+        if self._chat_reservation_mode == "strict":
+            raise ProviderError("mixed_chat_accounting_modes")
+        if type(output) is not int or output < 1:
+            raise ProviderError("invalid_output_limit")
+        if (
+            self.attempts["chat"] >= self._operation_limits["chat"]
+            or self.output_charged + output > self._output_limit
+        ):
+            raise ProviderError("token_or_attempt_budget_exhausted")
+        self._chat_reservation_mode = "reported_usage"
+        self._reported_chat_pending += 1
+        self.input_charged["chat"] = None
+        self.attempts["chat"] += 1
+        self.output_charged += output
+        return Reservation("chat", None, output)
 
     def settle(self, reservation: Reservation, usage: UsageReport) -> None:
         if reservation.settled:
             return
         reservation.settled = True
+        if reservation.count is None:
+            if reservation.kind != "chat" or not self._reported_chat:
+                self.blocked = True
+                raise ProviderError("invalid_reported_usage_reservation")
+            self._reported_chat_pending -= 1
+            if usage.input_tokens is None:
+                self._reported_chat_unknown = True
+            else:
+                self._reported_chat_known += usage.input_tokens
+            self.input_charged["chat"] = (
+                None
+                if self._reported_chat_pending or self._reported_chat_unknown
+                else self._reported_chat_known
+            )
+            if usage.output_tokens is not None:
+                if usage.output_tokens > reservation.output:
+                    self.blocked = True
+                    raise ProviderError("reported_usage_exceeds_reservation")
+                self.output_charged -= reservation.output - usage.output_tokens
+            return
         if (usage.input_tokens is not None and usage.input_tokens > reservation.count.units) or (
             usage.output_tokens is not None and usage.output_tokens > reservation.output
         ):

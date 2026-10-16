@@ -1,6 +1,6 @@
 # Retrieval diagnosis and proposed chunking experiment
 
-Date: 2026-10-16, Asia/Amman. Baseline checkout: `6afe486`. Scope: read-only implementation/source/evaluation diagnosis, fresh offline regression tests, and an experiment design. No production code, source bundle, frozen gold, collection or provider configuration was changed. No provider or index request ran. Technical documentation was consulted on the web; clinic evidence remains exclusively the saved Telescope website sources.
+Date: 2026-10-16, Asia/Amman. Baseline checkout: `6afe486`. Scope: read-only implementation/source/evaluation diagnosis, fresh offline regression tests, and an experiment design. No production code, source bundle, frozen gold, collection or provider configuration was changed. No provider or index request ran. Technical documentation was consulted on the web; clinic evidence remains exclusively the saved Telescope website sources. This is a historical diagnosis: the local Luna counting gate described below was subsequently removed for normal chat under the user's authorization; see [current provider contracts](PROVIDERS.md).
 
 **Recommendation:** implement bounded evidence assembly and source-scope handling first, keeping dense retrieval provisional. The user's independent semantic audit and controlled chunking comparison is a good experiment. Treat selective boundary changes as candidates, rather than assuming a replacement chunker will solve the observed failures.
 

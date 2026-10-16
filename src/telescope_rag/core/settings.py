@@ -77,6 +77,9 @@ class Settings(BaseSettings):
     openrouter_base_url: AnyHttpUrl = AnyHttpUrl("https://openrouter.ai/api/v1")
     openrouter_chat_model: Literal["openai/gpt-6-luna"] = "openai/gpt-6-luna"
     openrouter_embedding_model: Literal["qwen/qwen3-embedding-8b"] = "qwen/qwen3-embedding-8b"
+    # Normal Luna calls use actual provider usage after dispatch. Strict local
+    # counting remains available explicitly; embeddings always require counting.
+    chat_input_accounting: Literal["reported_usage", "strict"] = "reported_usage"
     provider_timeout_seconds: float = Field(default=15, gt=0)
     provider_max_retries: int = Field(default=1, ge=0, le=1)
     provider_max_request_bytes: int = Field(default=262144, gt=0)
