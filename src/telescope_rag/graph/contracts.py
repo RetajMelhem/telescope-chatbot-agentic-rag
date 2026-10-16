@@ -175,6 +175,20 @@ class BudgetSummary:
 
 
 @dataclass(frozen=True)
+class LiteralRequestSpan:
+    start: int
+    end: int
+    quote: str = field(repr=False)
+
+
+@dataclass(frozen=True)
+class PartAnchorBinding:
+    part_id: str
+    original: LiteralRequestSpan = field(repr=False)
+    constraints: tuple[LiteralRequestSpan, ...] = field(repr=False)
+
+
+@dataclass(frozen=True)
 class WorkflowRun:
     request: WorkflowRequest = field(repr=False)
     result: WorkflowResult
@@ -182,3 +196,4 @@ class WorkflowRun:
     evidence: AssembledEvidence | None = field(repr=False)
     stages: tuple[str, ...]
     usage: BudgetSummary
+    request_anchors: tuple[PartAnchorBinding, ...] = field(default=(), repr=False)

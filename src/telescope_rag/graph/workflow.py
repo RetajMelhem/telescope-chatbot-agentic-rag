@@ -13,11 +13,13 @@ from langsmith.run_helpers import tracing_context
 from pydantic import ValidationError
 
 from telescope_rag.core.settings import Settings
+from telescope_rag.graph.anchoring import AnchoredPlannerReply, AnchorError, resolve_anchored_plan
 from telescope_rag.graph.bindings import SourceBindings
 from telescope_rag.graph.contracts import (
     AnswerDraft,
     BudgetSummary,
     EvidenceRetriever,
+    PartAnchorBinding,
     PartResult,
     PlannerReply,
     QuotedEvidence,
@@ -46,11 +48,12 @@ class _RunContext:
     plan: ValidatedPlan | None = field(default=None, repr=False)
     evidence: AssembledEvidence | None = field(default=None, repr=False)
     stages: list[str] = field(default_factory=list)
+    request_anchors: tuple[PartAnchorBinding, ...] = field(default=(), repr=False)
 
 
 class _State(TypedDict, total=False):
     request: WorkflowRequest
-    proposal: PlannerReply
+    proposal: PlannerReply | AnchoredPlannerReply
     plan: ValidatedPlan
     candidates: dict[str, tuple[str, ...]]
     evidence: AssembledEvidence
@@ -74,15 +77,24 @@ class OfflineRagWorkflow:
         catalog: EvidenceCatalog,
         counter: AssemblyCounter,
         token_basis: Literal["qwen_retrieval_only", "synthetic_test"] = "qwen_retrieval_only",
+        planner_profile: Literal["baseline", "literal_anchors"] = "baseline",
     ) -> None:
-        if settings.app_env == "production" or token_basis not in {
-            "qwen_retrieval_only",
-            "synthetic_test",
-        }:
+        if (
+            planner_profile not in {"baseline", "literal_anchors"}
+            or settings.app_env == "production"
+            or token_basis
+            not in {
+                "qwen_retrieval_only",
+                "synthetic_test",
+            }
+        ):
             raise WorkflowError("offline_workflow_configuration_invalid")
         self._settings, self._chat, self._retriever = settings, chat, retriever
         self._catalog, self._counter, self._token_basis = catalog, counter, token_basis
-        self._bindings = SourceBindings(catalog)
+        self._planner_profile = planner_profile
+        self._bindings = SourceBindings(
+            catalog, include_block_types=planner_profile == "literal_anchors"
+        )
         self._snapshot = next(iter(catalog.chunks.values())).snapshot_id
         builder = StateGraph(_State, context_schema=_RunContext)
         for name, node in (
@@ -151,12 +163,16 @@ class OfflineRagWorkflow:
 
     async def _plan_query(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "plan_query")
+        model = AnchoredPlannerReply if self._planner_profile == "literal_anchors" else PlannerReply
         try:
             result = await self._chat.complete(
                 planner_messages(
-                    state["request"], self._bindings, max_parts=self._settings.max_subquestions
+                    state["request"],
+                    self._bindings,
+                    max_parts=self._settings.max_subquestions,
+                    profile=self._planner_profile,
                 ),
-                PlannerReply,
+                model,
                 max_output_tokens=min(1000, self._settings.max_total_output_tokens),
                 budget=runtime.context.budget,
             )
@@ -164,20 +180,28 @@ class OfflineRagWorkflow:
             raise
         except Exception:
             raise WorkflowError("planning_failed") from None
-        return {"proposal": self._typed(result, PlannerReply, "invalid_plan")}
+        return {"proposal": self._typed(result, model, "invalid_plan")}
 
     async def _validate_plan(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "validate_plan")
         try:
+            proposal, anchors = state["proposal"], ()
+            if self._planner_profile == "literal_anchors":
+                proposal, anchors = resolve_anchored_plan(
+                    proposal, state["request"], runtime.context.request_id
+                )
             plan = self._bindings.validate(
-                state["proposal"],
+                proposal,
                 state["request"],
                 runtime.context.request_id,
                 max_parts=self._settings.max_subquestions,
             )
+        except AnchorError as error:
+            raise WorkflowError(str(error)) from None
         except (ValueError, TypeError, ValidationError):
             raise WorkflowError("invalid_plan") from None
         runtime.context.plan = plan
+        runtime.context.request_anchors = anchors
         return {"plan": plan}
 
     @staticmethod
@@ -296,6 +320,19 @@ class OfflineRagWorkflow:
                 {
                     "part_id": part.part_id,
                     "operation": state["plan"].operations[i],
+                    **(
+                        {
+                            "original_text": state["request"].query[part.start : part.end],
+                            "state": part.state,
+                            "intended_use": part.intended_use,
+                            "constraint_quotes": [
+                                span.quote
+                                for span in runtime.context.request_anchors[i].constraints
+                            ],
+                        }
+                        if self._planner_profile == "literal_anchors"
+                        else {}
+                    ),
                     "eligible_quote_chunk_ids": list(
                         self._allowed(state["plan"], state["evidence"], i)
                     ),
@@ -515,6 +552,7 @@ class OfflineRagWorkflow:
                 budget.output_charged,
                 budget.receipts,
             ),
+            context.request_anchors,
         )
 
     def _failure(self, request: WorkflowRequest, context: _RunContext, code: str) -> WorkflowResult:

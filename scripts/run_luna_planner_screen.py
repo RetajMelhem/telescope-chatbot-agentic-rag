@@ -23,6 +23,7 @@ from scripts.planner_review import (
 )
 from scripts.retrieval_benchmark import load_corpus
 from telescope_rag.core.settings import Settings, load_settings
+from telescope_rag.graph.anchoring import AnchoredPlannerReply, AnchorError, resolve_anchored_plan
 from telescope_rag.graph.bindings import SourceBindings
 from telescope_rag.graph.contracts import PlannerReply, WorkflowRequest
 from telescope_rag.graph.planning import planner_messages
@@ -66,11 +67,14 @@ def screen_settings(
     return Settings(_env_file=None, **values)
 
 
-def planner_payload(messages: tuple[ChatMessage, ...], settings: Settings) -> dict:
+def planner_payload(
+    messages: tuple[ChatMessage, ...], settings: Settings, *, profile="baseline"
+) -> dict:
+    model = AnchoredPlannerReply if profile == "literal_anchors" else PlannerReply
     payload = {
         "model": settings.openrouter_chat_model,
         "messages": [m.model_dump() for m in messages],
-        "response_format": {"type": "json_schema", "json_schema": output_schema(PlannerReply)},
+        "response_format": {"type": "json_schema", "json_schema": output_schema(model)},
         "max_completion_tokens": OUTPUT_CAP,
         "stream": False,
         "provider": {"require_parameters": True, "allow_fallbacks": False},
@@ -94,7 +98,9 @@ def development_packets(cases, bindings: SourceBindings, *, profile="baseline") 
     packets = []
     for case in selected:
         payload = planner_payload(
-            planner_messages(case.request, bindings, max_parts=4, profile=profile), config
+            planner_messages(case.request, bindings, max_parts=4, profile=profile),
+            config,
+            profile=profile,
         )
         packets.append(
             {
@@ -108,7 +114,7 @@ def development_packets(cases, bindings: SourceBindings, *, profile="baseline") 
 
 
 def build_plan(root: Path, *, profile="baseline") -> tuple[dict, SourceBindings]:
-    if profile not in {"baseline", "source_types_no_reasoning"}:
+    if profile not in {"baseline", "source_types_no_reasoning", "literal_anchors"}:
         raise ValueError("unknown_planner_profile")
     directory = root / FIXTURES
     manifest = verify_inventory(directory, MANIFEST)
@@ -135,7 +141,7 @@ def build_plan(root: Path, *, profile="baseline") -> tuple[dict, SourceBindings]
     reviews = json.loads((directory / "independent-reviews.json").read_bytes())
     validate_reviews(cases, reviews)
     source_checks = validate_source_evidence(reviews, catalog, bundle=bundle, packet_root=directory)
-    bindings = SourceBindings(catalog, include_block_types=profile == "source_types_no_reasoning")
+    bindings = SourceBindings(catalog, include_block_types=profile != "baseline")
     code = sorted(
         p for parent in (root / "src/telescope_rag", root / "scripts") for p in parent.rglob("*.py")
     )
@@ -177,7 +183,10 @@ async def run_packets(
         messages = planner_messages(
             request, bindings, max_parts=settings.max_subquestions, profile=profile
         )
-        if payload_hash(planner_payload(messages, settings)) != packet["payload_sha256"]:
+        if (
+            payload_hash(planner_payload(messages, settings, profile=profile))
+            != packet["payload_sha256"]
+        ):
             raise ValueError("screen_payload_changed")
         budget = ExecutionBudget(settings)
         row = {
@@ -191,19 +200,29 @@ async def run_packets(
         }
         started = time.monotonic()
         fatal = False
+        model = AnchoredPlannerReply if profile == "literal_anchors" else PlannerReply
         try:
             result = await chat.complete(
-                messages, PlannerReply, max_output_tokens=OUTPUT_CAP, budget=budget
+                messages, model, max_output_tokens=OUTPUT_CAP, budget=budget
             )
-            if type(result.data) is not PlannerReply:
+            if type(result.data) is not model:
                 raise ValueError("screen_reply_type_invalid")
             row["proposal"] = result.data.model_dump(mode="json")
             row["schema_valid"] = True
             try:
-                bindings.validate(result.data, request, packet["case_id"], max_parts=4)
+                proposal = result.data
+                if profile == "literal_anchors":
+                    proposal, anchors = resolve_anchored_plan(proposal, request, packet["case_id"])
+                    row["derived_proposal"] = proposal.model_dump(mode="json")
+                    row["request_anchors"] = [asdict(a) for a in anchors]
+                bindings.validate(proposal, request, packet["case_id"], max_parts=4)
                 row["literal_bindings_valid"] = True
             except ValueError as error:
-                row["error_code"] = str(error) if type(error) is ValueError else "invalid_plan"
+                row["error_code"] = (
+                    str(error)
+                    if type(error) is ValueError or isinstance(error, AnchorError)
+                    else "invalid_plan"
+                )
         except ProviderError as error:
             row["error_code"] = error.code
             fatal = error.status_code in {400, 401, 402, 403, 404} or error.code in {
@@ -249,7 +268,9 @@ async def main() -> None:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--execute", action="store_true")
     parser.add_argument(
-        "--profile", choices=("baseline", "source_types_no_reasoning"), default="baseline"
+        "--profile",
+        choices=("baseline", "source_types_no_reasoning", "literal_anchors"),
+        default="baseline",
     )
     args = parser.parse_args()
     root = Path.cwd()

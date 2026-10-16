@@ -10,6 +10,7 @@ import httpx2 as httpx
 import pytest
 from test_offline_workflow import catalog, single_plan, source
 
+from telescope_rag.graph.anchoring import AnchoredPlannerReply
 from telescope_rag.graph.bindings import SourceBindings
 from telescope_rag.graph.contracts import WorkflowRequest
 from telescope_rag.providers.openrouter import OpenRouterProviders
@@ -20,9 +21,7 @@ from scripts import run_luna_planner_screen as screen
 
 
 def preparation(profile="baseline"):
-    bindings = SourceBindings(
-        catalog(source(1)), include_block_types=profile == "source_types_no_reasoning"
-    )
+    bindings = SourceBindings(catalog(source(1)), include_block_types=profile != "baseline")
     cases = [
         SimpleNamespace(
             case_id=identity,
@@ -40,6 +39,12 @@ def reply(request, *, usage=True, invalid_binding=False):
     payload = json.loads(request.read())
     body = json.loads(payload["messages"][-1]["content"])
     proposal = single_plan()(body).model_dump(mode="json")
+    if payload["response_format"]["json_schema"]["name"] == "AnchoredPlannerReply":
+        for part in proposal["parts"]:
+            start, end = part.pop("start"), part.pop("end")
+            part["original_text"] = body["original_query"][start:end]
+            part["constraint_quotes"] = []
+        AnchoredPlannerReply.model_validate_json(json.dumps(proposal))
     if invalid_binding:
         proposal["parts"][0]["document_handles"] = ["not-issued"]
     return httpx.Response(
@@ -61,7 +66,7 @@ def reply(request, *, usage=True, invalid_binding=False):
 
 
 @pytest.mark.parametrize("usage", [True, False])
-@pytest.mark.parametrize("profile", ["baseline", "source_types_no_reasoning"])
+@pytest.mark.parametrize("profile", ["baseline", "source_types_no_reasoning", "literal_anchors"])
 def test_exact_six_development_inputs_match_actual_adapter_and_have_no_gold(
     tmp_path, usage, profile
 ):
@@ -74,14 +79,17 @@ def test_exact_six_development_inputs_match_actual_adapter_and_have_no_gold(
     def handler(request):
         actual = json.loads(request.read())
         assert actual == packets[len(seen)]["payload"]
-        assert actual["response_format"]["json_schema"]["name"] == "PlannerReply"
+        assert actual["response_format"]["json_schema"]["name"] == (
+            "AnchoredPlannerReply" if profile == "literal_anchors" else "PlannerReply"
+        )
         assert actual["max_completion_tokens"] == 1000
         if profile == "source_types_no_reasoning":
             assert actual["reasoning"] == {"effort": "none"}
-            manifest = json.loads(actual["messages"][-1]["content"])["source_manifest"]
-            assert all(d["available_block_types"] == ["section"] for d in manifest["documents"])
         else:
             assert "reasoning" not in actual
+        if profile != "baseline":
+            manifest = json.loads(actual["messages"][-1]["content"])["source_manifest"]
+            assert all(d["available_block_types"] == ["section"] for d in manifest["documents"])
         seen.append(actual)
         return reply(request, usage=usage)
 
@@ -102,6 +110,9 @@ def test_exact_six_development_inputs_match_actual_adapter_and_have_no_gold(
         assert saved["reported_input_tokens"] == (20 if usage else None)
         assert saved["receipts"][0]["input_reserved"] is None
         assert "synthetic-screen-preparation" not in json.dumps(saved)
+        if profile == "literal_anchors":
+            assert saved["derived_proposal"]["parts"][0]["start"] == 0
+            assert saved["request_anchors"][0]["original"]["quote"] == packet["request"]["query"]
 
 
 @pytest.mark.parametrize("status", [400, 401, 402, 403, 404])
