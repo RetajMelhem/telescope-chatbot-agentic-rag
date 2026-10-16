@@ -247,3 +247,41 @@ not the new prompt's ability to make every decision. Select any further minimal
 live coverage only from those documented gaps. Typed unspecified AM/PM, broader
 hours-model behavior, answer/directory acceptance and serving remain unverified;
 default v12 stays and production adoption is held.
+
+## Consolidated hours acceptance evidence
+
+`artifacts/m5-hours-consolidation-v1` binds all four cohorts: 36 actual saved
+proposals/50 parts, representing 31 distinct request contents. Their existing
+individual semantic verdicts are imported with exact output/review hashes; this
+does not claim a new semantic grading or new v14 model decisions. Every proposal
+is replayed unchanged against both its original wire/profile and v14 at its
+original clock, using actual catalog/Qwen/graph/presenter, mocked transport and
+socket/DNS guards. All 36 old payloads reconstruct exactly. Of 72 mocked calls,
+34 original-profile and 33 v14 requests complete. All 33 jointly completed projected
+responses are identical. The three known invalid broader-screen proposals are
+rejected under v14, including the formerly accepted doctor/document mismatch.
+The two earlier false identity clarifications still execute and remain inherited
+semantic failures. Execution completion never substitutes for meaning review.
+
+The authored 12-row `acceptance-gap-matrix.json` distinguishes older-prompt
+decisions, current six-case v14 live evidence, offline execution contracts and
+separate serving/answer gates. Current live v14 evidence has no supported weekly
+listing, now/inside-boundary result, mixed positive booking, genuine ambiguity or
+supported exact-language FAQ listing. The proposed six-case cohort targets these
+gaps without repeating the successful midnight/profile checks. Two requests are
+exact exposed regressions and four are fresh development compositions; they are
+not an independent holdout. All six authored oracles/12 parts pass offline through
+the real bundle, with explicit source-grounded language review. No oracle is
+represented as actual Luna output. Either faithful direct AM/PM clarification or
+typed unspecified input remains acceptable; do not spend repeated calls to force
+one safe representation. Generic clarifications/dialect style remain limitations.
+
+The focused hours suite passes 253 guarded tests; lint/format (197 files), lock
+(65 packages), prior 481-file seal, source/cache/credential preservation and local
+links pass. The earlier full 1,986-test pass is preserved, not rerun. No runtime,
+prompt, source, API or index behavior changed; no external request/spend occurred.
+The frozen unexecuted proposal is
+`artifacts/m5-hours-consolidation-v1/proposed-run/plan.json`, with expectations
+outside model payloads. Next is the separately requested bounded six-case broader
+acceptance after allowance/pricing refresh, then individual actual-output review
+and unchanged replay. Production adoption and whole-system readiness remain held.

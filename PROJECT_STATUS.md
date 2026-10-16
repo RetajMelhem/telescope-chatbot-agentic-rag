@@ -2,6 +2,50 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
+Latest step — **hours evidence consolidated offline; broader v14 acceptance prepared**:
+All **36 saved proposals / 50 parts** across four cohorts (31 distinct request
+contents) retain their original individual semantic verdicts, authenticated by
+output/ledger hashes. Each unchanged proposal ran through its original profile
+and v14 using actual catalog/Qwen/graph/presenter, exact reconstructed payloads and
+mocked transport: **72 offline planner calls**, 34 original-profile completions,
+33 v14 completions, and **33 exactly identical completed projected responses**.
+V14 rejects all three known bad broader-screen proposals, adding rejection of the
+profile-only doctor/directory mismatch. The two old v12 false Lina clarifications
+still execute; they remain semantic failures, not repaired or accepted by replay.
+No other execution regression was observed. Inherited semantic verdicts are not
+claimed as a new 36-output semantic regrading or new-prompt model evidence.
+
+A primary-assistant-authored **12-row acceptance-gap matrix** distinguishes current
+v14 live evidence from older decisions, offline contracts and separate system gates.
+Current v14 lacks actual supported weekly/now/inside-boundary/mixed/ambiguity and
+supported restricted-source examples. A proposed **six-request / 12-part** cohort
+is frozen: two exact exposed requests and four fresh development compositions.
+All six explicitly authored oracle plans pass actual-bundle/Qwen/graph/presenter
+checks; all 12 oracle parts received individual language review against saved
+official source witnesses. These are source-bound representability controls, not
+model outputs. Direct faithful AM/PM clarification remains acceptable; observing
+the optional typed-unspecified wire path does not justify repeated paid calls.
+
+**253 focused guarded hours tests**, Ruff lint/format (197 files), 65-package lock,
+36 old payload reconstructions, prior 481-file seal, source/credential/cache and
+documentation checks pass. The previous 1,986-test full pass stays sealed; it was
+not rerun. Runtime/prompts/schema, `.env`, 122 source inputs, reviewed hours plan,
+924 vectors, default v12/API and previous evidence stay unchanged. Replay is
+socket/DNS guarded. An initial artifact-harness guard blocked Windows event-loop
+initialization before any replay; the failure is preserved and initialization was
+corrected without runtime changes. **Zero external requests / new spend $0**;
+no billing refresh, index change, deployment or subagent. Last reported $1.05630809
+allowance remains historical/unrefreshed; exact earlier billing remains unresolved.
+
+Evidence: `artifacts/m5-hours-consolidation-v1/REPORT.md`, `paired-replay.json`,
+`acceptance-gap-matrix.json`, individual inherited reviews, authored oracle review,
+`pytest-hours.xml` and final verification/seal. Unexecuted plan:
+`artifacts/m5-hours-consolidation-v1/proposed-run/plan.json`. **Next:** one bounded
+six-case broader v14 acceptance after refreshed read-only allowance/pricing, then
+individual review and unchanged replay of actual responses. No automatic paid
+dispatch or adoption follows this preparation. Serving, broader generated answers,
+directory completion and production readiness remain separate unverified gates.
+
 Latest result — **six-case hours contract confirmation passed; adoption held**:
 The frozen `contracts_v14` cohort ran once at checkpoint `ae0afa1`: **six actual
 HTTP 200 Luna/OpenAI planner requests**, six strict-schema and six literal/binding
