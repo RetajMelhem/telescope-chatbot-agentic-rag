@@ -93,3 +93,20 @@ questions, inspect subject/intent/date/AM/PM/constraint/source interpretation, a
 record actual usage without automatic repair. Paid calls need authorization; none
 ran for this offline implementation. Broader source/model/answer acceptance,
 directory completion, publication and deployment remain separate obligations.
+
+## Bounded development screen runner
+
+`scripts/run_hours_planner_screen.py` freezes an explicitly authored cohort of at
+most 12 cases. `--cases <cases.json> --output <new-directory>` captures the actual
+graph planning node's messages/schema and a frozen application clock without
+dispatch. Expected decisions stay outside the model payload. `--execute` requires
+exact case/source/code/payload hashes and a clean committed checkout before an
+exclusive start marker and key loading. Only request validation, planning and plan
+validation run; retrieval, assembly, drafting, embeddings and Qdrant are forbidden.
+
+The one-call-per-case screen uses a 4,096-token output cap, 30-second deadline,
+normal reasoning and reported input usage. Serving settings stay unchanged; no
+local input-counting or credit guard is added. Failed/ambiguous attempts are not
+retried, and a started run cannot repeat. Actual proposals, binding/computation
+receipts, generation IDs when supplied and usage remain in ignored evidence for
+separate semantic review. Literal success does not admit a model or production.
