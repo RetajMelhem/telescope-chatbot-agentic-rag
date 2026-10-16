@@ -10,6 +10,7 @@ from telescope_rag.graph.contracts import (
     ValidatedPlan,
     WorkflowRequest,
 )
+from telescope_rag.knowledge.source_authority import DirectoryAuthority
 from telescope_rag.retrieval.assembly import (
     AssemblyRequest,
     EvidenceCatalog,
@@ -19,10 +20,18 @@ from telescope_rag.retrieval.assembly import (
 
 
 class SourceBindings:
-    def __init__(self, catalog: EvidenceCatalog, *, include_block_types: bool = False):
+    def __init__(
+        self,
+        catalog: EvidenceCatalog,
+        *,
+        include_block_types: bool = False,
+        directory_authority: DirectoryAuthority | None = None,
+    ):
         documents = {}
         owners = defaultdict(set)
         block_types = defaultdict(set)
+        doctor_documents = set()
+        derivative_documents = set()
         for chunk in catalog.chunks.values():
             documents.setdefault(chunk.document_id, (chunk.canonical_url, chunk.page_title))
             if include_block_types:
@@ -31,6 +40,28 @@ class SourceBindings:
                 owners[("literal", chunk.doctor_id)].add(chunk.doctor_name)
             if chunk.canonical_doctor_id is not None:
                 owners[("canonical", chunk.canonical_doctor_id)].add(chunk.canonical_doctor_name)
+            if directory_authority is not None and chunk.block_type == "doctor":
+                doctor_documents.add(chunk.document_id)
+                if (
+                    "department_titles_non_authoritative_use_explicit_roles"
+                    in chunk.source_issue_codes
+                ):
+                    derivative_documents.add(chunk.document_id)
+        primary_documents = set()
+        if directory_authority is not None:
+            primary_documents = set(directory_authority.primary_directory_document_ids)
+            if (
+                directory_authority.prepared_digest != catalog.prepared_digest
+                or len(primary_documents) != len(directory_authority.primary_directory_document_ids)
+                or not primary_documents <= doctor_documents
+                or primary_documents & derivative_documents
+                or any(
+                    c.admission_policy_hash != directory_authority.admission_policy_hash
+                    for c in catalog.chunks.values()
+                )
+            ):
+                raise ValueError("directory_authority_catalog_mismatch")
+        self.directory_authority = directory_authority
         self.documents = MappingProxyType(
             {f"d{i:04}": identity for i, identity in enumerate(sorted(documents), 1)}
         )
@@ -49,6 +80,17 @@ class SourceBindings:
                         if include_block_types
                         else {}
                     ),
+                    **(
+                        {
+                            "source_role": "approved_primary_doctor_directory"
+                            if identity in primary_documents
+                            else "derivative_directory_titles_non_authoritative"
+                            if identity in derivative_documents
+                            else "unclassified"
+                        }
+                        if directory_authority is not None
+                        else {}
+                    ),
                 }
                 for handle, identity in self.documents.items()
             ],
@@ -61,6 +103,14 @@ class SourceBindings:
                 for handle, identity in self.owners.items()
             ],
         }
+        if directory_authority is not None:
+            manifest["source_role_basis"] = {
+                "prepared_digest": directory_authority.prepared_digest,
+                "admission_policy_hash": directory_authority.admission_policy_hash,
+                "primary_role": "exact_reviewed_directory_membership",
+                "derivative_role": "admitted_doctor_source_issue_code",
+                "role_is_not_question_relevance_or_factual_support": True,
+            }
         self.manifest_json = json.dumps(manifest, ensure_ascii=False)
         if len(self.manifest_json.encode()) > 96000:
             raise ValueError("planner_source_manifest_exceeds_bound")

@@ -28,6 +28,8 @@ from telescope_rag.graph.bindings import SourceBindings
 from telescope_rag.graph.contracts import PlannerReply, WorkflowRequest
 from telescope_rag.graph.planning import planner_messages
 from telescope_rag.graph.target_context import bind_answer_targets
+from telescope_rag.ingestion.admission import AdmissionPlan
+from telescope_rag.knowledge.source_authority import reviewed_directory_authority
 from telescope_rag.providers.budget import ExecutionBudget
 from telescope_rag.providers.contracts import ChatMessage, ChatProvider
 from telescope_rag.providers.errors import ProviderError
@@ -100,7 +102,7 @@ def planner_payload(
 ) -> dict:
     model = (
         AnchoredPlannerReply
-        if profile in {"literal_anchors", "answer_targets", "policy_targets"}
+        if profile in {"literal_anchors", "answer_targets", "policy_targets", "source_scoped"}
         else PlannerReply
     )
     payload = {
@@ -167,6 +169,7 @@ def build_plan(
         "literal_anchors",
         "answer_targets",
         "policy_targets",
+        "source_scoped",
     }:
         raise ValueError("unknown_planner_profile")
     expected = selected_case_ids(tuple(case_ids))
@@ -199,7 +202,18 @@ def build_plan(
     reviews = json.loads((directory / "independent-reviews.json").read_bytes())
     validate_reviews(cases, reviews)
     source_checks = validate_source_evidence(reviews, catalog, bundle=bundle, packet_root=directory)
-    bindings = SourceBindings(catalog, include_block_types=profile != "baseline")
+    authority = None
+    if profile == "source_scoped":
+        authority = reviewed_directory_authority(
+            AdmissionPlan.model_validate_json(
+                (bundle / "metadata/source-admission-plan.json").read_bytes()
+            ),
+            json.loads((bundle / "metadata/primary-directory.json").read_bytes()),
+            prepared_digest=catalog.prepared_digest,
+        )
+    bindings = SourceBindings(
+        catalog, include_block_types=profile != "baseline", directory_authority=authority
+    )
     code = sorted(
         p for parent in (root / "src/telescope_rag", root / "scripts") for p in parent.rglob("*.py")
     )
@@ -276,7 +290,7 @@ async def run_packets(
         fatal = False
         model = (
             AnchoredPlannerReply
-            if profile in {"literal_anchors", "answer_targets", "policy_targets"}
+            if profile in {"literal_anchors", "answer_targets", "policy_targets", "source_scoped"}
             else PlannerReply
         )
         try:
@@ -289,11 +303,16 @@ async def run_packets(
             row["schema_valid"] = True
             try:
                 proposal = result.data
-                if profile in {"literal_anchors", "answer_targets", "policy_targets"}:
+                if profile in {
+                    "literal_anchors",
+                    "answer_targets",
+                    "policy_targets",
+                    "source_scoped",
+                }:
                     proposal, anchors = resolve_anchored_plan(proposal, request, packet["case_id"])
                     row["derived_proposal"] = proposal.model_dump(mode="json")
                     row["request_anchors"] = [asdict(a) for a in anchors]
-                    if profile in {"answer_targets", "policy_targets"}:
+                    if profile in {"answer_targets", "policy_targets", "source_scoped"}:
                         row["answer_targets"] = [
                             asdict(t) for t in bind_answer_targets(result.data, anchors)
                         ]
@@ -357,6 +376,7 @@ async def main() -> None:
             "literal_anchors",
             "answer_targets",
             "policy_targets",
+            "source_scoped",
         ),
         default="baseline",
     )

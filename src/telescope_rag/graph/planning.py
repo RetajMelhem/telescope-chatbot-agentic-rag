@@ -16,6 +16,8 @@ from telescope_rag.prompts.planner_candidate_v2 import (
 )
 from telescope_rag.prompts.planner_policy_v6 import PLANNER_SYSTEM as POLICY_SYSTEM
 from telescope_rag.prompts.planner_policy_v6 import PROMPT_VERSION as POLICY_VERSION
+from telescope_rag.prompts.planner_sources_v7 import PLANNER_SYSTEM as SOURCE_SYSTEM
+from telescope_rag.prompts.planner_sources_v7 import PROMPT_VERSION as SOURCE_VERSION
 from telescope_rag.prompts.planner_targets_v5 import PLANNER_SYSTEM as TARGET_SYSTEM
 from telescope_rag.prompts.planner_targets_v5 import PROMPT_VERSION as TARGET_VERSION
 from telescope_rag.providers.contracts import ChatMessage
@@ -32,6 +34,7 @@ def planner_messages(
         "literal_anchors",
         "answer_targets",
         "policy_targets",
+        "source_scoped",
     ] = "baseline",
 ) -> tuple[ChatMessage, ...]:
     if profile not in {
@@ -40,11 +43,16 @@ def planner_messages(
         "literal_anchors",
         "answer_targets",
         "policy_targets",
+        "source_scoped",
     }:
         raise ValueError("unknown_planner_profile")
+    if profile == "source_scoped" and bindings.directory_authority is None:
+        raise ValueError("source_scoped_requires_directory_authority")
     candidate = profile == "source_types_no_reasoning"
     body = {
-        "prompt_version": POLICY_VERSION
+        "prompt_version": SOURCE_VERSION
+        if profile == "source_scoped"
+        else POLICY_VERSION
         if profile == "policy_targets"
         else TARGET_VERSION
         if profile == "answer_targets"
@@ -62,7 +70,9 @@ def planner_messages(
     return (
         ChatMessage(
             role="system",
-            content=POLICY_SYSTEM
+            content=SOURCE_SYSTEM
+            if profile == "source_scoped"
+            else POLICY_SYSTEM
             if profile == "policy_targets"
             else TARGET_SYSTEM
             if profile == "answer_targets"
