@@ -6,6 +6,19 @@ nonproduction construction with `offline_response_format="hours"`. Default chat
 remains unavailable. Earlier planner profiles and response contracts are unchanged;
 this is not production selection or model acceptance.
 
+Trusted callers may pass `hours_profile="contracts_v14"` to `HoursChatService`;
+`"identity_links_v13"` is also supported. The constructor forwards the selected
+profile to `HoursRagWorkflow`, preserving `"v12"` when omitted. This is an explicit
+nonproduction composition option, not a field in `ChatRequest`, environment toggle
+or default factory change. The caller still supplies the source catalog, reviewed
+hours plan/digest, directory authority, providers and counter, and owns their
+lifetimes. The service type does not make injected providers inherently offline.
+
+Planner output remains 1,000 by default. Replaying the hosted development screens
+uses explicit `planner_output_tokens=4096` and their matching bounded settings to
+preserve the exact tested wire. Selecting a profile alone does not change capacity,
+retry policy or budgets, and live compliance at the default cap is not established.
+
 ## Request interpretation
 
 The separate v12 planner prompt replaces two inherited instructions (the schema
@@ -38,7 +51,8 @@ unique literal offsets within that origin. Missing, repeated and out-of-origin
 quotes are refused. Original coverage, constraints, source handles, references,
 history and negation checks still run. History is not clinic-hours evidence.
 Literal binding cannot prove that model-selected subject/date/numeric values
-interpret the question correctly. That semantic gate remains unverified.
+interpret the question correctly. Broader semantic acceptance remains unverified;
+the bounded v14 development results and their limits are recorded below.
 
 ## Evidence and response
 
@@ -320,3 +334,28 @@ unavailability, production refusal, per-question proof and the one-budget/no-ret
 contract. No additional paid planner micro-screen is recommended first. This
 integration is not implemented by the screen and does not authorize production
 adoption, generated-answer acceptance, index publication or deployment.
+
+The explicit nonproduction service option is now implemented and checked through
+HTTP. Thirteen new integration checks cover old/default and selected profiles,
+exact closed-schema selection, weekly source ownership, refusal of malformed v14
+clock/query/doctor scope without retry, public profile-override rejection,
+production/default API refusal and concurrent budget/profile isolation. Full
+regressions pass **1,999 tests**, with lint/format (198 files) and the 65-package lock.
+
+`artifacts/m5-hours-service-v14-integration-v1/actual-http-replay.json` records all
+12 saved actual v14 decisions/18 parts through FastAPI, middleware, the service,
+real catalog/Qwen/graph/provider adapter and presenter, using mocked HTTP with
+socket/DNS guards. All emitted planner payloads match their original frozen wire
+exactly; all projected responses match the earlier reviewed projections after only
+opaque request/question ID renaming. Twenty question-owned source citations and
+twelve isolated request budgets survive. All 42 historical hours packets reconstruct
+exactly. Original semantic judgments remain inherited, not newly graded or inferred
+from HTTP success. No model/provider metadata/embedding/Qdrant call, source/index
+write or deployment occurred. Existing API schemas and v12 default remain intact.
+
+This verifies opt-in hours HTTP integration, not ordinary retrieval/draft behavior,
+new model reasoning or production acceptance. Generic clarification/style and
+other earlier caveats remain. Next is offline full-path verification of mixed hours
+and ordinary public website questions with development cases/cached evidence,
+before separately bounded full-path model acceptance. Default chat/readiness and
+production admission remain closed; no hours-only replay can satisfy those gates.

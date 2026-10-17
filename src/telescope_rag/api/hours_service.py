@@ -12,6 +12,7 @@ from telescope_rag.api.schemas import ChatRequest
 from telescope_rag.core.errors import ApplicationError
 from telescope_rag.core.settings import Settings
 from telescope_rag.graph.contracts import EvidenceRetriever, WorkflowResult
+from telescope_rag.graph.hours_contract import HoursProfile
 from telescope_rag.graph.hours_workflow import HoursRagWorkflow
 from telescope_rag.knowledge.hours import PublicHoursPlan
 from telescope_rag.knowledge.source_authority import DirectoryAuthority
@@ -35,6 +36,7 @@ class HoursChatService(OfflineChatService):
         planner_output_tokens: int = 1000,
         draft_output_tokens: int = 1000,
         clock: Callable[[], datetime] | None = None,
+        hours_profile: HoursProfile = "v12",
     ) -> None:
         self._settings, self._catalog = settings, catalog
         self._workflow = HoursRagWorkflow(
@@ -50,6 +52,7 @@ class HoursChatService(OfflineChatService):
             planner_output_tokens=planner_output_tokens,
             draft_output_tokens=draft_output_tokens,
             clock=clock,
+            hours_profile=hours_profile,
         )
 
     async def draft(self, payload: ChatRequest, *, request_id: UUID) -> WorkflowResult:

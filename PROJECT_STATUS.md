@@ -2,6 +2,45 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
+Latest implementation — **explicit v14 nonproduction hours HTTP integration**:
+`HoursChatService` now accepts trusted constructor `hours_profile` selection and
+forwards it to the existing graph; omission still selects v12. V13/v14 are opt-in,
+with no environment/public-request selector or default adoption. Existing public
+schemas, prompts, provider/budget logic, source policy and default API stay unchanged.
+**1,999 guarded offline tests pass (13 new)**, with Ruff lint/format (198 files),
+65-package lock and source/cache/credential/preservation checks. New HTTP tests
+exercise all profiles/defaults, v14 invalid clock/query/doctor scope refusal without
+retry/fallback, blocked request overrides, production/default 503 boundaries and
+concurrent profile/budget isolation. An initial test asserted the wrong existing
+output-cap wire key; it was corrected to `max_completion_tokens`, with no adapter
+change. Initial and final JUnit receipts remain available.
+
+All **12 saved actual v14 proposals / 18 parts** replay through FastAPI middleware,
+the service, graph, actual catalog/Qwen/provider adapter and independent presenter
+under mocked transport/socket guards. Each emitted provider payload exactly matches
+its frozen original. All 12 projected responses match earlier reviewed responses
+after only opaque request/question ID renaming; 20 source-owned citations, 12
+separate budgets, clocks, scopes, unknowns/exclusions/clarifications remain intact.
+All **42 historical hours request packets** reconstruct exactly. This is HTTP
+integration/nonregression evidence, not new Luna inference or semantic regrading.
+Replay explicitly uses the previously screened 4,096 output allowance; the service
+default remains 1,000 and is not claimed as live-accepted capacity for mixed cases.
+
+Evidence: `artifacts/m5-hours-service-v14-integration-v1/REPORT.md`, full/new JUnit,
+`actual-http-replay.json`, prior bindings and final verification/seal. Sources,
+reviewed hours plan, all admission/identity decisions, 924 cached vectors, `.env`
+and the previous 544-file evidence seal are preserved. **Zero external requests /
+new spend $0**, no metadata refresh, index change, deployment or subagent. Last
+reported allowance about $1.03277619 remains historical/unrefreshed; previous billing
+reconciliation and generic clarification/dialect presentation limits remain open.
+
+**Next:** offline end-to-end verification of mixed hours and ordinary website
+questions through this opt-in route, exercising retrieval and the existing draft
+stage with development cases/cached evidence before any paid full-path acceptance.
+Do not treat hours-only HTTP replay as general retrieval/drafting acceptance.
+Default chat/readiness remain unavailable; production admission, general generated
+answers, directory completion and deployment remain separate unverified gates.
+
 Latest result — **broader v14 hours screen passed; nonproduction integration next**:
 At checkpoint `e5ee6fa`, the six frozen requests ran once: **six HTTP 200 exact
 Luna/OpenAI planner responses**, six strict-schema and six literal/binding passes.
