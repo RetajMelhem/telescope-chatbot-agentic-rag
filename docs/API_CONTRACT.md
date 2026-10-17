@@ -1,5 +1,10 @@
 # FastAPI contract
 
+Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
+The explicit loopback entry point now serves live development queries. The default
+application and production acceptance remain separate; earlier checkpoints below
+describe their original scope.
+
 The separately injected [offline hours response](HOURS_GRAPH.md) uses
 `offline-hours-response-v1`, the same chat request and a nullable per-question
 `hours` summary. It requires `HoursChatService` and explicit nonproduction

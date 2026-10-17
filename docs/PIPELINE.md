@@ -1,5 +1,10 @@
 # LangGraph pipeline
 
+Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
+The explicit loopback entry point now serves live development queries. The default
+application and production acceptance remain separate; earlier checkpoints below
+describe their original scope.
+
 The separate [opt-in offline hours graph](HOURS_GRAPH.md) adds typed schedule/now/
 local inputs and source-bound calculation receipts. General schedule requests need
 no date/time fields; comparisons preserve unresolved date/AM/PM. It reuses evidence

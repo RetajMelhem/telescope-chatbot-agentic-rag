@@ -1,6 +1,59 @@
 # Project status
 
-Last updated: 2026-10-17 (Asia/Amman).
+Last updated: 2026-10-18 (Asia/Amman).
+
+
+Latest delivery — **usable local MVP, explicitly selected; production remains separate**:
+Run `.\run-local.ps1` and open `http://127.0.0.1:8000/`. The explicit local factory
+composes the existing bounded LangGraph, real Luna/Qwen providers, reviewed source
+and hours plans, and read-only dense retrieval from the existing 955-point Qdrant
+candidate. A browser interface and `local-mvp-response-v1` expose source excerpts,
+question-owned citations/timestamps, missing facts, exclusions and URL clarifications.
+Startup validates the bundle/digests/tokenizer/policy and collection configuration;
+health makes no inference call. Network clients close on failed startup/shutdown.
+The API binds to loopback, preserves the original unavailable default/production
+app, and makes no alias/index/source/cache/credential change.
+
+**Verification:** 7 new / **2,115 full guarded offline tests pass**; Ruff lint,
+format (212 files), locked dependencies and wheel/static-asset/secret exclusions
+pass. **23 completed actual live requests / 44 information parts** were individually
+reviewed by primary Codex, including diagnostics; one interrupted diagnostic has
+no complete response/usage receipt and is not a pass. The first prompt exposed four
+failed parts: two false unknowns from guessed source narrowing, one misclassified
+visitor duration and one silently selected ambiguous profile. General local-only
+prompt guidance fixes source scope, relationship classification and page ambiguity.
+The final prompt has **9 actual requests / 12 reviewed parts**, including targeted
+regressions and four real localhost HTTP requests. All 12 final-prompt parts are
+adequate within their tested source scope. The earlier 12-case/27-part cohort is
+development evidence, not a current-prompt whole-cohort pass or unseen holdout.
+All 33 citation occurrences match admitted chunks/owners; 68 original DOM spans
+across 13 cited chunks / five saved official pages verify exactly.
+
+Real HTTP checks cover English/Jordanian opening hours, a fresh visitor-duration
+paraphrase and combined private-record/booking/key-disclosure injection. All return
+200 with supported public excerpts or explicit exclusion. Browser automation is
+disabled in Work settings: static serving/API and offline UI checks pass, but no
+visual browser acceptance is claimed. Answers remain extractive, sometimes in the
+source language; smooth colloquial generation and overall accuracy are unproven.
+
+Evidence: `artifacts/local-mvp-v1/` (preflight, raw diagnostic traces, tests,
+individual semantic review, source verification and accounting), `local-mvp-v2/`
+(12 actual development requests), `local-mvp-v3/` (five targeted final-prompt runs),
+and `local-mvp-http-v1/` (four final-prompt real HTTP requests).
+Project key usage increased **$0.104005485** over this work window, with
+**$0.538826785 remaining** at the final observation. Audited screen responses
+report $0.086427705; four HTTP smoke requests lack payload audit and one interrupted
+attempt lacks settled usage, so exact per-request billing reconciliation is not
+claimed. No retries, external judge, corpus embedding or index write occurred.
+
+**Local delivery is complete with these limits. Next:** use the browser/API for
+hands-on local user acceptance and record concrete failing questions. Fix observed
+blockers without another preparatory audit track. Production adoption, broad
+independent evaluation, API Docker packaging, public launch/widget and source
+refresh remain separate work. See `docs/LOCAL_MVP.md` and
+`docs/LOCAL_MVP_ACCEPTANCE.md`.
+
+## Historical checkpoints before the local MVP
 
 Latest result — **actionable source-page clarification implemented and verified offline**:
 Trusted nonproduction callers may enable `source_page_clarifications=True` with

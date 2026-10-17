@@ -1,5 +1,10 @@
 # Docker deployment design
 
+Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
+The explicit loopback entry point now serves live development queries. The default
+application and production acceptance remain separate; earlier checkpoints below
+describe their original scope.
+
 Status: application deployment specification. M1 can run the API shell locally; its Dockerfile/application Compose runtime and deployed chatbot do not exist yet. A separate local M3 Qdrant gateway is implemented and tested below; it does not complete M6 or publish an index.
 
 ## Current local M3 Qdrant access

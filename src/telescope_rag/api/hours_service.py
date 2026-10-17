@@ -40,6 +40,7 @@ class HoursChatService(OfflineChatService):
         hours_profile: HoursProfile = "v12",
         reviewed_profile_limitations: bool = False,
         source_page_clarifications: bool = False,
+        local_mvp_search: bool = False,
     ) -> None:
         self._settings, self._catalog = settings, catalog
         self._source_page_clarifications = source_page_clarifications
@@ -59,6 +60,7 @@ class HoursChatService(OfflineChatService):
             hours_profile=hours_profile,
             reviewed_profile_limitations=reviewed_profile_limitations,
             source_page_clarifications=source_page_clarifications,
+            local_mvp_search=local_mvp_search,
         )
 
     async def draft(self, payload: ChatRequest, *, request_id: UUID) -> WorkflowResult:

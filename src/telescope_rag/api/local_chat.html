@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Telescope · Local RAG</title>
+<style>
+body{font:17px/1.6 system-ui,sans-serif;background:#f4f7f8;color:#16313c;margin:0}
+main{max-width:850px;margin:40px auto;padding:24px}h1{margin-bottom:0}
+.muted{color:#526873}textarea,select,button{font:inherit;border:1px solid #a6bcc6;border-radius:8px;padding:10px}
+textarea{box-sizing:border-box;width:100%;min-height:130px;background:white}button{background:#125d70;color:white;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}.row{display:flex;gap:12px;align-items:center;margin:12px 0}
+#answer{white-space:pre-wrap;overflow-wrap:anywhere;background:white;border-radius:12px;padding:22px;margin-top:24px}
+li{margin-bottom:14px}a{color:#125d70}#status{font-size:14px}small{color:#526873}
+</style>
+<main>
+<h1>Telescope · Local RAG</h1>
+<p class="muted">Ask about Telescope Medical Center in English or Arabic, including everyday Jordanian Arabic. Answers use saved public website evidence.</p>
+<form id="chat">
+<label for="query">Your question / سؤالك</label>
+<textarea id="query" dir="auto" maxlength="4000" required placeholder="When does the center open? / متى بفتح المركز؟"></textarea>
+<div class="row"><label for="language">Answer language</label><select id="language"><option value="auto">Auto</option><option value="en">English</option><option value="ar">العربية</option></select><button id="send">Ask / اسأل</button></div>
+</form>
+<p id="status" role="status"></p>
+<div id="answer" dir="auto" hidden></div>
+<ol id="sources"></ol>
+<small>Local MVP · Responses use source excerpts. Missing facts and ambiguous requests remain explicit. Published hours do not confirm appointment availability. Each submission uses the configured paid OpenRouter models. Questions are independent; this interface does not store conversation history.</small>
+</main>
+<script>
+const form=document.querySelector('#chat'),button=document.querySelector('#send'),statusEl=document.querySelector('#status'),answer=document.querySelector('#answer'),sources=document.querySelector('#sources');
+form.addEventListener('submit',async event=>{
+ event.preventDefault();button.disabled=true;answer.hidden=true;sources.replaceChildren();statusEl.textContent='Retrieving website evidence… / جارٍ البحث…';
+ const language=document.querySelector('#language').value;
+ try{
+  const response=await fetch('/api/v1/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:document.querySelector('#query').value,language,history:[]})});
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error?.message||'The request could not be completed.');
+  answer.textContent=data.answer;answer.hidden=false;
+  for(const citation of data.citations){
+   const item=document.createElement('li'),link=document.createElement('a');
+   const url=new URL(citation.url);
+   if(url.protocol!=='https:'||!['telescopecenter.com','www.telescopecenter.com'].includes(url.hostname))continue;
+   link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent=`[${citation.id}] ${citation.title}`;
+   item.append(link,document.createElement('br'),document.createTextNode(`Retrieved: ${citation.fetched_at}`));sources.append(item);
+  }
+  statusEl.textContent=`${data.status} · Request ${data.request_id}`;
+ }catch(error){statusEl.textContent=error.message;}
+ finally{button.disabled=false;}
+});
+</script>
+</html>

@@ -1,5 +1,10 @@
 # Evaluation and acceptance
 
+Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
+The explicit loopback entry point now serves live development queries. The default
+application and production acceptance remain separate; earlier checkpoints below
+describe their original scope.
+
 Status: API/provider/ingestion and comparison contracts have offline tests. A source-bound, independently reviewed 90-case benchmark is frozen for v6; its initial dense/BM25/hybrid retrieval comparison has executed. Dense is retained provisionally under the frozen rule. Source-policy enforcement, generated answers and deployment acceptance remain unverified. Current results are recorded in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## Offline checks first

@@ -1,5 +1,10 @@
 # Implementation plan
 
+Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
+The explicit loopback entry point now serves live development queries. The default
+application and production acceptance remain separate; earlier checkpoints below
+describe their original scope.
+
 Status: roadmap. M0 foundation, M1 API/configuration shell, and the initial offline M2 implementation are complete. M3 collection, source admission, Qwen/token preparation and authorized corpus embeddings/unpublished candidate verification are complete for their scoped gates; Qdrant publication and retrieval comparison remain pending. Luna compatibility remains unverified. Track actual verification and next actions in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## M0 — Specification and scaffold

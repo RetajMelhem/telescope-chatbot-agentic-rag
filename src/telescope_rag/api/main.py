@@ -25,16 +25,18 @@ def create_app(
     *,
     knowledge_probe: KnowledgeProbe | None = None,
     offline_chat_service: OfflineChatService | None = None,
-    offline_response_format: Literal["draft", "rendered", "hours"] = "draft",
+    offline_response_format: Literal["draft", "rendered", "hours", "local"] = "draft",
 ) -> FastAPI:
     config = settings if settings is not None else load_settings()
-    if offline_response_format not in {"draft", "rendered", "hours"} or (
+    if offline_response_format not in {"draft", "rendered", "hours", "local"} or (
         offline_response_format != "draft" and offline_chat_service is None
     ):
         raise ValueError("offline_response_configuration_invalid")
     from telescope_rag.api.hours_service import HoursChatService
 
-    if (offline_response_format == "hours") != isinstance(offline_chat_service, HoursChatService):
+    if (offline_response_format in {"hours", "local"}) != isinstance(
+        offline_chat_service, HoursChatService
+    ):
         raise ValueError("offline_response_configuration_invalid")
     if offline_chat_service is not None:
         offline_chat_service.check_configuration(config)
@@ -112,7 +114,9 @@ def create_app(
     else:
         # Import/register the draft route only for explicit trusted construction.
         # No environment toggle, default provider or production adoption.
-        if offline_response_format == "hours":
+        if offline_response_format == "local":
+            from telescope_rag.api.routes.local_chat import router as offline_router
+        elif offline_response_format == "hours":
             from telescope_rag.api.routes.hours_chat import router as offline_router
         elif offline_response_format == "rendered":
             from telescope_rag.api.routes.rendered_chat import router as offline_router

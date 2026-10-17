@@ -27,6 +27,8 @@ from telescope_rag.knowledge.time_calculations import PublicHoursCatalog
 from telescope_rag.prompts.planner_hours_contract_v14 import PLANNER_SYSTEM as CONTRACT_SYSTEM
 from telescope_rag.prompts.planner_hours_contract_v14 import PROMPT_VERSION as CONTRACT_VERSION
 from telescope_rag.prompts.planner_hours_v12 import PLANNER_SYSTEM, PROMPT_VERSION
+from telescope_rag.prompts.planner_local_mvp_v1 import PLANNER_SYSTEM as LOCAL_SYSTEM
+from telescope_rag.prompts.planner_local_mvp_v1 import PROMPT_VERSION as LOCAL_VERSION
 from telescope_rag.prompts.planner_source_choice_v1 import PLANNER_SYSTEM as SOURCE_CHOICE_SYSTEM
 from telescope_rag.prompts.planner_source_choice_v1 import PROMPT_VERSION as SOURCE_CHOICE_VERSION
 from telescope_rag.providers.contracts import ChatMessage, ChatProvider
@@ -52,6 +54,7 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         hours_profile: HoursProfile = "v12",
         reviewed_profile_limitations: bool = False,
         source_page_clarifications: bool = False,
+        local_mvp_search: bool = False,
     ) -> None:
         if type(reviewed_profile_limitations) is not bool or (
             reviewed_profile_limitations and hours_profile != "contracts_v14"
@@ -62,6 +65,10 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         ):
             raise ValueError("source_choices_require_contracts_v14")
         self._source_page_clarifications = source_page_clarifications
+        if type(local_mvp_search) is not bool or (
+            local_mvp_search and not source_page_clarifications
+        ):
+            raise ValueError("local_search_requires_source_choices")
         self._hours_reply_model = (
             SourceChoicePlannerReply
             if source_page_clarifications
@@ -112,6 +119,9 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         if source_page_clarifications:
             self._hours_prompt_version = SOURCE_CHOICE_VERSION
             self._hours_system = SOURCE_CHOICE_SYSTEM
+        if local_mvp_search:
+            self._hours_prompt_version = LOCAL_VERSION
+            self._hours_system = LOCAL_SYSTEM
         self._clock = clock or (lambda: datetime.now(UTC))
 
     async def _plan_query(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
