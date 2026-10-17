@@ -1,5 +1,6 @@
 """Publish generated prose with application-owned citations and unchanged source records."""
 
+from telescope_rag.api.hours_presentation import _answer as hours_answer
 from telescope_rag.api.hours_responses import HoursChatResponse
 from telescope_rag.graph.contracts import WorkflowRun
 
@@ -35,20 +36,14 @@ def project_conversation(response: HoursChatResponse, run: WorkflowRun) -> Hours
     questions = []
     for question in response.questions:
         entry = parts.get(question.id)
-        if (
-            question.hours is None
-            and entry is not None
-            and (entry.status != question.status or entry.reason_code != question.reason_code)
+        if entry is not None and (
+            entry.status != question.status or entry.reason_code != question.reason_code
         ):
             raise ValueError("conversation_outcome_mismatch")
-        if (
-            question.hours is None
-            and question.status == "candidate"
-            and (entry is None or not entry.sentences)
-        ):
+        if question.status == "candidate" and (entry is None or not entry.sentences):
             raise ValueError("conversation_answer_missing")
         if entry and entry.sentences:
-            if question.hours is not None or question.status != "candidate":
+            if question.status != "candidate":
                 raise ValueError("conversation_outcome_mismatch")
             citations = {
                 c.chunk_id: c.id for c in response.citations if c.question_id == question.id
@@ -62,8 +57,9 @@ def project_conversation(response: HoursChatResponse, run: WorkflowRun) -> Hours
                     or "]" in sentence.text
                 ):
                     raise ValueError("conversation_citation_mismatch")
-                refs = " ".join(f"[{citations[i]}]" for i in sentence.chunk_ids)
-                sentences.append(f"{sentence.text.strip()} {refs}")
+                # Validate support IDs above, but keep technical references in
+                # the structured sources panel rather than the chat prose.
+                sentences.append(sentence.text.strip())
             answer = " ".join(sentences)
         elif question.hours is None and (
             question.status == "excluded"
@@ -71,9 +67,13 @@ def project_conversation(response: HoursChatResponse, run: WorkflowRun) -> Hours
         ):
             answer = _TEXT[response.language][question.status]
         else:
-            # Existing computed hours and explicit URL choices keep their trusted
-            # application presentation. The model never recomputes a time result.
-            answer = question.answer
+            # Unknown/ambiguous hours and explicit URL choices keep application
+            # presentation. The model cannot change their computed outcomes.
+            answer = (
+                hours_answer(question.hours, response.language)
+                if question.hours is not None
+                else question.answer
+            )
         questions.append(question.model_copy(update={"answer": answer}))
     paragraphs = []
     for question in questions:

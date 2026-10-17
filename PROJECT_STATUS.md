@@ -2,6 +2,52 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Latest delivery — **natural hours replies and clean chat prose**:
+The explicit local MVP now sends validated published-hours records/results through
+the existing conversational second Luna stage. It answers the requested day/time
+directly instead of displaying the entire weekly schedule and technical boilerplate.
+Time calculations, missing/conflicting/stale proof and ambiguity remain application
+decisions, independently rechecked at publication. Hours-only supported queries now
+use two Luna calls instead of one; mixed/ordinary requests stay within the same two
+call allowance. No third model, retry, new retrieval round or index change.
+
+The local v7 planner anchors short hours subjects with the whole literal part and
+may append a standard-language paraphrase to a dialect search query. Original
+question/reference/constraint bytes remain mandatory; validators were not relaxed.
+This repairs a repeated-pronoun protocol failure and one observed colloquial visitor
+retrieval miss. No doctor identity, source scope or approved content was changed.
+
+As requested, **inline IDs such as [C1.1] no longer appear in chat answer text**.
+Question-owned source IDs, original excerpts, URLs, owners and timestamps remain
+in structured response metadata and the expandable source panel. The model's source
+references are still validated before its prose is displayed.
+
+**19 new / 2,144 full guarded offline tests pass**, plus lint/format and lock checks.
+Sixteen actual development requests include three rejected protocol attempts and
+19 returned parts individually reviewed by primary Codex. Earlier failures and the
+one false unknown remain recorded. Final v7: **five actual requests / nine parts**
+adequate within tested scope, including two restarted localhost HTTP requests.
+Friday, Monday/closing, pharmacy ownership, current time, doctor and mixed visitor/
+booking cases have scoped evidence. Five cited chunks / three saved official pages /
+26 exact DOM spans and all 26 citation occurrences verify. After the cosmetic ID
+change, three saved native-reply replays change only answer text, with all source
+metadata identical; these are offline replays, not additional live calls. Visual
+browser automation is disabled; no visual acceptance is claimed.
+
+Evidence: `artifacts/conversational-hours-v1/` through `conversational-hours-v5/`
+(actual traces, failures, individual review, source verification, final full tests,
+ID-removal replays and accounting). Observed key increase during the screen window:
+**$0.066729350**; **$0.408153510 remaining** at the final observation. Audited usage:
+25 chat / five Qwen attempts, reported cost $0.058140330. Two HTTP requests lack
+provider payload audit; independent billing reconciliation is not claimed. No new
+source/corpus embedding, persistent cache/index write, credential change, external
+judge, subagent or public deployment. Default/production app remains unavailable.
+
+**Next:** refresh the local browser and continue hands-on acceptance of concise
+public answers; then M6 portable API Docker packaging. This targeted repair does
+not prove broad retrieval generalization or production readiness. See
+`docs/CONVERSATIONAL_ANSWERS.md` and `docs/LOCAL_MVP.md`.
+
 Latest repair — **direct introductions for an unambiguous doctor**:
 The local v3 planner uses a clearly matching main-directory owner for a general
 doctor introduction instead of asking users to select among profile URLs. Multiple

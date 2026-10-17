@@ -11,6 +11,7 @@ from test_offline_workflow import FakeRetriever, SyntheticCounter
 
 from telescope_rag.api import local
 from telescope_rag.core.settings import ConfigurationError, Settings
+from telescope_rag.graph.contracts import AnswerSentence, ConversationalDraft, ConversationalPart
 from telescope_rag.graph.source_choices import SourceChoicePlannerPart, SourceChoicePlannerReply
 from telescope_rag.knowledge.hours import hours_plan_digest
 from telescope_rag.providers.contracts import StructuredResult
@@ -48,7 +49,7 @@ def test_local_lifespan_health_chat_sources_and_cleanup(
                 assert data["schema_version"] == "local-mvp-response-v1"
                 assert data["mode"] == "local_mvp" and "offline_only" not in data
                 assert data["questions"][0]["hours"]["status"] == "schedule_available"
-                assert data["citations"] and provider.calls == 1
+                assert data["citations"] and provider.calls == 2
                 qid = data["questions"][0]["id"]
                 assert all(c["question_id"] == qid for c in data["citations"])
                 assert all(
@@ -58,7 +59,7 @@ def test_local_lifespan_health_chat_sources_and_cleanup(
                 invalid = await client.post(
                     "/api/v1/chat", json={"query": text, "document_handles": []}
                 )
-                assert invalid.status_code == 422 and provider.calls == 1
+                assert invalid.status_code == 422 and provider.calls == 2
         assert provider.closed == 1 and reader.closed == 1
 
     asyncio.run(run())
@@ -101,8 +102,8 @@ def test_local_settings_use_dotenv_and_readonly_key_and_reject_production(tmp_pa
         local.local_settings(tmp_path)
 
 
-def compose(monkeypatch, root):
-    catalog, authority, hours, _ = fixtures()
+def compose(monkeypatch, root, *, fixture_args=None, clock=None):
+    catalog, authority, hours, _ = fixtures(**(fixture_args or {}))
     config = Settings(_env_file=None, app_env="test", openrouter_api_key="synthetic-only")
     config = Settings(
         _env_file=None,
@@ -122,6 +123,26 @@ def compose(monkeypatch, root):
         async def complete(self, messages, output_model, **kwargs):
             self.calls += 1
             body = json.loads(messages[-1].content)
+            if output_model is ConversationalDraft:
+                return StructuredResult(
+                    ConversationalDraft(
+                        parts=tuple(
+                            ConversationalPart(
+                                part_id=p["part_id"],
+                                status="candidate",
+                                reason_code=None,
+                                sentences=(
+                                    AnswerSentence(
+                                        text="The center opens at 09:00, except Friday at 14:00.",
+                                        chunk_ids=tuple(p["eligible_quote_chunk_ids"]),
+                                    ),
+                                ),
+                            )
+                            for p in body["parts"]
+                        )
+                    ),
+                    (),
+                )
             workflow = app.state.offline_chat_service._workflow
             p = hours_part(
                 body["original_query"], inputs(workflow, subject_text=self.subject)
@@ -160,7 +181,9 @@ def compose(monkeypatch, root):
     original_service = local.HoursChatService
 
     def synthetic_service(**kwargs):
-        return original_service(**kwargs, token_basis="synthetic_test", clock=lambda: NOW)
+        return original_service(
+            **kwargs, token_basis="synthetic_test", clock=clock or (lambda: NOW)
+        )
 
     monkeypatch.setattr(local, "local_settings", lambda root: config)
     monkeypatch.setattr(local, "load_resources", lambda root: resources)

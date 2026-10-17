@@ -1,8 +1,7 @@
 """Source-bound offline hours projection; no question parsing or semantic certification."""
 
-from datetime import UTC, timedelta
+from datetime import UTC
 from uuid import UUID
-from zoneinfo import ZoneInfo
 
 from telescope_rag.api.hours_responses import (
     HoursChatResponse,
@@ -13,8 +12,9 @@ from telescope_rag.api.presentation import project_response
 from telescope_rag.api.responses import ResponseCitation, ResponseKnowledge
 from telescope_rag.graph.contracts import WorkflowRun
 from telescope_rag.graph.hours_inputs import HoursBindings
+from telescope_rag.graph.hours_projection import hours_decision
 from telescope_rag.graph.hours_records import ComputedHours
-from telescope_rag.retrieval.assembly import EvidenceCatalog, limited_to_context
+from telescope_rag.retrieval.assembly import EvidenceCatalog
 
 _WEEKDAYS = {
     "en": ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"),
@@ -66,40 +66,6 @@ _TEXT = {
         "valid_through": "يسري حتى",
     },
 }
-
-
-def _listing_state(operation: ComputedHours, *, max_age: timedelta) -> tuple[str, str]:
-    """Compare reviewed rule records, never infer a schedule from text or today's outcome."""
-    if operation.query.subject is None:
-        return "clarification_required", "ambiguous_subject"
-    if not operation.schedules:
-        return "unknown", "missing_hours"
-    now = operation.assessment.evaluated_at
-    if any(c.fetched_at > now for c in operation.assessment.evidence):
-        return "unknown", "source_from_future"
-    if any(now - c.fetched_at > max_age for c in operation.assessment.evidence):
-        return "unknown", "stale_hours"
-    local_day = now.astimezone(ZoneInfo("Asia/Amman")).date()
-    for record in operation.schedules:
-        if record.conditional:
-            return "unknown", "conditional_hours"
-        if (record.valid_from and local_day < record.valid_from) or (
-            record.valid_through and local_day > record.valid_through
-        ):
-            return "unknown", "outside_effective_dates"
-    signatures = {
-        (
-            tuple(r.model_dump_json() for r in sorted(record.weekly, key=lambda r: r.weekday)),
-            tuple(r.model_dump_json() for r in sorted(record.exceptions, key=lambda r: r.on_date)),
-            record.valid_from,
-            record.valid_through,
-            record.timezone,
-        )
-        for record in operation.schedules
-    }
-    if len(signatures) != 1:
-        return "unknown", "conflicting_hours"
-    return "schedule_available", "published_schedule"
 
 
 def _clock_text(minutes: int, messages: dict[str, str]) -> str:
@@ -210,31 +176,15 @@ def _project_hours(
         if rebound != operation:
             raise ValueError
         assessment = operation.assessment
-        status, reason = (
-            _listing_state(operation, max_age=bindings.engine.max_source_age)
-            if operation.supplied.intent == "schedule"
-            else (assessment.status, assessment.reason)
+        decision = hours_decision(
+            operation,
+            part=part,
+            evidence=run.evidence,
+            catalog=catalog,
+            max_age=bindings.engine.max_source_age,
+            admitted_scope_complete=original.admitted_scope_complete,
         )
-        offered = set()
-        if run.evidence is not None:
-            for group in run.evidence.groups:
-                ids = dict(group.part_occurrences).get(part.part_id, ())
-                if ids and part.part_id not in group.context_only_parts:
-                    # Only this actual part's offered citation represents proof.
-                    offered.add(ids[0])
-        needed = {c.chunk_id for c in assessment.evidence}
-        scope = set(catalog.scope_members(part.scope))
-        proof_present = (
-            needed <= offered
-            and needed <= scope
-            and all(
-                catalog.chunks[c.chunk_id] == c and not limited_to_context(c, part.intended_use)
-                for c in assessment.evidence
-            )
-            and original.admitted_scope_complete is not False
-        )
-        if not proof_present:
-            status, reason = "unknown", "scope_incomplete"
+        status, reason, proof_present = decision.status, decision.reason, decision.proof_present
         ids = []
         for citation_index, source in enumerate(assessment.evidence if proof_present else (), 1):
             identity = f"C{index + 1}.{citation_index}"
@@ -286,20 +236,10 @@ def _project_hours(
                 **(
                     original.model_dump()
                     | {
-                        "status": "candidate"
-                        if status
-                        in {"schedule_available", "within_posted_hours", "outside_posted_hours"}
-                        else status,
+                        "status": decision.draft_status,
                         "answer": answer,
                         "citation_ids": tuple(ids),
-                        "reason_code": None
-                        if status
-                        in {"schedule_available", "within_posted_hours", "outside_posted_hours"}
-                        else "ambiguous_request"
-                        if status == "clarification_required"
-                        else "scope_incomplete"
-                        if reason == "scope_incomplete"
-                        else "not_found",
+                        "reason_code": decision.reason_code,
                     }
                 ),
                 hours=summary,

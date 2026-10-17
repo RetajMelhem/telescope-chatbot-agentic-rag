@@ -3,6 +3,9 @@
 The explicit local MVP now uses a [conversational second stage](CONVERSATIONAL_ANSWERS.md).
 It reuses the original question/evidence and shared two-call budget; default/earlier
 extractive profiles remain unchanged.
+Validated hours now pass through that same writer for concise day/time replies,
+with deterministic outcomes rechecked before publication. Technical citation IDs
+remain in source metadata instead of the visible chat prose.
 
 Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
 The explicit loopback entry point now serves live development queries. The default

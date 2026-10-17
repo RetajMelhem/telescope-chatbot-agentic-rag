@@ -35,7 +35,8 @@ page request, choose an exact URL and include it in a fresh question.
 
 The browser sends independent questions without storing history. The API accepts
 the bounded `history` contract. This MVP now writes natural answers from the original query and relevant website
-evidence, with citations attached to each generated sentence. Original quotations
+evidence, with validated support references retained in source metadata. Technical
+citation IDs are hidden from the answer prose. Original quotations
 remain literal in expandable source details. It can faithfully translate an English
 source for an Arabic reply. Missing facts remain unknown.
 Published hours never establish actual attendance or appointment availability.
@@ -100,8 +101,10 @@ Original excerpts stay in the provenance sidecar; generated text does not replac
 source data. Complete-source reads retain their required provenance separately
 from the sentence-specific support references.
 
-The presenter adds trusted citation labels and rechecks references. Hours keep
-the deterministic calculation/presentation, and source-page ambiguities keep
+The presenter rechecks references and keeps their IDs in the expandable source
+panel and API metadata. Hours keep deterministic calculation and proof validation;
+the existing second Luna stage phrases a concise answer for the requested day/time.
+Hours-only questions now use two calls instead of one. Source-page ambiguities keep
 validated URL choices. Excluded actions and missing facts stay explicit. Repeated
 identical excluded-action explanations can share one visible paragraph while every
 original part remains in the API response. Source records and distinct owners are

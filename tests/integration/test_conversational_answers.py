@@ -146,6 +146,12 @@ def test_natural_prose_keeps_distinct_owners_unknown_and_excluded(monkeypatch, t
     assert {c["literal_owner_id"] for c in data["citations"]} == {"a", "b"}
     assert all(c["quote"] not in data["answer"] for c in data["citations"])
     assert all(c["snapshot_id"] and c["fetched_at"] and c["url"] for c in data["citations"])
+    assert "[C" not in data["answer"]
+    for question in data["questions"]:
+        assert "[C" not in question["answer"]
+        assert set(question["citation_ids"]) == {
+            c["id"] for c in data["citations"] if c["question_id"] == question["id"]
+        }
 
 
 @pytest.mark.parametrize(

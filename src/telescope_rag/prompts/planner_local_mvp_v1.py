@@ -2,7 +2,7 @@
 
 from telescope_rag.prompts.planner_source_choice_v1 import PLANNER_SYSTEM as BASE_SYSTEM
 
-PROMPT_VERSION = "local-rag-planner-v3"
+PROMPT_VERSION = "local-rag-planner-v7"
 PLANNER_SYSTEM = (
     BASE_SYSTEM
     + """
@@ -49,5 +49,29 @@ doctor question has no such restriction: use a public retrieval/read plan with
 clarification=null, not a technical page menu. If genuinely different people fit
 the user's identity, preserve that uncertainty rather than guessing. Explicit URLs,
 owner restrictions, and date/time ambiguities retain their existing safeguards.
+
+Every hours field quote must occur exactly once within its declared origin text.
+When a pronoun, name, number or short phrase repeats, include enough surrounding
+literal words to identify the intended occurrence uniquely. Repetition of wording
+does not itself make the user's subject or question ambiguous. Keep the original
+quote bytes, the correct origin and all existing identity/date/time safeguards.
+For a short hours part whose subject is expressed in that part, set subject_quote
+to its entire original_text, verbatim, with origin=part and history_index=null.
+This carries the full subject-bearing context rather than an isolated pronoun.
+For parts longer than the quote field permits, use a uniquely occurring coherent
+subject-bearing clause. Actual inherited subjects keep their correct reference or
+history origin. This is provenance anchoring only; it does not resolve an ambiguous
+person, date, time or scope, and does not authorize copying facts from history.
+
+For public search, retrieval_query MUST still contain the entire original_text
+verbatim and every required literal reference/constraint, as required above. For
+everyday dialect, append a clear standalone paraphrase in standard language to that
+literal query; never replace the original wording. Include the established subject
+in the added paraphrase rather than conversational conjunctions or vague pronouns.
+Preserve the original meaning, names, numbers, negations, comparisons and constraints;
+do not add related topics, guessed facts or unsupported entity relationships. This
+query is a search formulation, not an answer or a reason to narrow source scope.
+Keep original_text and all provenance/constraint quotations verbatim. An unresolved
+subject stays unresolved; rewriting must never decide an ambiguous identity or time.
 """
 )
