@@ -2,6 +2,51 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
+Latest step — **mixed hours/source HTTP path verified offline with authored controls**:
+**37 new contract tests / 2,036 full guarded tests pass**, including English,
+Arabic and Jordanian Arabic mixed hours, two distinct same-field doctors and
+excluded booking. The actual v14 service/graph, Qwen accounting, embedding adapter,
+scoped candidate reader and presenter run with synthetic fixtures/mock transports.
+Coverage includes exact cache hits, complete-source reads, missing results, stale
+hours, absent reported chat usage, concurrent request isolation, and precise
+rejection of swapped owners, borrowed hours citations, altered quotations, omitted
+parts, corrupted database payloads and draft timeout without retry. Initial fixture
+binding/schema mistakes were corrected without changing runtime contracts; failed
+JUnit receipts remain available.
+
+Separately, **nine source-bound development controls / 21 parts** traverse the real
+HTTP/graph path using the unchanged Telescope corpus, actual pinned Qwen counter
+and existing hosted vectors. They exercise six dense reads and six owner-scoped
+source reads: 18 mocked chat, six mocked embedding and six mocked Qdrant requests.
+Primary Codex language review accepts the authored source representations with
+presentation limits. All **30 cited DOM spans across 10 chunks / eight saved
+official HTML pages** match exactly; all 122 source inputs and 924 cache entries
+match their historical bindings. Plans and draft selections are authored controls,
+not actual Luna decisions or live Qdrant ranking/answer acceptance.
+
+**Remaining retrieval risk:** each of the three unscoped cached two-doctor top-five
+pools contains only Odaibat, with no Farash evidence. The existing exact owner-scoped
+main-directory reads recover both roles under an authored plan. No runtime tuning,
+increased K, deletion, alias publication or claim that Luna chooses correctly follows.
+Full excerpts retain inherited headings and marketing text; formal Arabic/source
+quotations do not establish polished Jordanian Arabic generation.
+
+Evidence: `artifacts/m5-mixed-hours-retrieval-v1/REPORT.md`, individual
+`semantic-review.json`, `source-http-replay.json`, `raw-html-span-checks.json`,
+new/full JUnit and preservation/seal checks. Runtime, prompts, settings/default API,
+source/identity/admission/hour decisions, index, credentials and prior 563-file seal
+remain unchanged. Ruff lint/format and the 65-package lock pass. **Zero external
+requests / new spend $0**; no Docker requirement for these mocked offline checks,
+paid call, allowance refresh, deployment or subagent.
+
+**Next:** a bounded three-language live end-to-end development screen of planning,
+real retrieval and the existing extractive draft stage. First verify authenticated
+local Docker/Qdrant candidate reads and refresh the project-key allowance/pricing;
+then declare small explicit call/output limits and review every actual part against
+its offered source evidence. This offline substep is complete; M5, live answer
+acceptance and production readiness remain incomplete. Default chat/readiness stay
+503; no public query runner or deployment was added.
+
 Latest implementation — **explicit v14 nonproduction hours HTTP integration**:
 `HoursChatService` now accepts trusted constructor `hours_profile` selection and
 forwards it to the existing graph; omission still selects v12. V13/v14 are opt-in,

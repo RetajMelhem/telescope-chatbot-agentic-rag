@@ -19,6 +19,32 @@ uses explicit `planner_output_tokens=4096` and their matching bounded settings t
 preserve the exact tested wire. Selecting a profile alone does not change capacity,
 retry policy or budgets, and live compliance at the default cap is not established.
 
+## Mixed-source offline verification (2026-10-17)
+
+`tests/integration/test_hours_dense_http.py` exercises the v14 HTTP service with
+the existing request-scoped dense bridge and actual provider/candidate adapters,
+using synthetic sources, a synthetic test tokenizer, authored planner/draft replies
+and mocked transports. Thirty-seven tests cover three input languages, separate
+same-field doctors, hours/source citation ownership, booking exclusion, cache and
+complete-source paths, missing evidence, stale hours, missing chat usage, concurrent
+budgets, corrupted payloads, altered/swapped citations, omitted parts and timeouts.
+Failure tests assert the specific internal rejection, not just an HTTP error.
+
+Nine additional development controls use the unchanged Telescope bundle and pinned
+Qwen tokenizer, with historically authenticated cached vectors. All 21 parts pass
+through HTTP, graph, source assembly, extractive draft validation and presentation.
+Six controls use cached cosine candidates through mocked embedding/Qdrant transports;
+three two-doctor controls use exact owner-scoped main-directory reads. Both model
+stages are authored replies. The source review and all 30 original DOM-span matches
+are recorded in [the local report](../artifacts/m5-mixed-hours-retrieval-v1/REPORT.md).
+These generated local artifacts are not distributed clinic knowledge or Git assets.
+
+The unscoped two-doctor top-five pools all miss the second doctor. Correct scoped
+reads establish representability, not a live planner's interpretation. No K increase,
+corpus edit or runtime special case was introduced. Full source excerpts and formal
+Arabic presentation remain review-only. A bounded live planning/retrieval/draft
+screen is next; default chat, source policy and production refusal are unchanged.
+
 ## Request interpretation
 
 The separate v12 planner prompt replaces two inherited instructions (the schema
