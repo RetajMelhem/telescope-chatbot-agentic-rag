@@ -98,6 +98,27 @@ The full 786-test offline suite passed before execution; an independent post-run
 
 Next: bounded evidence assembly, complete admitted source reads when a question requires that scope, occurrence-preserving presentation and explicit source/identity/uncertainty enforcement. Use development fixtures and a new reviewed evaluation version; do not tune to the now-exposed evaluation cases or delete useful source occurrences to improve ranking scores.
 
+### Source-page clarification candidate
+
+The [subsequent opt-in implementation](../artifacts/m5-source-page-clarification-v1/REPORT.md)
+addresses the three authored generic clarification gaps with a typed nullable
+source-choice field and independent question/source URL projection. Choices never
+act as identity links, citations or retrieval authorization; old nonpublic filters
+remain forbidden. No runtime question wording, names or benchmark IDs select a path.
+
+Thirty-three new / 2,108 full guarded tests pass. Twelve frozen baseline responses
+reproduce exactly; candidate replay changes only three page-choice messages, while
+nine responses and every draft/embedding/query payload remain exact. Primary Codex
+reviews those changed messages against four saved profile witnesses; unchanged
+units inherit their prior exact review. Actual Luna decisions are unexecuted.
+
+Preserve the original frozen requests/gold/baseline and use the separately recorded
+candidate execution bindings. Next screen actual Luna schema compatibility and
+end-to-end semantics under the declared caps after fresh candidate/key/route
+preflight. Valid document handles do not prove relevant choices; review every
+actual proposal and answer without relabeling the exposed set as unseen. No
+additional paid judge, retries, index mutation or default adoption is introduced.
+
 ### Broader M5 end-to-end acceptance preparation
 
 The [October 17 preparation](../artifacts/m5-broader-e2e-acceptance-v1/REPORT.md)

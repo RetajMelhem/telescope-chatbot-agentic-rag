@@ -91,11 +91,19 @@ All 12 planner inputs reconstruct without gold; 135 focused guarded tests pass.
 No new actual model decision, live ranking, external request or spend occurred.
 This is known-source visible preparation, not an unseen holdout or M5 acceptance.
 
-**Next:** make source-page clarifications actionable in the opt-in path, preserving
-validated source scope, distinct owners and the frozen baseline. Verify offline
-before refreshing candidate/key/route preflight for bounded live acceptance and
-serving integration. Keep the view opt-in and P02/P04 intended pages unresolved
-until clarified. M5 acceptance remains incomplete;
+The opt-in source-page clarification is now implemented: a separate nullable typed
+choice field binds admitted document handles independently of retrieval filters,
+and the presenter asks for a page URL without merging owners or trusting free-form
+model reasons. Thirty-three new / 2,108 full guarded tests pass. All 12 baseline
+responses replay exactly; candidate changes only three clarification messages.
+No new actual model decision, provider request, source/cache/index change or spend.
+
+**Next:** bounded live Luna schema and end-to-end acceptance after authenticated
+candidate/key/route preflight, using the separate candidate plan and frozen original
+questions/source expectations. Keep opt-in choices and P02/P04 intended pages
+unresolved until the user chooses; actual model semantics remain unverified.
+No further fixture-preparation milestone is required before this live screen.
+M5 acceptance remains incomplete;
 do not proceed to production adoption or M6 deployment from this development screen.
 See [current status](../PROJECT_STATUS.md) and
 [hours graph verification](HOURS_GRAPH.md).

@@ -2,64 +2,59 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
-Latest result — **broader acceptance set frozen; offline page-choice gap identified**:
-At `211aa99`, twelve newly worded English/Arabic/Jordanian questions cover **27
-semantic information units**: visit preparation/duration, hours/payment/private
-booking, individual-profile choice, and cataract duration/glasses/missing price.
-Primary Codex authored the source expectations before controls and individually
-reviewed every final control unit. These are known-source, visible fixtures,
-**not an unseen statistical holdout or actual Luna accuracy results**.
+Latest result — **actionable source-page clarification implemented and verified offline**:
+Trusted nonproduction callers may enable `source_page_clarifications=True` with
+`hours_profile="contracts_v14"`. Default false; no public/environment selector.
+The closed `SourceChoicePlannerReply` adds required nullable `clarification`, with
+two to four proposed admitted document handles only for a clarification-required
+part. Earlier schemas/prompts/default paths retain their exact behavior.
 
-All 12 authored HTTP controls execute with external sockets/DNS denied. **24 units
-are adequate; three profile clarifications are incomplete**: their state safely
-retains uncertainty, but the final generic “clarify this part” message does not ask
-which specific page/URL to use. The existing presenter maps `ambiguous_request`
-to a constant; no actual model failure or runtime repair is claimed. Keep the
-page-choice gap explicit, rather than treating status/HTTP success as acceptance.
+Existing nonpublic/retrieval/source/owner/clock validators remain intact. Choices
+bind separately to question ID, snapshot/digest and issued documents. The presenter
+rechecks these bindings and canonical public URLs, then asks which page/URL to use.
+It never displays arbitrary model reasons, merges owners, answers qualifications,
+authorizes fetching or turns choices into factual citations. Public/excluded
+siblings keep their answers and citations. No new judge, retrieval loop or budget.
 
-Source expectations bind **52 chunks / eight saved official pages / 402 exact
-source/context DOM spans**, including all 40 admitted cataract-page chunks for the
-scoped missing-price judgment. Twenty-one citation occurrences / 12 distinct cited
-chunks preserve ownership and provenance. This is not a new full-corpus/excluded
-content audit. All 12 planner inputs reconstruct exactly from request + trusted
-manifests without gold; there are no exact whole-query repeats in 126 selected
-prior questions. This does not prove semantic novelty or generalization.
+**33 new tests / 2,108 full guarded tests pass**, plus Ruff (206 files) and the
+65-package lock check. The 12 frozen baseline responses replay exactly. Opt-in
+candidate replay preserves nine responses exactly and changes only the three
+profile clarification messages; draft/embedding payloads, query vectors/filters,
+source scopes and all other response fields are identical. Primary Codex reviewed
+all three changed messages against four original profile chunks/pages (24 DOM
+witnesses). The other 24 information units inherit their exact prior review.
+These are authored controls, not actual Luna understanding or live ranking scores.
 
-Observed mocks: **21 chat attempts, nine embedding batches / 18 texts / 789 exact
-Qwen input tokens, 18 candidate-query responses**. Vectors/orderings are synthetic
-fixtures, not native embeddings or rankings. One budget per request is shared by
-its stages; no persistent cache write. **135 focused guarded regressions**, Ruff
-(202 files) and the 65-package lock check pass. The prior full 2,075-test receipt
-remains bound to unchanged runtime/tests; it was not rerun here.
+The original 12-request / 27-unit acceptance set, gold and code bindings remain
+frozen. A separate candidate plan records actual new code/schema/prompt bytes.
+The three authored actionability gaps are addressed without resolving intended
+page/identity choices automatically. Actual native model selection remains
+unverified, and valid handles alone do not establish semantic relevance.
 
-Evidence: `artifacts/m5-broader-e2e-acceptance-v1/REPORT.md`, frozen requests and
-expectations, individual semantic review, exact input reconstruction, source DOM
-packet and mock HTTP journals. The prior 1,975-file seal, 122 source inputs and
-924 cache entries remain intact. Runtime/prompts/tests/credentials/source policies
-and index are unchanged; only four milestone documents change. Default public
-chat/readiness remain 503; v14/source view stay opt-in. No subagent or Docker action.
+Evidence: `artifacts/m5-source-page-clarification-v1/REPORT.md`, all 24 baseline/
+candidate replays, primary review, candidate plan and new/full test receipts.
+The prior 2,065-file seal, 122 source inputs, 924 cache entries, credentials, source
+admission/identity/hours decisions and index remain intact. Changed prior bytes
+are retained under `pre-edit/`. Default public chat/readiness remain 503; no
+production selection, Docker action or subagent. Initial test failures are retained;
+the snapshot-attribute assumption and unsafe-fixture expectation were corrected.
 
-**Next:** make page-choice clarifications actionable in the opt-in path, using
-validated source scope without guessing identity or trusting arbitrary model reason
-text. Verify offline and preserve the frozen baseline. Then refresh authenticated
-candidate/route/key preflight before a bounded live acceptance run. **M5 acceptance,
-serving integration and production readiness remain incomplete.** The current
-preparation is complete; actual new model decisions and live rankings remain unrun.
+**Next: bounded live Luna schema and end-to-end acceptance**, starting with fresh
+authenticated candidate/route/key preflight. Use the separate candidate binding,
+original questions and source expectations; screen actual schema compatibility,
+then remain within 24 chat attempts / 12 embedding batches / 48 query reads, with
+no retry, fallback, index write or default adoption. Review every actual information
+unit and any source choices; stop/preserve failures without automatic repair.
+The offline implementation is complete; **M5 live acceptance, serving integration
+and production readiness remain incomplete**. No additional fixture-preparation
+milestone is required before this live screen.
 
-**New spend $0; zero external requests**, including metadata. The last observed
-remaining allowance is $0.954834715 at October 17 15:32:57 Asia/Amman from the prior
-step; it was not refreshed and is not a current reservation. The future proposal
-allows at most 24 chat attempts / 12 embedding batches / 48 candidate-query reads,
-with retries/index writes off; no live runner or such execution exists in this step.
-
-Previous live continuation: P01/P03/P05 reused actual accepted plans, completed
-three actual drafts/two query embeddings/three Qdrant reads, and preserved all four
-role witnesses plus public hours. Cost $0.001569545 reconciled exactly. See
-`artifacts/m5-general-downstream-v1/REPORT.md`; that small development screen does
-not establish global recall, holdout generalization or production readiness.
-P02/Odaibat and P04/Rihab intended individual pages remain unresolved. Informative
-individual pages stay admitted separately from sparse profiles; no identity or
-source decision is altered. Full excerpts/formal Arabic retain presentation limits.
+**New spend $0; zero external requests**, including metadata. Last observed
+allowance: $0.954834715 at October 17 15:32:57 Asia/Amman, not refreshed or reserved.
+The previous source-bound acceptance preparation and its original three generic
+clarification failures remain in `artifacts/m5-broader-e2e-acceptance-v1/`.
+Earlier actual retrieval/draft evidence remains in `artifacts/m5-general-downstream-v1/`.
+No claim of an unseen statistical holdout, global corpus recall or full-site re-audit.
 
 Previous implementation: `0e4f6a7` added the trusted opt-in source view, with 36 new /
 2,075 full guarded tests and 22 projected annotations / 66 DOM witnesses checked.

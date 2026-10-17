@@ -9,6 +9,7 @@ from telescope_rag.api.hours_presentation import project_hours_response
 from telescope_rag.api.hours_responses import HoursChatResponse
 from telescope_rag.api.offline_service import OfflineChatService
 from telescope_rag.api.schemas import ChatRequest
+from telescope_rag.api.source_choices import project_source_choices
 from telescope_rag.core.errors import ApplicationError
 from telescope_rag.core.settings import Settings
 from telescope_rag.graph.contracts import EvidenceRetriever, WorkflowResult
@@ -38,8 +39,10 @@ class HoursChatService(OfflineChatService):
         clock: Callable[[], datetime] | None = None,
         hours_profile: HoursProfile = "v12",
         reviewed_profile_limitations: bool = False,
+        source_page_clarifications: bool = False,
     ) -> None:
         self._settings, self._catalog = settings, catalog
+        self._source_page_clarifications = source_page_clarifications
         self._workflow = HoursRagWorkflow(
             settings=settings,
             chat=chat,
@@ -55,6 +58,7 @@ class HoursChatService(OfflineChatService):
             clock=clock,
             hours_profile=hours_profile,
             reviewed_profile_limitations=reviewed_profile_limitations,
+            source_page_clarifications=source_page_clarifications,
         )
 
     async def draft(self, payload: ChatRequest, *, request_id: UUID) -> WorkflowResult:
@@ -63,12 +67,17 @@ class HoursChatService(OfflineChatService):
     async def respond(self, payload: ChatRequest, *, request_id: UUID) -> HoursChatResponse:
         run = await self._run(payload, request_id=request_id)
         try:
-            return project_hours_response(
+            response = project_hours_response(
                 run,
                 catalog=self._catalog,
                 request_id=request_id,
                 bindings=self._workflow.hours_bindings,
             )
+            if self._source_page_clarifications:
+                response = project_source_choices(
+                    response, run, catalog=self._catalog, bindings=self._workflow._bindings
+                )
+            return response
         except ValueError:
             raise ApplicationError(
                 502, "offline_response_failed", "The offline response could not be validated."

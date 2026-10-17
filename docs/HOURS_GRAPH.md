@@ -19,6 +19,39 @@ uses explicit `planner_output_tokens=4096` and their matching bounded settings t
 preserve the exact tested wire. Selecting a profile alone does not change capacity,
 retry policy or budgets, and live compliance at the default cap is not established.
 
+## Opt-in actionable source-page clarification (2026-10-17)
+
+Trusted callers may additionally set `source_page_clarifications=True` with v14.
+The default is false; earlier profiles and nonboolean values are rejected. No
+public request field or environment toggle enables this candidate. The independent
+source-limitations view remains optional, and all serving defaults stay unchanged.
+
+The new closed `SourceChoicePlannerReply` adds required nullable `clarification`
+to each part. Only a clarification-required source-page ambiguity may supply
+`kind="source_page"` and two to four distinct issued document handles. Old fields
+still pass their original validators; nonpublic retrieval filters remain forbidden.
+Choices bind separately to question/snapshot/digest/document IDs. They are not
+identity links, factual evidence, source selection or retrieval authorization.
+
+The presenter independently rebinds those references and canonical public URLs.
+Its English/Arabic message asks which page/URL to use, with no arbitrary model
+reason text. Only that clarification text changes; the existing response schema,
+citations, hours calculations, excluded/public siblings and unverified flags remain.
+Other ambiguity kinds can retain null choices and their generic message. No new
+model stage, retry, fallback, budget or query parser is added.
+
+The [offline implementation report](../artifacts/m5-source-page-clarification-v1/REPORT.md)
+records 33 new / 2,108 full guarded tests, exact replay of 12 baseline responses,
+and candidate replay changing only three page-choice messages while retaining nine
+responses and all draft/embedding/query payloads exactly. Primary language review
+checks those three changes against four original saved profile witnesses. This
+establishes authored representability and isolation, not actual model source choice.
+
+Next run bounded live Luna schema/end-to-end acceptance after authenticated
+candidate/routes/allowance preflight, preserving the frozen baseline and candidate
+code bindings. New schema compatibility and native semantic selection remain
+unverified. No external request or new spend occurred in this implementation.
+
 ## Broader acceptance preparation (2026-10-17)
 
 The [new source-bound fixture set](../artifacts/m5-broader-e2e-acceptance-v1/REPORT.md)
@@ -37,9 +70,9 @@ guarded regressions, Ruff and lock checks pass. No runtime, source, cache, index
 default changed; no external request or new spend occurred. This is a visible,
 known-source cohort, not a statistical holdout or a broad language-quality score.
 
-Next address actionable source-page clarification in the opt-in path with validated
-scope, preserving the frozen baseline and distinct owners. Verify offline before
-spending credit on bounded live acceptance; default serving remains unavailable.
+The subsequently implemented opt-in option is documented above. It addresses the
+authored actionability gap without resolving the intended page automatically;
+actual model source-choice acceptance and default serving remain unavailable.
 
 ## Actual-plan retrieval and draft continuation (2026-10-17)
 

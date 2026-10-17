@@ -1,5 +1,15 @@
 # Provider contracts and verified scope
 
+The opt-in [source-page clarification contract](HOURS_GRAPH.md) uses a separate
+closed `SourceChoicePlannerReply` only when trusted v14 callers enable it. Every
+part adds required nullable `clarification`; non-null choices carry two to four
+issued document handles and are limited to clarification state. The original
+v14/earlier schemas and default payloads are unchanged. This adds no provider call,
+retry, fallback, token counter or budget; existing reported chat usage remains.
+The new hosted schema and native choice selection are **unverified** until the
+next bounded live screen. Thirty-three new / 2,108 full offline tests and exact
+baseline/candidate controls prove local protocol/ownership behavior only.
+
 `providers/screen_audit.py` supplies an explicitly injected local development-audit
 transport; default adapters/logging do not enable it. It reserves exclusive journal
 slots before awaiting I/O, so concurrent source reads cannot overwrite each other.
