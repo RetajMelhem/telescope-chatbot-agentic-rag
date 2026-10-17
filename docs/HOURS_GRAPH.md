@@ -19,6 +19,49 @@ uses explicit `planner_output_tokens=4096` and their matching bounded settings t
 preserve the exact tested wire. Selecting a profile alone does not change capacity,
 retry policy or budgets, and live compliance at the default cap is not established.
 
+## Actual-plan retrieval and draft continuation (2026-10-17)
+
+The [bounded downstream screen](../artifacts/m5-general-downstream-v1/REPORT.md)
+continues the three accepted P01/P03/P05 treatment plans with exact original wire
+checks and zero new paid planning. Three actual Luna drafts, two Qwen query
+embeddings (77 tokens) and three authenticated exact Qdrant queries complete with
+HTTP 200 after offline controls and preflight. The English query uses its existing
+cache; new vectors are request-local. No retry, fallback, K increase, index write
+or default adoption occurred.
+
+Primary Codex individually reviewed all three actual drafts / four final question
+parts against saved official sources. All four requested role witnesses are
+retrieved and cited, keeping Odaibat/Farash separate, Arabic qualifiers intact and
+hours citations with the hours part. Farash remains anesthesia/critical care;
+the inherited department heading does not establish his specialty. The hours
+draft's unknown/operation_unavailable is intentional: the existing deterministic
+hours presenter supplies the reviewed schedule and preserves uncertainty.
+
+Scoped witness Recall@5 and binary nDCG@5 are 1.0 in each request, with 13
+primary-authored judgments frozen before ranking. The English scope contains 11
+cards; Arabic scopes contain one each, making their ranking trivial once the scope
+is correct. Three unrelated English top-five cards are not cited. These results
+establish neither global corpus recall nor a causal answer gain over control.
+
+Exact offline replay reproduces every actual draft/final response, query vector
+and filter. Ninety-two original DOM spans across 15 chunks / four saved pages pass,
+covering nine offered and six cited chunks. Seventy-six focused guarded regressions,
+Ruff (202 files) and the 65-package lock pass. The previous full 2,075-test receipt
+remains bound to unchanged runtime and tests; it was not rerun here.
+
+New cost is $0.001569545, exactly matching key usage change and per-call route/cache
+rates: 7,992 chat input / 1,140 output tokens, including 501 reasoning tokens already
+within output, plus 77 embedding tokens. The observed remaining allowance is
+$0.954834715 at October 17 15:32:57 Asia/Amman. Mean continuation is 6.224 seconds,
+excluding previous planning/resource loading. Earlier planner charges are referenced
+once separately. Source/cache/credential bytes and candidate metadata remain intact.
+
+Next freeze an independently worded M5 acceptance cohort and source judgments,
+starting offline, before further bounded live acceptance or serving integration.
+P02/P04 source-page choices remain pending, full excerpts retain presentation
+limits, and polished Jordanian generation is unverified. This screen does not
+re-audit all 955 chunks, approve defaults or establish production readiness.
+
 ## Paired live planner comparison (2026-10-17)
 
 The [six-pair development screen](../artifacts/m5-profile-limitations-live-v1/REPORT.md)
@@ -59,12 +102,10 @@ lengths and caching confound cost/latency comparisons; no causal speed gain or
 generalization estimate follows. The last key observation was $0.95640426 remaining
 at October 17 04:09:54 Asia/Amman; no further review-time API request refreshed it.
 
-Next verify actual retrieval and draft answers for general treatment plans
-P01/P03/P05, reusing those plans without new paid planning. The English query has
-an existing cache entry; bound further work to two new request-local query
-embeddings, three read-only Qdrant queries and three drafts after preparation and
-preflight. Keep ambiguous profile choices pending and the view opt-in. This
-continuation has not run; serving adoption and production readiness remain unproven.
+The subsequent P01/P03/P05 actual retrieval/draft continuation is recorded above.
+Its three plans are reused without new paid planning. Ambiguous individual-page
+choices remain pending and the view stays opt-in; serving adoption and production
+readiness remain unproven.
 
 ## Reviewed profile-limitations source view (2026-10-17)
 

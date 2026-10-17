@@ -68,14 +68,26 @@ name-only limitations at exact occurrence scope. Its six-pair live screen now ha
 All explicit profile-only limits hold; two material individual-page choices remain
 unresolved. A prior profile-sample overgeneralization is corrected using informative
 Odaibat/Rihab pages already in the admitted corpus; no source or identity change.
-The observed $0.04229628 exactly reconciles to key usage. Thirty-nine focused checks,
-all 12 actual-output replays and 194 source DOM witnesses pass; the prior full 2,075
-tests remain bound to unchanged implementation. No ranking/answer acceptance follows.
-**Next:** bounded downstream verification of P01/P03/P05 treatment plans, reused
-without new paid planning, after offline preparation and current preflight. Limit
-new work to two request-local query embeddings, three authenticated read-only
-Qdrant queries and three drafts. This continuation has not run. Keep the view
-opt-in and ambiguous profile choices pending. M5 acceptance remains incomplete;
+The planner screen's $0.04229628 exactly reconciles to key usage; its source-scope
+results alone do not establish ranking/answer acceptance.
+
+The subsequent P01/P03/P05 downstream continuation now passes with three actual
+drafts, two request-local Qwen query embeddings (77 tokens) and three authenticated
+exact read-only Qdrant queries. No new paid planning or index write occurred.
+Primary Codex reviewed every actual draft / four final question parts: all four
+role witnesses and the public-hours part are represented with correct ownership.
+Scoped witness Recall@5/nDCG@5 are 1.0, conditional on 11 English cards and one card
+per Arabic scope; this is not global recall or holdout acceptance. Exact replay,
+92 original DOM spans / 15 chunks / four pages and 76 focused guarded tests pass.
+The prior full 2,075-test result remains bound to unchanged runtime/tests.
+New $0.001569545 reconciles exactly; $0.954834715 remained at October 17 15:32:57
+Asia/Amman. No default adoption, retry, deployment or source/cache change.
+
+**Next:** freeze an independently worded M5 end-to-end acceptance cohort and source
+judgments before further paid calls, starting with offline controls. Include wider
+website facts, mixed public/private questions, missing facts and material page-choice
+uncertainty; then bound a live acceptance screen before serving integration. Keep
+the view opt-in and P02/P04 page choices pending. M5 acceptance remains incomplete;
 do not proceed to production adoption or M6 deployment from this development screen.
 See [current status](../PROJECT_STATUS.md) and
 [hours graph verification](HOURS_GRAPH.md).

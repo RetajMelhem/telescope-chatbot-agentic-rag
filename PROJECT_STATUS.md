@@ -2,58 +2,65 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
-Latest result — **paired live planner comparison complete; view remains opt-in**:
-At `0e4f6a7`, all 12 frozen requests ran with actual Luna/OpenAI, no retry or
-fallback. Twelve schemas passed; literal/source checks passed 5/6 control and 6/6
-treatment plans. The failed control combined a sparse-profile document with a
-main-directory owner and was rejected without repair. Every actual proposal and
-its source restriction was individually reviewed by primary Codex: **12 plans /
-14 parts**, with 32 relevant source chunks / 14 saved pages and 194 exact DOM checks.
+Latest result — **three actual-plan retrieval/answer continuations pass; view stays opt-in**:
+At `f1a25f8`, P01/P03/P05 reuse their actual accepted treatment proposals with
+exact original planner-wire checks and **zero new paid planning**. After offline
+controls and authenticated preflight, three actual Luna/OpenAI drafts, two Qwen
+query embeddings (**77 tokens**) and three exact read-only Qdrant queries complete
+with HTTP 200. No retry, fallback, plan repair, K increase, index write or subagent.
 
-General role questions with all target evidence reachable: **1/3 control → 3/3
-optional view** (2/4 → 4/4 role witnesses). Both arms preserve all three explicit
-profile-only restrictions. The original English comparison selects the correct
-directory in both arms; this alone demonstrates no gain. P02/Odaibat and P04/Rihab
-have material individual-page choices; keep them unresolved rather than claiming
-6/6 semantic acceptance. No live ranking, Recall@K/nDCG or draft answers ran here.
+Primary Codex individually reviewed **three actual drafts / four final question
+parts** against original saved Telescope evidence. Odaibat and Farash rank first
+and second in the English directory scope and retain distinct roles/owners; Sarah
+and Tashman retain their exact Arabic roles and qualifications. The final mixed
+response also preserves the reviewed public opening schedule and its own citations.
+Farash's explicit anesthesia/critical-care role is not inferred from a department
+heading; pharmacy 24/7 is not assigned to the clinic.
 
-**Correction:** the prior profile review overgeneralized its name-only sample.
-Informative profiles already exist at `/dr-osama-odaibat/` and
-`/ar/dr-rihab-ghanma/`, separately from sparse `/doctors/` pages. Saved HTML and
-literal owners substantiate them. The implementation flags exact occurrences and
-did not suppress these informative pages. Preserve the old sealed review and
-frozen criteria; no source text, admission decision or identity link is changed.
+All **four role witnesses** are retrieved and cited. Scoped witness Recall@5 and
+binary nDCG@5 are **1.0 for each case**, using 13 primary-authored pre-live relevance
+judgments. These cover 11 English cards and one card per Arabic scope; one-card
+ranking is trivial conditional on scope. The English pool still returns three
+unrelated cards, which the draft does not cite. No global recall, held-out
+generalization or paired downstream accuracy/cost gain is established.
 
-All 12 actual outputs/payloads/validation outcomes replay offline. Both Farash
-profile-only plans assemble to unknown/context_only with no quote or draft branch.
-**39 focused guarded regressions pass**, with Ruff (202 files) and 65-package lock
-checks. The previous full **2,075-test** receipt remains bound to unchanged runtime
-and tests; it was not rerun for these documentation-only changes. An initial
-replay-verifier JSON tuple/list comparison was corrected; its failed version is
-retained and no provider request was repeated.
+All actual drafts, final parts, query vectors/filters and responses replay exactly
+with external sockets blocked. **92 exact original DOM spans / 15 chunks / four
+saved pages** pass, covering nine offered and six cited chunks. This is not a new
+audit of all 955 chunks or excluded content; no source content changed. **76 focused
+guarded regressions**, Ruff (202 files) and the 65-package lock check pass. The prior
+full **2,075-test** result remains bound to unchanged runtime/tests, not rerun here.
 
-Actual usage: **342,836 input / 8,469 output tokens**, including 6,238 reasoning
-already within output. **$0.04229628** exactly matches key usage change and each
-call recomputes from route/cache rates. The view adds 2,001 observed native input
-tokens per call. Six-call control/treatment costs: $0.021030825 / $0.021265455;
-mean times 8.310 / 5.883 seconds, confounded by output/reasoning/cache variation.
-Last checked balance: **$0.95640426 at October 17 04:09:54 Asia/Amman**. Four provider
-metadata GETs accompanied the original screen; resumed review adds zero external
-requests/spend. No draft, embedding, Qdrant/index call, deployment or subagent.
+New usage: **7,992 chat input / 1,140 output tokens**, including 501 reasoning
+already within output, plus 77 embedding tokens. **$0.001569545** exactly matches
+the key usage increase and all five route/cache rate recomputations. Prior planning
+is referenced once separately. Remaining: **$0.954834715 at October 17 15:32:57
+Asia/Amman**. Mean continuation 6.224 seconds excludes previous planning/resource
+loading. Four provider metadata GETs and five Qdrant metadata/auth GETs accompany
+the five inference calls and three query POSTs; no deployment or index change.
 
-Evidence: `artifacts/m5-profile-limitations-live-v1/REPORT.md`, individual review,
-source correction, original live receipts, exact replay, comparison and accounting.
-Sources, 924 cached vectors, credentials, runtime/prompts/tests and prior seals
-remain unchanged. Default view stays off and public chat/readiness remain 503.
+Evidence: `artifacts/m5-general-downstream-v1/REPORT.md`, individual semantic
+review, frozen scope judgments, exact replay, DOM witnesses, native receipts and
+accounting. The prior 1,899-file seal, 122 source inputs, 924 cached vectors,
+credentials and runtime/prompts/tests remain intact. Authenticated candidate
+metadata stays green/955 points/no aliases; default chat/readiness remain 503.
 
-**Next:** prepare/preflight a bounded downstream continuation of accepted general
-treatment plans **P01/P03/P05**, reusing the actual plans without new paid planning.
-Use the existing English cache; at most two new request-local Qwen query embeddings,
-three authenticated read-only Qdrant queries and three drafts. Review every actual
-answer, qualifier, owner and question-owned citation, charging prior planning once
-separately. Keep ambiguous individual-page requests pending. This continuation has
-not run. The planner screen is complete; **M5 acceptance and production readiness
-remain incomplete**. Do not adopt defaults or claim broad robustness from six pairs.
+**Next:** freeze an independently worded M5 end-to-end acceptance cohort and source
+judgments before further live calls, starting with offline controls. Cover general
+website facts beyond these exposed examples, mixed hours/source/private parts,
+material page-choice uncertainty and missing facts. Then bound a live acceptance
+screen against the remaining allowance before considering serving integration.
+The present continuation is complete; **M5 acceptance and production readiness
+remain incomplete**. Keep v14/view opt-in; do not tune routing to these examples.
+
+P02/Odaibat and P04/Rihab individual-page choices remain unresolved and were not
+continued or scored as wins. Informative `/dr-osama-odaibat/` and
+`/ar/dr-rihab-ghanma/` pages remain admitted separately from sparse `/doctors/`
+pages, preserving the earlier correction. Full excerpts still show inherited
+headings/marketing and formal Arabic, so concise Jordanian presentation is unproven.
+Previous six-pair planner screen: 12 plans / 14 reviewed parts, general-role source
+reachability 1/3 control versus 3/3 optional view, all explicit restrictions retained,
+with $0.04229628 reconciled; see `artifacts/m5-profile-limitations-live-v1/REPORT.md`.
 
 Previous implementation: `0e4f6a7` added the trusted opt-in source view, with 36 new /
 2,075 full guarded tests and 22 projected annotations / 66 DOM witnesses checked.
