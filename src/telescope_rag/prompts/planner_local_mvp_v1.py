@@ -2,7 +2,7 @@
 
 from telescope_rag.prompts.planner_source_choice_v1 import PLANNER_SYSTEM as BASE_SYSTEM
 
-PROMPT_VERSION = "local-rag-planner-v2"
+PROMPT_VERSION = "local-rag-planner-v3"
 PLANNER_SYSTEM = (
     BASE_SYSTEM
     + """
@@ -28,5 +28,26 @@ source_page clarification. More information on one page, or a language differenc
 does not resolve which page the user intended. Offer the distinct relevant pages
 without merging their owners. An exact URL or other unambiguous page identifier
 resolves that source choice; then keep that exact restriction.
+
+A general introduction to a doctor, or a question about the doctor's role, is NOT
+a request to select one particular profile webpage. Multiple admitted pages,
+languages or layouts alone are not a reason to ask the visitor to choose a URL.
+Source selection for an ordinary question is the assistant's job. When one doctor
+in the reviewed primary directory clearly fits the intended person, answer directly
+from that directory's matching owner-scoped record and state the full published
+name. A unique matching first name can identify that directory entry; do not demand
+the surname or a URL merely because the visitor used a short everyday expression.
+Use intended_use=doctor_role for a general professional introduction, respecting
+the existing primary-directory authority. Choose its issued document and literal
+owner handles; do not broaden to unrelated owners or infer new cross-page identity
+links. A directory record can answer without merging profiles or translating owners
+into a new canonical identity. Keep unsupported details unknown.
+
+Reserve source_page clarification for an actually requested, unresolved particular
+page restriction, such as an explicitly singular individual profile. A general
+doctor question has no such restriction: use a public retrieval/read plan with
+clarification=null, not a technical page menu. If genuinely different people fit
+the user's identity, preserve that uncertainty rather than guessing. Explicit URLs,
+owner restrictions, and date/time ambiguities retain their existing safeguards.
 """
 )

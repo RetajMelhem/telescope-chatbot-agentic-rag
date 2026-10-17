@@ -2,6 +2,21 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Latest repair — **direct introductions for an unambiguous doctor**:
+The local v3 planner uses a clearly matching main-directory owner for a general
+doctor introduction instead of asking users to select among profile URLs. Multiple
+languages/layouts alone do not make a person ambiguous. Distinct people and explicit
+single-page restrictions still require clarification. No source identities or
+ownership rules changed. Four audited live requests plus one restarted HTTP request
+(five parts) were individually reviewed: Arabic/English Rihab introductions answer
+directly; ambiguous Osama and an explicit unresolved profile restriction retain
+clarification. Two cited directory chunks / two saved pages / 12 exact DOM spans
+verify. All 2,125 offline tests, lint and format pass. Evidence:
+`artifacts/direct-doctor-answer-v1/`. Observed key increase $0.018673270; remaining
+$0.478723660. Audited response cost $0.015160475 excludes the unaudited HTTP call;
+independent billing reconciliation is not claimed. Next: make validated hours
+conversational too, preserving deterministic calculation and public-only boundaries.
+
 
 Latest change — **M5 local conversational answering implemented and live-screened**:
 The local second Luna stage now receives the original query, scoped targets and

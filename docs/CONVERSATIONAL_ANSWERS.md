@@ -28,6 +28,14 @@ pages keep validated URL choices. Missing facts and excluded private or personal
 medical requests stay explicit. Several excluded actions may share one visible
 explanation while all original API parts retain their individual outcomes.
 
+The local v3 planner answers a general introduction from a clearly matching main
+directory owner without demanding a profile URL. A first name that identifies
+multiple people still needs clarification; an explicit single-page restriction
+remains binding. Five actual development requests were individually reviewed for
+Arabic/English Rihab, ambiguous Osama and a restricted profile request. The cited
+directory records retain their literal owners and exact source spans; no new
+identity aliases were added. Evidence: `artifacts/direct-doctor-answer-v1/`.
+
 The UI shows prose as its main answer and offers expandable original source excerpts.
 `answer_style=conversational` identifies the local output style. Citation identity
 and exact original quotation do not prove semantic entailment of generated prose;
