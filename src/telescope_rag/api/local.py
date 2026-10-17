@@ -107,6 +107,7 @@ class LocalChatResponse(ResponseRecord):
 
     schema_version: Literal["local-mvp-response-v1"] = "local-mvp-response-v1"
     mode: Literal["local_mvp"] = "local_mvp"
+    answer_style: Literal["conversational"] = "conversational"
     request_id: str
     status: Literal["draft_ready", "not_found", "out_of_scope", "clarification_required"]
     answer: str = Field(repr=False)
@@ -200,6 +201,7 @@ def create_local_app(
         reviewed_profile_limitations=True,
         source_page_clarifications=True,
         local_mvp_search=True,
+        conversational_answers=True,
     )
     probe = LocalKnowledgeProbe(reader, resources)
     app = create_app(

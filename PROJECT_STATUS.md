@@ -3,7 +3,51 @@
 Last updated: 2026-10-18 (Asia/Amman).
 
 
-Latest delivery — **usable local MVP, explicitly selected; production remains separate**:
+Latest change — **M5 local conversational answering implemented and live-screened**:
+The local second Luna stage now receives the original query, scoped targets and
+assembled website evidence, and returns concise English/Arabic/Jordanian prose
+with sentence-specific source IDs. It replaces extractive draft selection; no
+third model, external judge, new retrieval loop or budget increase is added.
+Earlier/default profiles stay extractive/unavailable as before. Original chunks,
+source decisions, owner bindings, cache and candidate index are unchanged.
+
+The old quotation/scope/ownership validator remains active. The new contract and
+presenter reject missing/duplicate parts, cross-question or unknown source IDs,
+forged citation markers and changed fixed outcomes. Citations keep exact original
+quotes; the main answer contains natural prose. Hours stay deterministic, source
+ambiguities retain URL choices, and unsupported/private/personalized requests remain
+explicit. Source excerpts are expandable in the UI instead of being the main reply.
+
+**10 new / 2,125 full guarded tests pass** (including English/Arabic/Jordanian
+controls), with lint/format and lock checks. **Eight actual live requests / 16
+parts** received primary Codex individual language review. Six audited cases use
+10 chat / four Qwen attempts, without retries; two restarted real HTTP requests
+verify Jordanian prose and the repaired personalized-medical refusal. The old
+booking-specific refusal safely excluded two medical requests but explained the
+wrong boundary; its new shared explanation is verified in the final HTTP run.
+Nine source chunks / three original saved pages / 45 exact DOM spans verify;
+all ten citation occurrences, including the final HTTP example, preserve source
+text/ownership. Cross-language generation retains the English cataract page's
+usually/lens-dependent qualifiers; absent price stays unknown. One short Arabic
+phrase has a minor fluency caution. These are development screens, not a global
+factual-accuracy or independent generalization acceptance claim. Structural source
+checks do not prove entailment of future generated text.
+
+Evidence: `artifacts/conversational-answer-v1/` (plan, actual provider/Qdrant traces,
+final replies, full tests, individual review, original-DOM checks and accounting).
+The observed key increase during this screen window is **$0.033173155**, with
+**$0.500979850 remaining** at the final metadata observation. Audited responses
+report $0.025720165; two real HTTP requests lack payload audit, so independent
+per-request billing reconciliation is not claimed. No index/corpus/source write,
+public deployment, new agent, fallback or external judge occurred.
+
+**Current position:** the local M5 chatbot now answers conversationally with cited
+website evidence. Next: hands-on acceptance of this running local chat, followed
+by M6 portable API Docker packaging. Broad independent answer/retrieval quality,
+production serving, source refresh and website integration remain incomplete.
+See `docs/CONVERSATIONAL_ANSWERS.md` and `docs/LOCAL_MVP.md`.
+
+Previous delivery — **usable local MVP, explicitly selected; production remains separate**:
 Run `.\run-local.ps1` and open `http://127.0.0.1:8000/`. The explicit local factory
 composes the existing bounded LangGraph, real Luna/Qwen providers, reviewed source
 and hours plans, and read-only dense retrieval from the existing 955-point Qdrant

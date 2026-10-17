@@ -1,5 +1,10 @@
 # Implementation plan
 
+M5 local conversational answering is now implemented and screened with actual Luna
+responses; see [current verification](CONVERSATIONAL_ANSWERS.md). Hands-on local
+acceptance remains next, followed by M6 portable API Docker packaging. Broad
+independent quality acceptance and production adoption remain separate.
+
 Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
 The explicit loopback entry point now serves live development queries. The default
 application and production acceptance remain separate; earlier checkpoints below

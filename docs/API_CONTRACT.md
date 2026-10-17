@@ -1,5 +1,10 @@
 # FastAPI contract
 
+Local MVP replies now include `answer_style=conversational`: `answer` contains generated
+prose with application-owned citation markers; `citations[].quote` retains original
+evidence. Each original part, owner and unresolved outcome remains inspectable.
+See [conversational verification](CONVERSATIONAL_ANSWERS.md).
+
 Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
 The explicit loopback entry point now serves live development queries. The default
 application and production acceptance remain separate; earlier checkpoints below

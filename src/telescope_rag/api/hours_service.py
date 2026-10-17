@@ -41,10 +41,21 @@ class HoursChatService(OfflineChatService):
         reviewed_profile_limitations: bool = False,
         source_page_clarifications: bool = False,
         local_mvp_search: bool = False,
+        conversational_answers: bool = False,
     ) -> None:
+        if type(conversational_answers) is not bool or (
+            conversational_answers and not local_mvp_search
+        ):
+            raise ValueError("conversational_answers_require_local_mvp")
+        workflow_type = HoursRagWorkflow
+        if conversational_answers:
+            from telescope_rag.graph.conversation_workflow import ConversationalRagWorkflow
+
+            workflow_type = ConversationalRagWorkflow
         self._settings, self._catalog = settings, catalog
+        self._conversational_answers = conversational_answers
         self._source_page_clarifications = source_page_clarifications
-        self._workflow = HoursRagWorkflow(
+        self._workflow = workflow_type(
             settings=settings,
             chat=chat,
             retriever=retriever,
@@ -79,6 +90,10 @@ class HoursChatService(OfflineChatService):
                 response = project_source_choices(
                     response, run, catalog=self._catalog, bindings=self._workflow._bindings
                 )
+            if self._conversational_answers:
+                from telescope_rag.api.conversation import project_conversation
+
+                response = project_conversation(response, run)
             return response
         except ValueError:
             raise ApplicationError(

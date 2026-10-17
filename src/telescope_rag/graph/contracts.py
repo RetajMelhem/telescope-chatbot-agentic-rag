@@ -92,6 +92,22 @@ class AnswerDraft(ClosedRecord):
     parts: tuple[PartDraft, ...] = Field(min_length=1, max_length=4)
 
 
+class AnswerSentence(ClosedRecord):
+    text: str = Field(min_length=1, max_length=2500, repr=False)
+    chunk_ids: tuple[str, ...] = Field(min_length=1, max_length=16)
+
+
+class ConversationalPart(ClosedRecord):
+    part_id: str = Field(min_length=1, max_length=128)
+    status: DraftStatus
+    sentences: tuple[AnswerSentence, ...] = Field(max_length=12, repr=False)
+    reason_code: ReasonCode | None
+
+
+class ConversationalDraft(ClosedRecord):
+    parts: tuple[ConversationalPart, ...] = Field(min_length=1, max_length=4)
+
+
 class RetrievalQuery(ClosedRecord):
     part_id: str
     text: str = Field(min_length=1, max_length=4000, repr=False)
@@ -209,3 +225,4 @@ class WorkflowRun:
     answer_targets: tuple[PartAnswerTarget, ...] = field(default=(), repr=False)
     computed_hours: tuple[ComputedHours, ...] = field(default=(), repr=False)
     operation_clock: datetime | None = field(default=None, repr=False)
+    conversation: ConversationalDraft | None = field(default=None, repr=False)

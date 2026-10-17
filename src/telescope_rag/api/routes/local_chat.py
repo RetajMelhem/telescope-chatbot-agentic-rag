@@ -18,6 +18,6 @@ async def chat(payload: ChatRequest, request: Request) -> LocalChatResponse:
     values = {
         name: getattr(response, name)
         for name in LocalChatResponse.model_fields
-        if name not in {"schema_version", "mode"}
+        if name not in {"schema_version", "mode", "answer_style"}
     }
     return LocalChatResponse(**values)

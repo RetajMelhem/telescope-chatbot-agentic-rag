@@ -23,7 +23,7 @@ li{margin-bottom:14px}a{color:#125d70}#status{font-size:14px}small{color:#526873
 <p id="status" role="status"></p>
 <div id="answer" dir="auto" hidden></div>
 <ol id="sources"></ol>
-<small>Local MVP · Responses use source excerpts. Missing facts and ambiguous requests remain explicit. Published hours do not confirm appointment availability. Each submission uses the configured paid OpenRouter models. Questions are independent; this interface does not store conversation history.</small>
+<small>Local MVP · Answers are written from Telescope's website evidence. Sources appear below for reference. Missing facts and ambiguous requests remain explicit. Published hours do not confirm appointment availability. Each submission uses the configured paid OpenRouter models. Questions are independent; this interface does not store conversation history.</small>
 </main>
 <script>
 const form=document.querySelector('#chat'),button=document.querySelector('#send'),statusEl=document.querySelector('#status'),answer=document.querySelector('#answer'),sources=document.querySelector('#sources');
@@ -40,9 +40,11 @@ form.addEventListener('submit',async event=>{
    const url=new URL(citation.url);
    if(url.protocol!=='https:'||!['telescopecenter.com','www.telescopecenter.com'].includes(url.hostname))continue;
    link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent=`[${citation.id}] ${citation.title}`;
-   item.append(link,document.createElement('br'),document.createTextNode(`Retrieved: ${citation.fetched_at}`));sources.append(item);
+   const details=document.createElement('details'),summary=document.createElement('summary'),quote=document.createElement('p');
+   summary.textContent='View supporting excerpt / عرض نص المصدر';quote.textContent=citation.quote;quote.dir='auto';details.append(summary,quote);
+   item.append(link,document.createElement('br'),document.createTextNode(`Retrieved: ${citation.fetched_at}`),details);sources.append(item);
   }
-  statusEl.textContent=`${data.status} · Request ${data.request_id}`;
+  statusEl.textContent=data.language==='en'?'Reply ready':'الإجابة جاهزة';
  }catch(error){statusEl.textContent=error.message;}
  finally{button.disabled=false;}
 });

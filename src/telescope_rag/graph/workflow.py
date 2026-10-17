@@ -19,6 +19,7 @@ from telescope_rag.graph.bindings import SourceBindings, SourceFilterError
 from telescope_rag.graph.contracts import (
     AnswerDraft,
     BudgetSummary,
+    ConversationalDraft,
     EvidenceRetriever,
     PartAnchorBinding,
     PartAnswerTarget,
@@ -68,6 +69,7 @@ class _RunContext:
     answer_targets: tuple[PartAnswerTarget, ...] = field(default=(), repr=False)
     operation_clock: datetime | None = None
     computed_hours: tuple[ComputedHours, ...] = field(default=(), repr=False)
+    conversation: ConversationalDraft | None = field(default=None, repr=False)
 
 
 class _State(TypedDict, total=False):
@@ -391,9 +393,8 @@ class OfflineRagWorkflow:
             else "safe"
         )
 
-    async def _generate_draft(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
-        self._enter(runtime, "generate_draft")
-        body = {
+    def _draft_body(self, state: _State, runtime: Runtime[_RunContext]) -> dict:
+        return {
             "prompt_version": CONSTRAINT_VERSION
             if self._planner_profile == "local_constraints"
             else DEPENDENCY_VERSION
@@ -489,6 +490,10 @@ class OfflineRagWorkflow:
             # per part/group. All other occurrences stay in the provenance sidecar;
             # duplicating their bodies here would crowd the model input again.
         }
+
+    async def _generate_draft(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
+        self._enter(runtime, "generate_draft")
+        body = self._draft_body(state, runtime)
         try:
             result = await self._chat.complete(
                 (
@@ -712,6 +717,7 @@ class OfflineRagWorkflow:
             context.answer_targets,
             context.computed_hours,
             context.operation_clock,
+            context.conversation,
         )
 
     def _failure(self, request: WorkflowRequest, context: _RunContext, code: str) -> WorkflowResult:

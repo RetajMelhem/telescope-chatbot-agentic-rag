@@ -1,5 +1,9 @@
 # LangGraph pipeline
 
+The explicit local MVP now uses a [conversational second stage](CONVERSATIONAL_ANSWERS.md).
+It reuses the original question/evidence and shared two-call budget; default/earlier
+extractive profiles remain unchanged.
+
 Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
 The explicit loopback entry point now serves live development queries. The default
 application and production acceptance remain separate; earlier checkpoints below

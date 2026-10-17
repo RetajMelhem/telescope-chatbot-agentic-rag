@@ -34,9 +34,10 @@ each part gets its own outcome. When several profiles could match a singular
 page request, choose an exact URL and include it in a fresh question.
 
 The browser sends independent questions without storing history. The API accepts
-the bounded `history` contract. This MVP presents source excerpts and citation
-links, not a polished narrative answer. A source's language may differ from the
-question's language; quotations are literal. Missing facts remain unknown.
+the bounded `history` contract. This MVP now writes natural answers from the original query and relevant website
+evidence, with citations attached to each generated sentence. Original quotations
+remain literal in expandable source details. It can faithfully translate an English
+source for an Arabic reply. Missing facts remain unknown.
 Published hours never establish actual attendance or appointment availability.
 
 ## Local resources and boundaries
@@ -44,7 +45,8 @@ Published hours never establish actual attendance or appointment availability.
 The factory `telescope_rag.api.local:create_local_app` explicitly composes the
 current v14 hours/source contracts, source-page choices and the local search
 prompt. The local response schema is `local-mvp-response-v1`, with `mode=local_mvp`.
-It preserves all question-owned citations, source timestamps, literal/canonical
+It sets `answer_style=conversational` and preserves question-owned citations,
+source timestamps, literal/canonical
 ownership and unresolved parts. The original default application remains disabled.
 This entry point does not publish an alias or change the existing index.
 
@@ -81,3 +83,30 @@ This MVP depends on local files excluded from Git and Docker. Copying the Git
 repository alone is not a portable installation. The separate production app,
 containerized API packaging, public deployment, widget, source refresh and broad
 independent accuracy acceptance are outside this local delivery.
+
+
+## Conversational answer stage
+
+The local `ConversationalRagWorkflow` replaces the earlier extractive second stage.
+Luna receives the original question, history as interpretation context only, the
+validated per-part targets/policies, and the assembled untrusted source evidence.
+It returns concise prose segments and their supporting chunk IDs in one strict
+`ConversationalDraft`. No third model, judge or retrieval loop is added.
+
+The application rejects omitted/duplicate parts, borrowed/unknown citation IDs,
+forged citation markers and changed fixed outcomes without a repair call. Existing
+source, ownership, exact quotation, complete-scope and time checks remain active.
+Original excerpts stay in the provenance sidecar; generated text does not replace
+source data. Complete-source reads retain their required provenance separately
+from the sentence-specific support references.
+
+The presenter adds trusted citation labels and rechecks references. Hours keep
+the deterministic calculation/presentation, and source-page ambiguities keep
+validated URL choices. Excluded actions and missing facts stay explicit. Repeated
+identical excluded-action explanations can share one visible paragraph while every
+original part remains in the API response. Source records and distinct owners are
+never deduplicated by this presentation rule.
+
+Structural citation checks cannot prove factual entailment of arbitrary prose.
+The local live examples received individual primary Codex language review; future
+answers can still be wrong. See [conversational verification](CONVERSATIONAL_ANSWERS.md).

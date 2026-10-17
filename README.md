@@ -18,7 +18,8 @@ the launcher starts the two existing Qdrant containers if stopped. The API runs
 on this computer at `127.0.0.1:8000`. Ctrl+C stops it.
 
 The existing reviewed 107-page / 955-chunk snapshot supplies evidence. Answers
-contain source excerpts, URLs and retrieval timestamps. Public hours are supported;
+are written naturally from the retrieved evidence, with citations and retrieval timestamps.
+Original source excerpts are available under expandable source details. Public hours are supported;
 private records, private calendars, availability and booking actions are excluded.
 Missing facts and ambiguous source choices remain explicit. Each submitted question
 uses the project OpenRouter key; opening the page and health checks make no
@@ -36,9 +37,9 @@ webpages. The diagnostic failures, targeted fixes, counts, cost and remaining
 limitations are recorded in [PROJECT_STATUS.md](PROJECT_STATUS.md) and
 [LOCAL_MVP_ACCEPTANCE.md](docs/LOCAL_MVP_ACCEPTANCE.md).
 
-Dense retrieval remains provisional. The system presents literal excerpts rather
-than polished generated narrative. A source may use a different language from the
-question. The saved snapshot is not a live website refresh. Broad independent
+Dense retrieval remains provisional. The local flow now writes conversational answers in the requested language. Source
+quotations remain unchanged, including when an English source supports an Arabic reply.
+Broader answer quality and semantic robustness remain unproven. The saved snapshot is not a live website refresh. Broad independent
 accuracy acceptance, portable API Docker packaging, public deployment and website
 integration remain future work. The original default `api.main:create_app` still
 returns unavailable; use the explicit local launcher above.
