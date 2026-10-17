@@ -19,6 +19,43 @@ uses explicit `planner_output_tokens=4096` and their matching bounded settings t
 preserve the exact tested wire. Selecting a profile alone does not change capacity,
 retry policy or budgets, and live compliance at the default cap is not established.
 
+## Reviewed profile-limitations source view (2026-10-17)
+
+With `hours_profile="contracts_v14"`, trusted callers may explicitly set
+`reviewed_profile_limitations=True`. The default is false; v12/v13 reject enabling
+it. This adds only `source_manifest.reviewed_profile_limitations` to the planner's
+input. The system prompt, output schema, draft input, source validation, retrieval,
+budgets and public request schema remain unchanged. No environment selector or
+default adoption was added.
+
+The view projects the existing admitted
+`name_only_profile_no_specialty_or_biography_claim` flag. Each listed chunk keeps
+its exact document handle, literal/canonical owner handles, source language and
+block type, bound to the existing prepared digest and admission policy. Other
+chunks for the same person or document do not inherit that flag. Other issue codes
+are not inventoried here, and absence is not evidence that a source is informative
+or complete. Naming/literal quotation remains possible; explicit profile-only
+restrictions cannot be broadened. No names, question patterns or source IDs select
+an operation or source automatically. The existing 96,000-byte manifest bound is
+retained without truncation.
+
+The [offline evidence](../artifacts/m5-profile-limitations-view-v1/REPORT.md) records
+22 exact projected occurrences and 66 original DOM witnesses. Primary Codex read
+each annotation and its identity witnesses; this is not a new semantic audit of all
+955 chunks or excluded content. Thirty-six new / 2,075 full guarded tests pass.
+Authored English, Arabic and Jordanian Arabic HTTP controls preserve useful
+directory evidence, synthetic informative profiles, literal names and profile-only
+unknowns. Six control/treatment replays retain all prior actual outputs; removing
+the new field reconstructs the original planner payloads exactly. Holding outputs
+fixed verifies isolation, not a model accuracy gain.
+
+The source manifest grows from 44,022 to 49,700 UTF-8 bytes. Native token usage,
+cost, latency and improved model source selection remain unmeasured. Six paired
+development cases / 12 planner-only payloads are frozen but unexecuted. Next test
+those actual planner decisions within a separately bounded live screen, reviewing
+every returned part for relevance, purpose and user source restrictions. No draft,
+embedding, index call, source edit, allowance refresh or new spend occurred here.
+
 ## Mixed-source offline verification (2026-10-17)
 
 The subsequent [live mixed screen](../artifacts/m5-mixed-live-screen-v1/REPORT.md)
@@ -37,8 +74,8 @@ failure. Exact mocked replay reproduces their actual payloads and final response
 The live evidence establishes these two draft-schema/extractive representations;
 general answer quality, colloquial presentation and default serving remain unaccepted.
 No new source fact, source/identity policy, normal graph behavior or default profile
-was introduced. Next address reviewed sparse-profile metadata in source selection
-offline, preserving explicit user restrictions and avoiding forced routing.
+was introduced. The subsequent opt-in source-view implementation is described
+above; its effect on actual model choices remains unverified.
 
 `tests/integration/test_hours_dense_http.py` exercises the v14 HTTP service with
 the existing request-scoped dense bridge and actual provider/candidate adapters,
@@ -61,8 +98,8 @@ These generated local artifacts are not distributed clinic knowledge or Git asse
 The unscoped two-doctor top-five pools all miss the second doctor. Correct scoped
 reads establish representability, not a live planner's interpretation. No K increase,
 corpus edit or runtime special case was introduced. Full source excerpts and formal
-Arabic presentation remain review-only. A bounded live planning/retrieval/draft
-screen is next; default chat, source policy and production refusal are unchanged.
+Arabic presentation remain review-only. The later live screen is documented above;
+default chat, source policy and production refusal are unchanged.
 
 ## Request interpretation
 

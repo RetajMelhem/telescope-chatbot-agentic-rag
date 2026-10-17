@@ -37,6 +37,7 @@ class HoursChatService(OfflineChatService):
         draft_output_tokens: int = 1000,
         clock: Callable[[], datetime] | None = None,
         hours_profile: HoursProfile = "v12",
+        reviewed_profile_limitations: bool = False,
     ) -> None:
         self._settings, self._catalog = settings, catalog
         self._workflow = HoursRagWorkflow(
@@ -53,6 +54,7 @@ class HoursChatService(OfflineChatService):
             draft_output_tokens=draft_output_tokens,
             clock=clock,
             hours_profile=hours_profile,
+            reviewed_profile_limitations=reviewed_profile_limitations,
         )
 
     async def draft(self, payload: ChatRequest, *, request_id: UUID) -> WorkflowResult:

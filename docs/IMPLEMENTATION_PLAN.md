@@ -61,11 +61,16 @@ by a bounded live three-language development screen. Two actual extractive draft
 preserve their source claims, including a separately recorded Jordanian audit-failure
 continuation. English doctor-role selection still misses available evidence by
 choosing name-only profiles; safe unknown is not retrieval acceptance. The audit
-recorder was fixed and verified with 2,039 guarded tests. **Next:** improve the
-planner view of existing reviewed sparse-profile limitations and verify general
-source-selection contrasts offline before another paid screen. M5 acceptance is
-incomplete; do not proceed to production adoption or M6 deployment based on these
-development results. See [current status](../PROJECT_STATUS.md) and
+recorder was fixed and verified. A subsequent opt-in v14 source view now exposes
+existing name-only limitations at exact occurrence scope. Thirty-six new / 2,075
+full guarded tests pass; 22 annotations / 66 DOM witnesses match, and replay holds
+prior outputs fixed with only the planner metadata field changed. This establishes
+contract preservation, not improved actual source selection. **Next:** the frozen
+six-pair planner-only comparison, with current allowance/pricing verified before
+authorized paid execution and individual review of every actual part. Twelve
+payloads are prepared, none executed. M5 acceptance remains incomplete; do not
+proceed to production adoption or M6 deployment from these development results.
+See [current status](../PROJECT_STATUS.md) and
 [hours graph verification](HOURS_GRAPH.md).
 
 Implement the graph in [PIPELINE.md](PIPELINE.md), versioned prompts, per-part scope/outcome handling, final structured responses, citation validation, and the chat route. Keep current questions and unresolved meaning intact across budgets.

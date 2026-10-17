@@ -47,7 +47,12 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         draft_output_tokens: int = 1000,
         clock: Callable[[], datetime] | None = None,
         hours_profile: HoursProfile = "v12",
+        reviewed_profile_limitations: bool = False,
     ) -> None:
+        if type(reviewed_profile_limitations) is not bool or (
+            reviewed_profile_limitations and hours_profile != "contracts_v14"
+        ):
+            raise ValueError("profile_limitations_require_contracts_v14")
         self._hours_reply_model = hours_reply_model(hours_profile)
         # The old profiles and their payload builder are not changed/adopted.
         super().__init__(
@@ -61,6 +66,11 @@ class HoursRagWorkflow(OfflineRagWorkflow):
             token_basis=token_basis,
             planner_output_tokens=planner_output_tokens,
             draft_output_tokens=draft_output_tokens,
+        )
+        self._planner_source_manifest_json = (
+            self._bindings.with_reviewed_profile_limitations()
+            if reviewed_profile_limitations
+            else None
         )
         plan = PublicHoursPlan.model_validate_json(hours_plan.model_dump_json())
         engine = PublicHoursCatalog(
@@ -101,6 +111,8 @@ class HoursRagWorkflow(OfflineRagWorkflow):
             profile="local_constraints",
         )
         body = json.loads(old[-1].content)
+        if self._planner_source_manifest_json is not None:
+            body["source_manifest"] = json.loads(self._planner_source_manifest_json)
         body.update(
             prompt_version=self._hours_prompt_version,
             hours_manifest=json.loads(self._hours_manifest_json),

@@ -2,56 +2,54 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
-Latest result — **bounded live mixed screen completed; source-selection gap remains**:
-Three frozen requests ran at `a055037` with actual Luna and authenticated Qdrant.
-English hours succeeded, but its doctor comparison selected two name-only profiles
-and safely remained unknown despite specialty evidence elsewhere. Arabic PRK
-completed planning, scoped retrieval and extractive drafting with qualifiers.
-The Jordanian request produced a valid three-part plan and successful 72-token
-Qwen batch, then the **evaluation recorder** failed on concurrent filenames.
-That original HTTP 502 and one unretained database response remain explicit.
+Latest result — **reviewed profile-limitations view implemented and verified offline**:
+Trusted v14 hours construction can opt into `reviewed_profile_limitations=True`;
+default false, v12/v13 and public request overrides cannot enable it. Only the
+planner source manifest gains an exact occurrence-scoped projection of the existing
+name-only flag. Source text, aliases, admission policy, ownership, source filters,
+K, retrieval, draft inputs, prompts, schemas, budgets and default 503 API persist.
+No source is automatically selected or classified by question/name heuristics.
 
-The opt-in audit transport fix was committed as `677b1b6`: slots are reserved before
-I/O, with exclusive files, caller-supplied URL/attempt bounds and no logged headers.
-**Three new / 2,039 full guarded tests**, Ruff (201 files) and lock checks pass.
-An offline reproduction confirms the old race. A separately frozen continuation
-reused the unchanged actual Jordanian plan, then completed two real scoped reads
-and one actual draft using one deliberate replacement 72-token Qwen batch. There
-was **no paid planner reissue or automatic transport retry**. New work shares one
-fresh bounded ledger; original usage is counted separately once. The recovered
-response is not claimed as an uninterrupted initial end-to-end success.
+**36 new / 2,075 full guarded tests pass**, with Ruff (202 files) and 65-package
+lock checks. Authored three-language HTTP contrasts retain directory evidence,
+synthetic informative-profile support, literal naming and profile-only unknowns;
+concurrent options/budgets stay isolated. Initial fixture schema/language/citation
+and test-size errors were corrected; their failing receipts remain available.
 
-Primary Codex individually reviewed all **three actual plans, two actual drafts /
-seven final parts**: six source-supported parts; one safe unknown with a recall
-failure. Source text, qualifiers, ownership and question-owned citations hold.
-Exact offline replay reproduces all three final responses and five actual chat
-payloads; four cited chunks / four saved HTML pages / 12 DOM spans match. This is
-development evidence, not a generalization estimate or polished dialect acceptance.
+All **22 projected annotations / 66 saved DOM witnesses** match their original
+admitted units, literal owners and provenance. Primary Codex individually read the
+annotation/identity witnesses; no new exhaustive audit of 955 chunks or removed
+content is claimed. Six control/treatment runs replay three actual prior plans,
+two drafts and seven final parts: removing the one new field reconstructs every
+prior planner payload, with exact prior answers and database/embedding requests.
+These fixed-output replays prove isolation, not better actual model choices.
 
-Total: **five Luna calls / two Qwen batches, 92,528 chat input / 4,426 output tokens**
-(2,877 reasoning already included), 144 embedding tokens. Response-reported cost
-**$0.012908825** exactly matches the observed key usage change. The October 17
-03:42:56 Amman key GET reports **$0.99870054 remaining**; one generation metadata
-record independently matches native usage/provider/cost. Full invoice/account
-reconciliation is not claimed. Five provider metadata GETs; no further inference.
-Docker/Qdrant remain running on loopback, with unchanged 955-point candidate,
-configuration and empty alias inventory; no corpus embedding/index write occurred.
+Source manifest: **44,022 → 49,700 UTF-8 bytes** (+5,678); native token/cost/latency
+impact is unmeasured. Six paired development cases / 12 planner-only payloads are
+frozen but **unexecuted**, covering general-vs-profile-only requests in English,
+Arabic and Jordanian Arabic. No forced routing, scope broadening or new facts.
+Evidence: `artifacts/m5-profile-limitations-view-v1/REPORT.md`, individual review,
+source projection, actual-output replays, frozen comparison and test receipts.
+Sources, 924 cached vectors, credentials and the prior 1,779-file seal are preserved.
+**Zero external requests / new spend $0**; no allowance refresh, Docker/Qdrant
+contact, embedding/index writes, deployment or subagent in this offline step.
 
-Evidence: `artifacts/m5-mixed-live-screen-v1/REPORT.md`, individual semantic review,
-original/live and separately frozen recovery receipts, accounting, actual replay,
-source-scope counterfactual, tests and final preservation/seal. Original failures,
-sources, 924 cached vectors, credentials, source decisions and old seals remain.
-Normal graph/prompts/provider/budget behavior and default 503 API remain unchanged;
-the new transport is explicit evaluation infrastructure. No subagent or deployment.
+**Next:** run the bounded six-pair planner comparison after current allowance and
+route pricing verification, with the project key and individual source/scope review.
+No draft, embedding or database call is needed for that comparison. Measure actual
+source-selection gains/regressions before adopting the view or repeating a broader
+end-to-end screen. This offline substep is complete; **M5 acceptance and production
+readiness remain incomplete**. The original English doctor-role recall failure is
+still unresolved with its returned plan held fixed.
 
-**Next:** expose existing reviewed name-only/profile limitations to the planner's
-source view as exact scoped metadata, then test general specialty questions,
-informative profiles and explicit profile-only restrictions offline. The English
-scope excluded both main-directory roles; the same cached query/K=5 retrieves them
-at ranks 1/2 when only document scope changes. Do not force routing, broaden an
-explicit user scope, infer specialties, increase K or start another broad paid
-screen first. This live development screen is complete; **M5 acceptance and
-production readiness remain incomplete** because source-selection recall failed.
+Previous live screen: three actual mixed plans / two drafts / seven final parts
+produced six supported parts and one safe unknown recall failure. The audit-recorder
+race was fixed in `677b1b6`; a separately frozen Jordanian continuation succeeded,
+without erasing its original HTTP 502 or unretained response. Total response cost
+$0.012908825 reconciled exactly to key usage change. **Last observed**, October 17
+03:42:56 Amman: $0.99870054 remaining; this has not been refreshed by the offline
+step. Local candidate then held 955 points, no aliases/writes. Full live records and
+limits remain in `artifacts/m5-mixed-live-screen-v1/REPORT.md` (checkpoint `4923c19`).
 
 Latest step — **mixed hours/source HTTP path verified offline with authored controls**:
 **37 new contract tests / 2,036 full guarded tests pass**, including English,

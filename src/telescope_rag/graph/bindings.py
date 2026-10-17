@@ -133,6 +133,52 @@ class SourceBindings:
         if len(self.manifest_json.encode()) > 96000:
             raise ValueError("planner_source_manifest_exceeds_bound")
 
+    def with_reviewed_profile_limitations(self) -> str:
+        """Opt-in view of an existing admission flag, without interpreting source text.
+
+        Occurrence IDs retain the catalog's spans/provenance. Neither a document nor
+        an owner inherits a flag from another occurrence. Unannotated sources are
+        not classified as informative, and this view never changes plan validation.
+        """
+        if self.directory_authority is None or not self.purpose_contract:
+            raise ValueError("profile_limitations_require_source_contract")
+        documents = {identity: handle for handle, identity in self.documents.items()}
+        owners = {identity: handle for handle, identity in self.owners.items()}
+        code = "name_only_profile_no_specialty_or_biography_claim"
+        manifest = json.loads(self.manifest_json)
+        manifest["reviewed_profile_limitations"] = {
+            "version": "reviewed-profile-limitations-v1",
+            "issue_code": code,
+            "basis": "exact admitted occurrence source_issue_codes; no new text classification",
+            "meaning": (
+                "These occurrences retain identity labels, not specialty or biography claims. "
+                "They can support naming or literal quotation; they do not establish "
+                "doctor_role or profile_detail."
+            ),
+            "scope_rule": (
+                "Applies only to the listed occurrences, not other chunks, documents, "
+                "languages or owners. Absence is not evidence of completeness or support. "
+                "Other issue codes are not inventoried here. Preserve explicit user source "
+                "restrictions; this annotation does not authorize broadening them."
+            ),
+            "occurrences": [
+                {
+                    "chunk_id": chunk.chunk_id,
+                    "document_handle": documents[chunk.document_id],
+                    "literal_owner_handle": owners.get(("literal", chunk.doctor_id)),
+                    "canonical_owner_handle": owners.get(("canonical", chunk.canonical_doctor_id)),
+                    "source_language": chunk.language,
+                    "block_type": chunk.block_type,
+                }
+                for chunk in sorted(self._catalog.chunks.values(), key=lambda c: c.chunk_id)
+                if code in chunk.source_issue_codes
+            ],
+        }
+        serialized = json.dumps(manifest, ensure_ascii=False)
+        if len(serialized.encode()) > 96000:
+            raise ValueError("planner_source_manifest_exceeds_bound")
+        return serialized
+
     def validate(
         self,
         reply: PlannerReply,
