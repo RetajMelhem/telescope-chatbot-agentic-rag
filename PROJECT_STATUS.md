@@ -2,65 +2,64 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
-Latest result — **three actual-plan retrieval/answer continuations pass; view stays opt-in**:
-At `f1a25f8`, P01/P03/P05 reuse their actual accepted treatment proposals with
-exact original planner-wire checks and **zero new paid planning**. After offline
-controls and authenticated preflight, three actual Luna/OpenAI drafts, two Qwen
-query embeddings (**77 tokens**) and three exact read-only Qdrant queries complete
-with HTTP 200. No retry, fallback, plan repair, K increase, index write or subagent.
+Latest result — **broader acceptance set frozen; offline page-choice gap identified**:
+At `211aa99`, twelve newly worded English/Arabic/Jordanian questions cover **27
+semantic information units**: visit preparation/duration, hours/payment/private
+booking, individual-profile choice, and cataract duration/glasses/missing price.
+Primary Codex authored the source expectations before controls and individually
+reviewed every final control unit. These are known-source, visible fixtures,
+**not an unseen statistical holdout or actual Luna accuracy results**.
 
-Primary Codex individually reviewed **three actual drafts / four final question
-parts** against original saved Telescope evidence. Odaibat and Farash rank first
-and second in the English directory scope and retain distinct roles/owners; Sarah
-and Tashman retain their exact Arabic roles and qualifications. The final mixed
-response also preserves the reviewed public opening schedule and its own citations.
-Farash's explicit anesthesia/critical-care role is not inferred from a department
-heading; pharmacy 24/7 is not assigned to the clinic.
+All 12 authored HTTP controls execute with external sockets/DNS denied. **24 units
+are adequate; three profile clarifications are incomplete**: their state safely
+retains uncertainty, but the final generic “clarify this part” message does not ask
+which specific page/URL to use. The existing presenter maps `ambiguous_request`
+to a constant; no actual model failure or runtime repair is claimed. Keep the
+page-choice gap explicit, rather than treating status/HTTP success as acceptance.
 
-All **four role witnesses** are retrieved and cited. Scoped witness Recall@5 and
-binary nDCG@5 are **1.0 for each case**, using 13 primary-authored pre-live relevance
-judgments. These cover 11 English cards and one card per Arabic scope; one-card
-ranking is trivial conditional on scope. The English pool still returns three
-unrelated cards, which the draft does not cite. No global recall, held-out
-generalization or paired downstream accuracy/cost gain is established.
+Source expectations bind **52 chunks / eight saved official pages / 402 exact
+source/context DOM spans**, including all 40 admitted cataract-page chunks for the
+scoped missing-price judgment. Twenty-one citation occurrences / 12 distinct cited
+chunks preserve ownership and provenance. This is not a new full-corpus/excluded
+content audit. All 12 planner inputs reconstruct exactly from request + trusted
+manifests without gold; there are no exact whole-query repeats in 126 selected
+prior questions. This does not prove semantic novelty or generalization.
 
-All actual drafts, final parts, query vectors/filters and responses replay exactly
-with external sockets blocked. **92 exact original DOM spans / 15 chunks / four
-saved pages** pass, covering nine offered and six cited chunks. This is not a new
-audit of all 955 chunks or excluded content; no source content changed. **76 focused
-guarded regressions**, Ruff (202 files) and the 65-package lock check pass. The prior
-full **2,075-test** result remains bound to unchanged runtime/tests, not rerun here.
+Observed mocks: **21 chat attempts, nine embedding batches / 18 texts / 789 exact
+Qwen input tokens, 18 candidate-query responses**. Vectors/orderings are synthetic
+fixtures, not native embeddings or rankings. One budget per request is shared by
+its stages; no persistent cache write. **135 focused guarded regressions**, Ruff
+(202 files) and the 65-package lock check pass. The prior full 2,075-test receipt
+remains bound to unchanged runtime/tests; it was not rerun here.
 
-New usage: **7,992 chat input / 1,140 output tokens**, including 501 reasoning
-already within output, plus 77 embedding tokens. **$0.001569545** exactly matches
-the key usage increase and all five route/cache rate recomputations. Prior planning
-is referenced once separately. Remaining: **$0.954834715 at October 17 15:32:57
-Asia/Amman**. Mean continuation 6.224 seconds excludes previous planning/resource
-loading. Four provider metadata GETs and five Qdrant metadata/auth GETs accompany
-the five inference calls and three query POSTs; no deployment or index change.
+Evidence: `artifacts/m5-broader-e2e-acceptance-v1/REPORT.md`, frozen requests and
+expectations, individual semantic review, exact input reconstruction, source DOM
+packet and mock HTTP journals. The prior 1,975-file seal, 122 source inputs and
+924 cache entries remain intact. Runtime/prompts/tests/credentials/source policies
+and index are unchanged; only four milestone documents change. Default public
+chat/readiness remain 503; v14/source view stay opt-in. No subagent or Docker action.
 
-Evidence: `artifacts/m5-general-downstream-v1/REPORT.md`, individual semantic
-review, frozen scope judgments, exact replay, DOM witnesses, native receipts and
-accounting. The prior 1,899-file seal, 122 source inputs, 924 cached vectors,
-credentials and runtime/prompts/tests remain intact. Authenticated candidate
-metadata stays green/955 points/no aliases; default chat/readiness remain 503.
+**Next:** make page-choice clarifications actionable in the opt-in path, using
+validated source scope without guessing identity or trusting arbitrary model reason
+text. Verify offline and preserve the frozen baseline. Then refresh authenticated
+candidate/route/key preflight before a bounded live acceptance run. **M5 acceptance,
+serving integration and production readiness remain incomplete.** The current
+preparation is complete; actual new model decisions and live rankings remain unrun.
 
-**Next:** freeze an independently worded M5 end-to-end acceptance cohort and source
-judgments before further live calls, starting with offline controls. Cover general
-website facts beyond these exposed examples, mixed hours/source/private parts,
-material page-choice uncertainty and missing facts. Then bound a live acceptance
-screen against the remaining allowance before considering serving integration.
-The present continuation is complete; **M5 acceptance and production readiness
-remain incomplete**. Keep v14/view opt-in; do not tune routing to these examples.
+**New spend $0; zero external requests**, including metadata. The last observed
+remaining allowance is $0.954834715 at October 17 15:32:57 Asia/Amman from the prior
+step; it was not refreshed and is not a current reservation. The future proposal
+allows at most 24 chat attempts / 12 embedding batches / 48 candidate-query reads,
+with retries/index writes off; no live runner or such execution exists in this step.
 
-P02/Odaibat and P04/Rihab individual-page choices remain unresolved and were not
-continued or scored as wins. Informative `/dr-osama-odaibat/` and
-`/ar/dr-rihab-ghanma/` pages remain admitted separately from sparse `/doctors/`
-pages, preserving the earlier correction. Full excerpts still show inherited
-headings/marketing and formal Arabic, so concise Jordanian presentation is unproven.
-Previous six-pair planner screen: 12 plans / 14 reviewed parts, general-role source
-reachability 1/3 control versus 3/3 optional view, all explicit restrictions retained,
-with $0.04229628 reconciled; see `artifacts/m5-profile-limitations-live-v1/REPORT.md`.
+Previous live continuation: P01/P03/P05 reused actual accepted plans, completed
+three actual drafts/two query embeddings/three Qdrant reads, and preserved all four
+role witnesses plus public hours. Cost $0.001569545 reconciled exactly. See
+`artifacts/m5-general-downstream-v1/REPORT.md`; that small development screen does
+not establish global recall, holdout generalization or production readiness.
+P02/Odaibat and P04/Rihab intended individual pages remain unresolved. Informative
+individual pages stay admitted separately from sparse profiles; no identity or
+source decision is altered. Full excerpts/formal Arabic retain presentation limits.
 
 Previous implementation: `0e4f6a7` added the trusted opt-in source view, with 36 new /
 2,075 full guarded tests and 22 projected annotations / 66 DOM witnesses checked.

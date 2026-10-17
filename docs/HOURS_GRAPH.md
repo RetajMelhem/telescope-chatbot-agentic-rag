@@ -19,6 +19,28 @@ uses explicit `planner_output_tokens=4096` and their matching bounded settings t
 preserve the exact tested wire. Selecting a profile alone does not change capacity,
 retry policy or budgets, and live compliance at the default cap is not established.
 
+## Broader acceptance preparation (2026-10-17)
+
+The [new source-bound fixture set](../artifacts/m5-broader-e2e-acceptance-v1/REPORT.md)
+freezes 12 newly worded requests / 27 information units across English, Arabic and
+Jordanian Arabic. All authored HTTP controls execute offline, but primary review
+finds three generic profile clarifications do not request the specific page/URL
+choice; only 24 units meet their full expectations. Safe clarification state and
+HTTP success are not complete semantic/usability acceptance. No actual new model
+decision or live ranking occurred.
+
+All 12 planner inputs reconstruct exactly without gold fields. Fifty-two source
+chunks / eight saved pages have 402 exact DOM checks. The controls use 21 mocked
+chat attempts, nine mocked embedding batches (18 texts / 789 exact Qwen tokens)
+and 18 mocked candidate queries; vectors/orderings are synthetic. The 135 focused
+guarded regressions, Ruff and lock checks pass. No runtime, source, cache, index or
+default changed; no external request or new spend occurred. This is a visible,
+known-source cohort, not a statistical holdout or a broad language-quality score.
+
+Next address actionable source-page clarification in the opt-in path with validated
+scope, preserving the frozen baseline and distinct owners. Verify offline before
+spending credit on bounded live acceptance; default serving remains unavailable.
+
 ## Actual-plan retrieval and draft continuation (2026-10-17)
 
 The [bounded downstream screen](../artifacts/m5-general-downstream-v1/REPORT.md)
@@ -56,8 +78,8 @@ $0.954834715 at October 17 15:32:57 Asia/Amman. Mean continuation is 6.224 secon
 excluding previous planning/resource loading. Earlier planner charges are referenced
 once separately. Source/cache/credential bytes and candidate metadata remain intact.
 
-Next freeze an independently worded M5 acceptance cohort and source judgments,
-starting offline, before further bounded live acceptance or serving integration.
+The subsequent M5 acceptance preparation is documented above; it identifies an
+actionable page-choice gap to address offline before bounded live acceptance.
 P02/P04 source-page choices remain pending, full excerpts retain presentation
 limits, and polished Jordanian generation is unverified. This screen does not
 re-audit all 955 chunks, approve defaults or establish production readiness.

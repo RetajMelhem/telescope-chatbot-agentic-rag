@@ -83,11 +83,19 @@ The prior full 2,075-test result remains bound to unchanged runtime/tests.
 New $0.001569545 reconciles exactly; $0.954834715 remained at October 17 15:32:57
 Asia/Amman. No default adoption, retry, deployment or source/cache change.
 
-**Next:** freeze an independently worded M5 end-to-end acceptance cohort and source
-judgments before further paid calls, starting with offline controls. Include wider
-website facts, mixed public/private questions, missing facts and material page-choice
-uncertainty; then bound a live acceptance screen before serving integration. Keep
-the view opt-in and P02/P04 page choices pending. M5 acceptance remains incomplete;
+The next cohort is now frozen: 12 new English/Arabic/Jordanian compositions / 27
+information units, with 52 source chunks / eight pages / 402 exact DOM witnesses.
+Twelve authored controls execute offline; primary review accepts 24 units but finds
+three profile-choice clarifications too generic to request the needed page/URL.
+All 12 planner inputs reconstruct without gold; 135 focused guarded tests pass.
+No new actual model decision, live ranking, external request or spend occurred.
+This is known-source visible preparation, not an unseen holdout or M5 acceptance.
+
+**Next:** make source-page clarifications actionable in the opt-in path, preserving
+validated source scope, distinct owners and the frozen baseline. Verify offline
+before refreshing candidate/key/route preflight for bounded live acceptance and
+serving integration. Keep the view opt-in and P02/P04 intended pages unresolved
+until clarified. M5 acceptance remains incomplete;
 do not proceed to production adoption or M6 deployment from this development screen.
 See [current status](../PROJECT_STATUS.md) and
 [hours graph verification](HOURS_GRAPH.md).

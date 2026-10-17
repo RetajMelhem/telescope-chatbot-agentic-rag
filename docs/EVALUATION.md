@@ -98,6 +98,39 @@ The full 786-test offline suite passed before execution; an independent post-run
 
 Next: bounded evidence assembly, complete admitted source reads when a question requires that scope, occurrence-preserving presentation and explicit source/identity/uncertainty enforcement. Use development fixtures and a new reviewed evaluation version; do not tune to the now-exposed evaluation cases or delete useful source occurrences to improve ranking scores.
 
+### Broader M5 end-to-end acceptance preparation
+
+The [October 17 preparation](../artifacts/m5-broader-e2e-acceptance-v1/REPORT.md)
+freezes 12 newly worded known-source requests and 27 semantic information units in
+English, Arabic and Jordanian Arabic. Families cover visit preparation/duration,
+mixed hours/payment/private-booking requests, ambiguous individual-profile pages,
+and source-restricted cataract information with an unsupported exact price.
+The English profile target differs from the Arabic/Jordanian target; this family
+tests ambiguity handling rather than translation equivalence.
+
+Primary Codex authored each source expectation before control execution and read
+every final control unit. Scripts only bind/track judgments and exact source data.
+All 12 HTTP controls complete, with 24 adequate units and three incomplete generic
+profile clarifications. The latter preserve safe uncertainty but do not request
+the needed page/URL choice. Record this as a presenter usability/meaning gap, not
+an actual Luna score or a reason to weaken source ownership.
+
+Every frozen planner input reconstructs exactly from request and trusted manifests
+without gold. Fifty-two source chunks across eight saved official pages have 402
+exact source/context DOM checks; 135 focused guarded regressions pass. All provider
+and candidate responses are explicit fixtures, including synthetic query vectors;
+zero external requests or new spend occurred. These visible, known-source cases
+are not an unseen statistical holdout, native ranking experiment or complete
+release-acceptance set. Do not tune runtime to case wording or infer broad accuracy.
+
+The 27 information units do not mandate an exact planner part count. A later
+actual plan may combine compatible needs while preserving every constraint,
+qualifier, owner and unsupported/excluded sibling. Selected positive witnesses are
+not exhaustive relevance labels; semantically valid unlisted alternatives need
+adjudication. Preserve the frozen baseline and record changed execution bindings
+separately. First address actionable source-page clarification offline; refresh
+authenticated candidate/routes/allowance before any subsequent bounded live run.
+
 ### M5 planner preparation
 
 The next offline graph step is prepared in `artifacts/m5-planner-cases-v1`: **24 new authored cases, eight families × English/Arabic/Jordanian Arabic, covering 63 parts**. Six cases are development; 18 are reserved evaluation, grouped by family. These are new compositions of known source/policy challenges, not an unseen statistical holdout. Prompts and runtime were fixed before authoring; no runtime tuning used these cases. The old 90-case benchmark remains unchanged.
