@@ -1,5 +1,13 @@
 # Provider contracts and verified scope
 
+`providers/screen_audit.py` supplies an explicitly injected local development-audit
+transport; default adapters/logging do not enable it. It reserves exclusive journal
+slots before awaiting I/O, so concurrent source reads cannot overwrite each other.
+Its caller provides an authorized fixed URL set and attempt cap. Headers are never
+recorded; public development embedding vectors may be retained only in the explicit
+local audit, outside the persistent query cache. This helper does not authorize
+dispatch, retry, select models or change normal provider/budget behavior.
+
 The separate [offline hours graph](HOURS_GRAPH.md) supplies a v12 planner schema
 only through trusted nonproduction injection. Twelve actual development requests
 passed its strict schema/literal bindings; semantic acceptance failed on two

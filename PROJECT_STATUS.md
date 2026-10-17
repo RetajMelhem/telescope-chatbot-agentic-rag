@@ -2,6 +2,33 @@
 
 Last updated: 2026-10-17 (Asia/Amman).
 
+In progress — **three-case live mixed screen and audit-recorder repair**:
+Docker Desktop was started; the existing Qdrant/gateway resumed with loopback-only
+access, 955 green 4,096-dimensional Cosine points and no aliases. Read credentials
+match the configured read-only role; unauthenticated access returns 401. Pre-screen
+OpenRouter allowance was $1.011609365. Three frozen requests ran once at `a055037`:
+English hours succeeded but the specialty comparison selected two name-only
+profiles and correctly remained unknown; Arabic PRK completed real planning,
+scoped retrieval and drafting with qualifiers; Jordanian input produced a valid
+three-part plan and a successful 72-token Qwen batch, then the **evaluation
+recorder**, not the retrieval runtime, failed when concurrent response files
+collided. Four actual Luna calls, one Qwen batch and four Qdrant queries are
+preserved; no automatic retries or index writes occurred. Full semantic/accounting
+review is still pending; this is not a passing three-case acceptance result.
+
+The optional `providers/screen_audit.py` transport now allocates exclusive file slots
+before I/O. **Three focused / 2,039 full guarded tests pass**, verifying simultaneous response capture,
+in-flight attempt bounds, secret-header exclusion and refusal to overwrite existing
+evidence. An initial script-path import failure was corrected by packaging the
+helper; its receipt is preserved. Normal provider adapters, prompts, budgets and
+default API are unchanged. **Next within this screen:** verify and commit the
+recorder fix, then recover only the failed Jordanian retrieval/draft stages from its
+saved actual plan without a new paid planner call. One replacement 72-token Qwen
+batch is needed because the old vectors were request-local and not retained; total
+screen dispatch stays below six Luna/three embedding attempts. Original failure
+receipts and frozen code/plan remain immutable. Evidence is under
+`artifacts/m5-mixed-live-screen-v1/`; production readiness remains unproven.
+
 Latest step — **mixed hours/source HTTP path verified offline with authored controls**:
 **37 new contract tests / 2,036 full guarded tests pass**, including English,
 Arabic and Jordanian Arabic mixed hours, two distinct same-field doctors and
