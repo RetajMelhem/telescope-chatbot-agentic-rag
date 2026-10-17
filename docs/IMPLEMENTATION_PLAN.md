@@ -59,17 +59,24 @@ Verify missing evidence, similar doctor names, unrelated service attribution, pa
 Current checkpoint (2026-10-17): the offline mixed-path substep passed, followed
 by a bounded live three-language development screen. Two actual extractive drafts
 preserve their source claims, including a separately recorded Jordanian audit-failure
-continuation. English doctor-role selection still misses available evidence by
-choosing name-only profiles; safe unknown is not retrieval acceptance. The audit
-recorder was fixed and verified. A subsequent opt-in v14 source view now exposes
-existing name-only limitations at exact occurrence scope. Thirty-six new / 2,075
-full guarded tests pass; 22 annotations / 66 DOM witnesses match, and replay holds
-prior outputs fixed with only the planner metadata field changed. This establishes
-contract preservation, not improved actual source selection. **Next:** the frozen
-six-pair planner-only comparison, with current allowance/pricing verified before
-authorized paid execution and individual review of every actual part. Twelve
-payloads are prepared, none executed. M5 acceptance remains incomplete; do not
-proceed to production adoption or M6 deployment from these development results.
+continuation. That earlier English doctor-role plan missed available evidence by
+choosing name-only profiles; its safe unknown is not retrieval acceptance. The audit
+recorder was fixed and verified. The opt-in v14 source view exposes existing
+name-only limitations at exact occurrence scope. Its six-pair live screen now has
+12 actual plans / 14 individually reviewed parts: useful general-role source scopes
+1/3 control versus 3/3 treatment, with 5/6 versus 6/6 literal/source-valid plans.
+All explicit profile-only limits hold; two material individual-page choices remain
+unresolved. A prior profile-sample overgeneralization is corrected using informative
+Odaibat/Rihab pages already in the admitted corpus; no source or identity change.
+The observed $0.04229628 exactly reconciles to key usage. Thirty-nine focused checks,
+all 12 actual-output replays and 194 source DOM witnesses pass; the prior full 2,075
+tests remain bound to unchanged implementation. No ranking/answer acceptance follows.
+**Next:** bounded downstream verification of P01/P03/P05 treatment plans, reused
+without new paid planning, after offline preparation and current preflight. Limit
+new work to two request-local query embeddings, three authenticated read-only
+Qdrant queries and three drafts. This continuation has not run. Keep the view
+opt-in and ambiguous profile choices pending. M5 acceptance remains incomplete;
+do not proceed to production adoption or M6 deployment from this development screen.
 See [current status](../PROJECT_STATUS.md) and
 [hours graph verification](HOURS_GRAPH.md).
 

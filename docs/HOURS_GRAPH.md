@@ -19,6 +19,53 @@ uses explicit `planner_output_tokens=4096` and their matching bounded settings t
 preserve the exact tested wire. Selecting a profile alone does not change capacity,
 retry policy or budgets, and live compliance at the default cap is not established.
 
+## Paired live planner comparison (2026-10-17)
+
+The [six-pair development screen](../artifacts/m5-profile-limitations-live-v1/REPORT.md)
+made 12 actual planner calls at checkpoint `0e4f6a7`, with counterbalanced first
+arms, identical paired inputs except the optional source-view field, and no retry.
+All schemas passed; literal/source validation passed 5/6 control and 6/6 treatment
+plans. The failed control used a sparse profile with a different main-directory
+owner and was rejected without repair.
+
+Primary Codex individually read 12 actual proposals / 14 parts and the relevant
+saved source excerpts. General role questions with all target source witnesses
+reachable improved from 1/3 control to 3/3 treatment on this screen (2/4 to 4/4
+role witnesses). Both versions respected all three explicit profile-only requests.
+The original English comparison selected the correct main directory in both arms,
+so that pair alone demonstrates no treatment gain. Two source-choice cases remain
+unresolved; there is no six-of-six semantic acceptance score. These are planner
+source-scope results, not measured ranking, Recall@K/nDCG or final answer accuracy.
+
+The review also corrects an earlier overgeneralization: informative individual
+profiles already exist at `/dr-osama-odaibat/` and `/ar/dr-rihab-ghanma/`, alongside
+separate name-only `/doctors/` pages. Exact saved HTML supports their content.
+The occurrence-scoped implementation did not suppress these informative sources.
+The old sealed review and frozen expectations remain intact, with the correction
+and material page-choice uncertainty documented separately. No source text,
+identity link or admission decision changed.
+
+All 12 actual plans and their exact source-validation outcomes replay offline;
+both restricted Farash plans assemble to unknown/context_only without a draft.
+Thirty-two source chunks / 14 saved pages have 194 exact DOM witness checks.
+Thirty-nine focused guarded regressions and Ruff/lock checks pass. The earlier
+2,075-test full result remains bound to unchanged runtime/tests, not newly rerun.
+
+Cost was $0.04229628, exactly reconciled to the key change and independently
+recomputed for every call with cache rates. The view added 2,001 native input
+tokens per call. Control/treatment costs were $0.021030825 / $0.021265455, with
+observed mean attempt times 8.310 / 5.883 seconds. Different reasoning/output
+lengths and caching confound cost/latency comparisons; no causal speed gain or
+generalization estimate follows. The last key observation was $0.95640426 remaining
+at October 17 04:09:54 Asia/Amman; no further review-time API request refreshed it.
+
+Next verify actual retrieval and draft answers for general treatment plans
+P01/P03/P05, reusing those plans without new paid planning. The English query has
+an existing cache entry; bound further work to two new request-local query
+embeddings, three read-only Qdrant queries and three drafts after preparation and
+preflight. Keep ambiguous profile choices pending and the view opt-in. This
+continuation has not run; serving adoption and production readiness remain unproven.
+
 ## Reviewed profile-limitations source view (2026-10-17)
 
 With `hours_profile="contracts_v14"`, trusted callers may explicitly set
@@ -50,11 +97,11 @@ the new field reconstructs the original planner payloads exactly. Holding output
 fixed verifies isolation, not a model accuracy gain.
 
 The source manifest grows from 44,022 to 49,700 UTF-8 bytes. Native token usage,
-cost, latency and improved model source selection remain unmeasured. Six paired
-development cases / 12 planner-only payloads are frozen but unexecuted. Next test
-those actual planner decisions within a separately bounded live screen, reviewing
-every returned part for relevance, purpose and user source restrictions. No draft,
-embedding, index call, source edit, allowance refresh or new spend occurred here.
+cost, latency and improved model source selection were unmeasured at this offline
+checkpoint. Six paired development cases / 12 planner-only payloads were frozen
+without execution; the subsequent live comparison is documented above. No draft,
+embedding, index call, source edit, allowance refresh or new spend occurred during
+that preparation step.
 
 ## Mixed-source offline verification (2026-10-17)
 
