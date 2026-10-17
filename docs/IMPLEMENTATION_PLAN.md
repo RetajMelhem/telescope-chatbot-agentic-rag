@@ -56,14 +56,17 @@ Verify missing evidence, similar doctor names, unrelated service attribution, pa
 
 ## M5 — LangGraph chat flow
 
-Current checkpoint (2026-10-17): mixed hours/source HTTP integration has passed
-37 new offline contract tests and nine source-bound authored controls across three
-languages. This completes that offline substep, not M5 acceptance. Next verify
-local read-only Qdrant connectivity and run a small declared-budget live
-planning/retrieval/draft development screen, reviewing every actual answer part.
-Cached unscoped two-doctor retrieval still misses one owner; the live planner must
-demonstrate correct source/owner selection. See [current status](../PROJECT_STATUS.md)
-and [hours graph verification](HOURS_GRAPH.md).
+Current checkpoint (2026-10-17): the offline mixed-path substep passed, followed
+by a bounded live three-language development screen. Two actual extractive drafts
+preserve their source claims, including a separately recorded Jordanian audit-failure
+continuation. English doctor-role selection still misses available evidence by
+choosing name-only profiles; safe unknown is not retrieval acceptance. The audit
+recorder was fixed and verified with 2,039 guarded tests. **Next:** improve the
+planner view of existing reviewed sparse-profile limitations and verify general
+source-selection contrasts offline before another paid screen. M5 acceptance is
+incomplete; do not proceed to production adoption or M6 deployment based on these
+development results. See [current status](../PROJECT_STATUS.md) and
+[hours graph verification](HOURS_GRAPH.md).
 
 Implement the graph in [PIPELINE.md](PIPELINE.md), versioned prompts, per-part scope/outcome handling, final structured responses, citation validation, and the chat route. Keep current questions and unresolved meaning intact across budgets.
 

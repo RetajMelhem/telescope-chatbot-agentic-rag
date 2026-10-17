@@ -21,6 +21,25 @@ retry policy or budgets, and live compliance at the default cap is not establish
 
 ## Mixed-source offline verification (2026-10-17)
 
+The subsequent [live mixed screen](../artifacts/m5-mixed-live-screen-v1/REPORT.md)
+ran three actual planner requests against the same corpus/candidate. Arabic PRK
+completed real retrieval and a strict extractive draft; English hours succeeded,
+but doctor-role retrieval was restricted to name-only profiles and stayed unknown.
+The Jordanian request's evaluation journal hit a concurrent filename collision;
+the original failure is preserved. After the independently tested audit fix
+(`677b1b6`), a separately frozen continuation reused that actual plan, repeated its
+72-token embedding batch deliberately and completed retrieval/drafting without a
+new paid planning call. It is not an uninterrupted initial end-to-end success.
+
+All three actual plans, two actual drafts and seven final parts received individual
+Codex language review; six parts are source-supported, with one safe unknown recall
+failure. Exact mocked replay reproduces their actual payloads and final responses.
+The live evidence establishes these two draft-schema/extractive representations;
+general answer quality, colloquial presentation and default serving remain unaccepted.
+No new source fact, source/identity policy, normal graph behavior or default profile
+was introduced. Next address reviewed sparse-profile metadata in source selection
+offline, preserving explicit user restrictions and avoiding forced routing.
+
 `tests/integration/test_hours_dense_http.py` exercises the v14 HTTP service with
 the existing request-scoped dense bridge and actual provider/candidate adapters,
 using synthetic sources, a synthetic test tokenizer, authored planner/draft replies

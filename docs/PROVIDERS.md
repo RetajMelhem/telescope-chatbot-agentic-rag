@@ -8,6 +8,17 @@ recorded; public development embedding vectors may be retained only in the expli
 local audit, outside the persistent query cache. This helper does not authorize
 dispatch, retry, select models or change normal provider/budget behavior.
 
+The October 17 mixed development screen observed two actual `AnswerDraft` replies
+through the unchanged strict adapter: Arabic PRK, and eye-exam content after a
+separately recorded audit-failure continuation using its saved actual plan. Both
+retain complete source quotations/qualifiers. Five actual Luna calls plus two
+Qwen batches report $0.012908825, matching the observed key usage change; one
+generation lookup independently matches its native usage/provider/cost. These
+point-in-time results are not full bilingual/dialect acceptance or an independently
+settled invoice. The helper fix does not add retries, chat counting, source fallback
+or production serving. See [current status](../PROJECT_STATUS.md) and
+[the local screen report](../artifacts/m5-mixed-live-screen-v1/REPORT.md).
+
 The separate [offline hours graph](HOURS_GRAPH.md) supplies a v12 planner schema
 only through trusted nonproduction injection. Twelve actual development requests
 passed its strict schema/literal bindings; semantic acceptance failed on two
