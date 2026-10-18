@@ -30,7 +30,7 @@ experiments remain documented for traceability; their dated counts, balances and
   [evaluation plan](EVALUATION.md) and [completion/budget policy](COMPLETION_BUDGET.md).
 - [50 approved everyday user questions](NATURAL_QUESTIONS_50_DRAFT.md) and
   [source-backed evaluation runbook](NATURAL_EVALUATION_50.md): 25 Jordanian Arabic /
-  English pairs; offline preparation complete, live execution not started.
+  English pairs; installed v0.1.0 HTTP execution, source review and metric limits.
 
 These documents may retain dated development sections. Current local serving is
 the explicit Docker/host factory; the default `api.main:create_app` still fails

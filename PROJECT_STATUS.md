@@ -1,37 +1,36 @@
 # Project status
 
-Last updated: 2026-10-18 (Asia/Amman).
+Last updated: 2026-10-19 (Asia/Amman).
 
-Latest evaluation preparation: **all 50 questions approved; source-backed answer
-key, capture runner and scoring protocol prepared offline**. The user approved
-the two price cases and will supply/configure the API key when needed. The current
-package is `artifacts/natural-evaluation-50-v2/`: unchanged request bytes, reviewed
-gold, readable `ANSWER_KEY.md`, null human judgments and sealed `plan.json`.
-Two sibling source reviews plus one repaired review establish 50 minimum required
-fact/groups with 470 exact positive quotations from 299 admitted chunks. Optional
-doctor-assessment advice is not required for the PRK/LASIK comparison; U25 has no
-positive price-amount group. All 116 source file hashes and the prepared digest
-were reverified. Preparation v1 is preserved but superseded after capture fixes.
+Latest evaluation: **installed v0.1.0 HTTP runner prepared and live run in progress**
+(2026-10-19). The user selected `install-mvp.ps1 -Version v0.1.0`, then confirmed
+installation/key setup. The evaluator uses the installed Docker factory over real
+HTTP at the saved loopback port; it never reads the installer API key or constructs
+a second host app. Exact release/image/configuration/ownership/mount/network
+checks and readiness/OpenAPI GETs passed before inference. No runtime, prompt,
+retrieval, corpus, installer or dependency change was made.
 
-The evaluation-only scripts use the existing local MVP factory/HTTP route without
-serving/prompt/retrieval/index changes. Receipts distinguish dense hits, merged
-candidates, actual writer eligibility, citations, reported usage and available
-existing-response costs. Case/code/source/plan bindings, no repeat after failures,
-honest nulls and human semantic review are enforced. `ar-JO` inputs map to API `ar`
-without changing the approved question. Latency is in-process application HTTP
-time, not deployed network/load performance. **2,334 full guarded offline tests
-pass**, including 34 new runner/trace/review cases; Ruff lint and format pass.
-Evidence: `artifacts/natural-questions-50-source-v1/offline-suite-final.xml` and
-the v2 preparation verification. See `docs/NATURAL_EVALUATION_50.md`.
+`artifacts/natural-evaluation-50-v3/` seals the unchanged 50 approved requests and
+v2 gold (50 minimum facts/groups, 470 witnesses, 299 chunks), code hashes and
+released knowledge/image identities. Earlier ASGI v1/v2 plans remain historical.
+The installed runner captures responses/HTTP latency, keeps internal retrieval,
+writer context, tokens/cost and actual-context faithfulness unavailable, binds
+before/HTTP/after receipts, and stops on failed requests without retries. Cited
+witness coverage is not retrieval recall. See `docs/NATURAL_EVALUATION_50.md`.
 
-No live evaluation, provider/embedding/billing call, database/Docker operation,
-runtime credential change or remote publication ran. This clone still lacks its
-serving-root source files, project `.env` key and Qdrant read key; an existing
-compatible database, current provider pricing/allowance and a spend boundary must
-be verified before live execution. Call/deadline caps are not a hard USD cap.
-**Next:** obtain/configure the user's project OpenRouter key, prepare/verify the
-selected local runtime, then authorize the bounded live run. Do not approve the
-questions again or infer answer-quality results from offline tests.
+**2,399 full guarded offline tests pass**, with 257 focused evaluation cases
+passing again after preparation metadata cleanup; Ruff lint/format pass.
+Evidence: `artifacts/natural-questions-50-source-v1/portable-http-offline-suite.xml`
+and `portable-http-evaluation-final.xml`. The actual read-only installed preflight
+passed at `artifacts/natural-evaluation-50-installed-preflight-v1/`.
+
+The authorized live run is `artifacts/natural-evaluation-50-installed-run-v1/`,
+50 serial questions, one attempt each, no extra provider judge, no fallback or
+automatic replay. Execution is in progress; no quality result is claimed yet.
+Call/deadline bounds are not a hard USD cap. Offline AI source review, if used,
+will be labeled provisional and does not establish independent human validation.
+**Next:** finish the run, verify unchanged runtime receipts, score returned
+citations/latency/failures and complete the source-based response review.
 
 Earlier evaluation preparation: **50 everyday questions drafted for user review,
 not approved for execution**. `docs/NATURAL_QUESTIONS_50_DRAFT.md` contains 25

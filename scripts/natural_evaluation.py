@@ -1,8 +1,8 @@
 """Prepare, execute by explicit opt-in, and review the approved 50-question cohort.
 
 Preparation/scoring never create network clients or read credentials. Live mode
-uses the unchanged local factory and actual ASGI HTTP route, serially, once per
-case. Gold is never passed to that factory, client, planner or writer.
+targets the verified v0.1.0 portable Docker installation over real HTTP, once per
+case. The installer owns credentials; gold is never included in API requests.
 """
 
 import argparse
@@ -10,6 +10,7 @@ import asyncio
 import hashlib
 import json
 import math
+import os
 import subprocess
 import time
 from collections import Counter
@@ -182,7 +183,17 @@ def prepare(root: Path, source: Path, output: Path) -> dict:
         "intents": intents,
     }
     write_new(output / "gold.json", gold)
-    write_new(output / "human-review-template.json", review_template(requests, intents))
+    template = review_template(requests, intents)
+    template["internal_context_available"] = False
+    template["instruction"] = (
+        "Human source review only; null means unreviewed, never pass. "
+        "For each factual claim provide text, correct and supported_by_cited_sources booleans. "
+        "Judge the exact cited public sources; actual model context is unavailable. "
+        "Cited witness coverage does not measure retrieval recall."
+    )
+    for case in template["cases"]:
+        case["internal_context_available"] = False
+    write_new(output / "human-review-template.json", template)
     plan = {
         "schema_version": "natural-evaluation-plan-v1",
         "question_approval": "User approved all 50 questions including both price cases.",
@@ -198,8 +209,14 @@ def prepare(root: Path, source: Path, output: Path) -> dict:
         "revision_at_preparation": subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=root, text=True
         ).strip(),
-        "transport": "actual local MVP POST /api/v1/chat via in-process ASGI HTTP",
-        "latency_scope": "application HTTP latency; excludes deployed network/container queue",
+        "transport_kind": "installed_portable_http",
+        "transport": "real HTTP POST /api/v1/chat to the verified installed v0.1.0 Docker API",
+        "latency_scope": "client-observed HTTP latency including installed API/network overhead",
+        "release_version": "v0.1.0",
+        "knowledge_id": manifest["knowledge_id"],
+        "snapshot_id": next(iter(chunks.values()))["snapshot_id"],
+        "api_image_id": manifest["images"]["api"]["image_id"],
+        "qdrant_image_id": manifest["images"]["qdrant"]["image_id"],
         "limits": {
             "cases": 50,
             "concurrency": 1,
@@ -216,23 +233,21 @@ def prepare(root: Path, source: Path, output: Path) -> dict:
         "cost": {
             "estimate_usd": None,
             "hard_usd_cap_enforced": False,
-            "note": "Call/deadline limits are not a dollar cap. Pricing, allowance and an "
-            "appropriate provider-side spend limit must be checked before live authorization.",
+            "note": "Call/deadline limits are not a dollar cap. Spending uses the key "
+            "configured through the installer; its balance and provider limit are not inspected.",
         },
         "prerequisites": [
-            "An explicitly selected prepared host runtime root with reviewed data/tokenizer.",
-            "That project's .env OpenRouter key and .tools/qdrant-m3/read.key.",
-            "Existing compatible localhost Qdrant; runner never installs/starts/restores it.",
+            "User installs/configures install-mvp.ps1 -Version v0.1.0 and keeps its key private.",
+            "Installation records, exact release images/configuration and HTTP readiness verify.",
+            "Use the installer's published loopback API; never construct a separate host app.",
             "Unchanged plan/request/gold/source/code hashes and explicit live authorization.",
         ],
         "metrics": [
-            "Known-witness recall at 5/10 candidates per search part; read-only paths N/A.",
-            "Dense known-witness coverage at actual query limits (normally 5), not dense@10.",
-            "Writer-eligible witness coverage, distinct from all provenance occurrences.",
-            "Human fact recall, claim precision, faithfulness, citation entailment "
-            "and full success.",
+            "Human answer fact recall, claim correctness, cited-source support and task success.",
+            "Cited known-witness coverage is separate from unavailable retrieval/context recall.",
+            "Internal retrieval, writer context, usage and cost are not exposed by v0.1.0 HTTP.",
             "Human missing-information handling for U25; exact-price support recall is null.",
-            "Median/p95 application HTTP time; errors/timeouts remain in full cohort denominator.",
+            "Median/p95 real HTTP time; errors/timeouts remain in full cohort denominator.",
         ],
     }
     write_new(output / "plan.json", plan)
@@ -317,6 +332,13 @@ def execution_inputs(root: Path, directory: Path, runtime: Path, output: Path) -
 def write_run_binding(
     directory: Path, output: Path, runtime: Path, plan: dict, execution_kind: str
 ) -> None:
+    installed = {}
+    if execution_kind == "installed_portable_http":
+        installed = {
+            name: digest(output / name)
+            for name in ("preflight-before.json", "http-preflight.json", "preflight-after.json")
+            if (output / name).is_file()
+        }
     write_new(
         output / "run-binding.json",
         {
@@ -328,6 +350,7 @@ def write_run_binding(
             "runtime_root": str(runtime),
             "index_sha256": digest(output / "execution-index.json"),
             "case_sha256": {path.name: digest(path) for path in sorted(output.glob("U*.json"))},
+            **({"installed_receipts_sha256": installed} if installed else {}),
         },
     )
 
@@ -353,17 +376,65 @@ async def execute(root: Path, directory: Path, runtime: Path, output: Path, limi
     await asyncio.to_thread(write_run_binding, directory, output, runtime, plan, "live_local_mvp")
 
 
+async def execute_installed(
+    root: Path, directory: Path, install_root: Path, output: Path, limit: int
+) -> None:
+    plan = await asyncio.to_thread(verify_plan, root, directory)
+    if plan.get("transport_kind") != "installed_portable_http":
+        raise ValueError("plan_does_not_target_installed_release")
+    requests = await asyncio.to_thread(requests_from, directory / "requests.jsonl")
+    if type(limit) is not int or not 1 <= limit <= 50:
+        raise ValueError("invalid_case_limit")
+    from scripts.natural_evaluation_portable import run_portable
+
+    try:
+        await run_portable(directory, plan, install_root, output, requests, limit)
+    finally:
+        if await asyncio.to_thread((output / "execution-index.json").is_file):
+            await asyncio.to_thread(
+                write_run_binding, directory, output, install_root, plan, "installed_portable_http"
+            )
+
+
+async def inspect_installed(root: Path, directory: Path, install_root: Path, output: Path) -> None:
+    """Read-only Docker and HTTP readiness checks; never send chat requests."""
+    import httpx2 as httpx
+
+    from scripts.natural_evaluation_portable import preflight, verify_http
+
+    plan = await asyncio.to_thread(verify_plan, root, directory)
+    if plan.get("transport_kind") != "installed_portable_http":
+        raise ValueError("plan_does_not_target_installed_release")
+    await asyncio.to_thread(output.mkdir, parents=True, exist_ok=False)
+    receipt = await asyncio.to_thread(preflight, plan, install_root)
+    await asyncio.to_thread(write_new, output / "preflight-before.json", receipt)
+    async with httpx.AsyncClient(
+        base_url=receipt["base_url"],
+        transport=httpx.AsyncHTTPTransport(retries=0),
+        timeout=155,
+        follow_redirects=False,
+        trust_env=False,
+    ) as client:
+        http_receipt = await verify_http(client)
+    await asyncio.to_thread(write_new, output / "http-preflight.json", http_receipt)
+    print("Installed v0.1.0 Docker/HTTP preflight passed; zero chat requests sent.")
+
+
 def percentile95(values: list[float]) -> float | None:
     return sorted(values)[math.ceil(0.95 * len(values)) - 1] if values else None
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("prepare", "run", "score"))
+    parser.add_argument("mode", choices=("prepare", "preflight", "run", "score"))
     parser.add_argument("--source", type=Path, default=SOURCE)
     parser.add_argument("--plan", type=Path)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--runtime-root", type=Path)
+    parser.add_argument(
+        "--install-root",
+        type=Path,
+        default=Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "TelescopeRag",
+    )
     parser.add_argument("--run", type=Path)
     parser.add_argument("--review", type=Path)
     parser.add_argument("--case-limit", type=int, default=50)
@@ -375,10 +446,16 @@ def main() -> None:
             parser.error("Preparation cannot dispatch requests.")
         prepare(root, args.source, args.output)
         print("Prepared source-bound answer key and run plan; no evaluation executed.")
+    elif args.mode == "preflight":
+        if args.execute or args.plan is None:
+            parser.error("Read-only preflight requires --plan and does not accept --execute.")
+        asyncio.run(inspect_installed(root, args.plan, args.install_root, args.output))
     elif args.mode == "run":
-        if not args.execute or args.plan is None or args.runtime_root is None:
-            parser.error("Run requires --execute, --plan and --runtime-root after live approval.")
-        asyncio.run(execute(root, args.plan, args.runtime_root, args.output, args.case_limit))
+        if not args.execute or args.plan is None:
+            parser.error("Run requires --execute and --plan after the installer is ready.")
+        asyncio.run(
+            execute_installed(root, args.plan, args.install_root, args.output, args.case_limit)
+        )
     else:
         if args.plan is None or args.run is None or args.execute:
             parser.error("Offline scoring requires --plan and --run; no --execute.")

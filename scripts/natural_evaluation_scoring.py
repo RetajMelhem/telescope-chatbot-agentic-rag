@@ -6,10 +6,12 @@ No model, retrieval, database or billing requests are issued by this module.
 
 import json
 import statistics
+from datetime import datetime
 from pathlib import Path
 from uuid import UUID
 
 from scripts.natural_evaluation import (
+    api_payload,
     digest,
     load_source,
     percentile95,
@@ -53,7 +55,9 @@ def observed_evidence(trace: dict) -> dict:
     }
 
 
-def structural_citations(response: dict | None, chunks: dict) -> bool | None:
+def structural_citations(
+    response: dict | None, chunks: dict, *, full_source_identity: bool = False
+) -> bool | None:
     """Literal identity/quote checks only; this cannot establish entailment."""
     if response is None:
         return None
@@ -78,6 +82,23 @@ def structural_citations(response: dict | None, chunks: dict) -> bool | None:
             or citation.get("question_id") not in questions
         ):
             return False
+        if full_source_identity:
+            fields = {
+                "parent_block_id": "parent_block_id",
+                "title": "page_title",
+                "section": "section_path",
+                "source_language": "language",
+                "snapshot_id": "snapshot_id",
+                "literal_owner_name": "doctor_name",
+                "canonical_owner_name": "canonical_doctor_name",
+                "source_issue_codes": "source_issue_codes",
+            }
+            if any(citation.get(wire) != source.get(saved) for wire, saved in fields.items()):
+                return False
+            if datetime.fromisoformat(citation["fetched_at"]) != datetime.fromisoformat(
+                source["fetched_at"]
+            ):
+                return False
         seen.add(citation["id"])
     by_id = {c["id"]: c for c in citations}
     return all(
@@ -87,7 +108,9 @@ def structural_citations(response: dict | None, chunks: dict) -> bool | None:
     )
 
 
-def human_metrics(review: dict | None, intent: dict, *, http_ok: bool) -> dict:
+def human_metrics(
+    review: dict | None, intent: dict, *, http_ok: bool, context_available: bool = True
+) -> dict:
     expected = {f["fact_id"] for f in intent["required_facts"]}
     missing = intent["answerability"] == "missing_exact_amount"
     required_flags = [
@@ -102,6 +125,7 @@ def human_metrics(review: dict | None, intent: dict, *, http_ok: bool) -> dict:
         and review["reviewer"].strip()
         and review.get("claim_inventory_complete") is True
     )
+    support_field = "supported_by_context" if context_available else "supported_by_cited_sources"
     if complete:
         facts = review.get("required_facts", {})
         complete = set(facts) == expected and all(type(v) is bool for v in facts.values())
@@ -113,7 +137,7 @@ def human_metrics(review: dict | None, intent: dict, *, http_ok: bool) -> dict:
             isinstance(c.get("text"), str)
             and c["text"].strip()
             and type(c.get("correct")) is bool
-            and type(c.get("supported_by_context")) is bool
+            and type(c.get(support_field)) is bool
             for c in review.get("claims", [])
         )
         complete = complete and (not any(facts.values()) or bool(review.get("claims")))
@@ -123,12 +147,13 @@ def human_metrics(review: dict | None, intent: dict, *, http_ok: bool) -> dict:
             "fact_recall": None,
             "claim_precision": None,
             "faithfulness": None,
+            "source_support_precision": None,
             "missing_information_handled": None,
             "complete_question_success": False if not http_ok else None,
         }
     facts, claims = review["required_facts"], review["claims"]
     fact_recall = sum(facts.values()) / len(facts) if facts else None
-    correct = all(c["correct"] and c["supported_by_context"] for c in claims)
+    correct = all(c["correct"] and c[support_field] for c in claims)
     success = http_ok and all(facts.values()) and correct
     success = success and all(review[k] for k in required_flags)
     success = success and (not missing or review["missing_information_handled"])
@@ -137,7 +162,14 @@ def human_metrics(review: dict | None, intent: dict, *, http_ok: bool) -> dict:
         "fact_recall": fact_recall,
         "claim_precision": sum(c["correct"] for c in claims) / len(claims) if claims else None,
         "faithfulness": (
-            sum(c["supported_by_context"] for c in claims) / len(claims) if claims else None
+            sum(c["supported_by_context"] for c in claims) / len(claims)
+            if context_available and claims
+            else None
+        ),
+        "source_support_precision": (
+            sum(c["supported_by_cited_sources"] for c in claims) / len(claims)
+            if not context_available and claims
+            else None
         ),
         "missing_information_handled": review["missing_information_handled"] if missing else None,
         "complete_question_success": bool(success),
@@ -176,16 +208,72 @@ def reported_usage(trace: dict) -> dict:
     return result
 
 
-def case_metrics(record: dict | None, intent: dict, review: dict | None, chunks: dict) -> dict:
+def case_metrics(
+    record: dict | None,
+    intent: dict,
+    review: dict | None,
+    chunks: dict,
+    *,
+    context_available: bool = True,
+) -> dict:
     if record is None:
         return {
             "execution": "not_attempted_after_stop",
             "http_ok": False,
-            "human": human_metrics(None, intent, http_ok=False),
+            "human": human_metrics(
+                None, intent, http_ok=False, context_available=context_available
+            ),
         }
     trace = record.get("trace", {})
     if trace.get("capture_errors") or trace.get("concurrent_run_detected"):
         raise ValueError("trace_incomplete_or_concurrent")
+    if not context_available:
+        http_ok = record["http_status"] == 200 and record.get("error") is None
+        citation_validity = structural_citations(
+            record.get("response") if http_ok else None,
+            chunks,
+            full_source_identity=True,
+        )
+        referenced = (
+            {
+                identity
+                for question in (record.get("response") or {}).get("questions", [])
+                for identity in question.get("citation_ids", [])
+            }
+            if http_ok
+            else set()
+        )
+        cited = (
+            {c["chunk_id"] for c in record["response"]["citations"] if c["id"] in referenced}
+            if citation_validity is True
+            else set()
+        )
+        coverage = witness_recall(cited, intent) if citation_validity is True else None
+        if coverage is not None:
+            coverage["coverage"] = coverage.pop("recall")
+        human = human_metrics(review, intent, http_ok=http_ok, context_available=False)
+        if citation_validity is False:
+            human["complete_question_success"] = False
+        return {
+            "execution": "attempted",
+            "http_ok": http_ok,
+            "http_status": record["http_status"],
+            "elapsed_seconds": record["elapsed_seconds"],
+            "internal_context_available": False,
+            "candidate_recall5_per_search_part": None,
+            "candidate_recall10_per_search_part": None,
+            "dense_coverage_at_actual_limits": None,
+            "dense_query_limits": None,
+            "writer_eligible_coverage": None,
+            "writer_observed": None,
+            "candidate_judged_precision5": None,
+            "candidate_judged_precision10": None,
+            "cited_witness_coverage": coverage,
+            "structural_citations_valid": citation_validity,
+            "cost": None,
+            "reported_usage": reported_usage({}),
+            "human": human,
+        }
     evidence = observed_evidence(trace)
     if (evidence["candidate10"] | evidence["writer"] | evidence["dense"]) - chunks.keys():
         raise ValueError("trace_unknown_source_occurrence")
@@ -218,10 +306,43 @@ def case_metrics(record: dict | None, intent: dict, review: dict | None, chunks:
     return result
 
 
-def bind_record(record: dict, request: dict, prepared_digest: str) -> None:
+def bind_record(
+    record: dict,
+    request: dict,
+    prepared_digest: str,
+    *,
+    execution_kind: str = "live_local_mvp",
+    snapshot_id: str | None = None,
+) -> None:
     if record.get("case_id") != request["case_id"] or record.get("language") != request["language"]:
         raise ValueError("case_record_identity_mismatch")
     trace = record.get("trace", {})
+    if execution_kind == "installed_portable_http":
+        if trace.get("internal_trace_available") is not False or trace != {
+            "schema_version": "natural-evaluation-http-observation-v1",
+            "case_id": request["case_id"],
+            "internal_trace_available": False,
+            "cost": None,
+        }:
+            raise ValueError("http_observation_identity_or_schema_mismatch")
+        if record.get("request_payload") != api_payload(request):
+            raise ValueError("captured_request_differs_from_question")
+        if record["http_status"] == 200 and record.get("error") is None:
+            from telescope_rag.api.local import LocalChatResponse
+
+            response = record.get("response")
+            LocalChatResponse.model_validate_json(json.dumps(response))
+            UUID(response["request_id"])
+            knowledge = response.get("knowledge")
+            if knowledge and (
+                knowledge["prepared_digest"] != prepared_digest
+                or snapshot_id is None
+                or knowledge["snapshot_id"] != snapshot_id
+            ):
+                raise ValueError("response_knowledge_source_mismatch")
+            if any(c["snapshot_id"] != snapshot_id for c in response["citations"]):
+                raise ValueError("response_citation_snapshot_mismatch")
+        return
     runs = trace.get("workflow_runs", [])
     if (
         trace.get("case_id") != request["case_id"]
@@ -282,6 +403,9 @@ def aggregate(rows: list[dict]) -> dict:
             [r["human"]["claim_precision"] for r in reviewed]
         ),
         "faithfulness_macro_reviewed_only": average([r["human"]["faithfulness"] for r in reviewed]),
+        "source_support_precision_macro_reviewed_only": average(
+            [r["human"].get("source_support_precision") for r in reviewed]
+        ),
         "missing_information_handling_reviewed_only": average(
             [r["human"]["missing_information_handled"] for r in reviewed]
         ),
@@ -297,6 +421,12 @@ def aggregate(rows: list[dict]) -> dict:
             "macro": average(values),
             "eligible_scored_cases": sum(v is not None for v in values),
         }
+    cited = [r.get("cited_witness_coverage") for r in rows]
+    values = [v["coverage"] if v else None for v in cited]
+    output["cited_witness_coverage"] = {
+        "macro": average(values),
+        "eligible_scored_cases": sum(v is not None for v in values),
+    }
     output["cost_reported_usd"] = (
         sum(r["cost"]["reported_usd"] for r in rows)
         if all(r.get("cost") and r["cost"].get("complete") for r in rows)
@@ -321,8 +451,13 @@ def aggregate(rows: list[dict]) -> dict:
 def score_run(root: Path, plan_dir: Path, run_dir: Path, output: Path, review_path: Path | None):
     plan = verify_plan(root, plan_dir)
     binding = json.loads((run_dir / "run-binding.json").read_bytes())
-    if binding["execution_kind"] not in {"live_local_mvp", "synthetic_contract_test"}:
+    if binding["execution_kind"] not in {
+        "live_local_mvp",
+        "synthetic_contract_test",
+        "installed_portable_http",
+    }:
         raise ValueError("execution_kind_unknown")
+    context_available = binding["execution_kind"] != "installed_portable_http"
     if (
         binding["plan_sha256"] != digest(plan_dir / "plan.json")
         or binding["requests_sha256"] != plan["requests_sha256"]
@@ -330,10 +465,42 @@ def score_run(root: Path, plan_dir: Path, run_dir: Path, output: Path, review_pa
         or binding["index_sha256"] != digest(run_dir / "execution-index.json")
     ):
         raise ValueError("run_plan_binding_mismatch")
+    if not context_available:
+        expected_receipts = {"preflight-before.json", "http-preflight.json", "preflight-after.json"}
+        receipt_hashes = binding.get("installed_receipts_sha256", {})
+        if set(receipt_hashes) != expected_receipts or any(
+            not (run_dir / name).is_file() or digest(run_dir / name) != receipt_hashes[name]
+            for name in expected_receipts
+        ):
+            raise ValueError("installed_preflight_receipt_binding_mismatch")
+        installed_before = json.loads((run_dir / "preflight-before.json").read_bytes())
+        installed_after = json.loads((run_dir / "preflight-after.json").read_bytes())
+        http_preflight = json.loads((run_dir / "http-preflight.json").read_bytes())
+        if (
+            installed_before != installed_after
+            or installed_before.get("status") != "verified"
+            or installed_before.get("internal_trace_available") is not False
+            or http_preflight.get("status") != "verified"
+            or http_preflight.get("readiness_http_status") != 200
+            or http_preflight.get("openapi_http_status") != 200
+            or http_preflight.get("runtime_unchanged_before_first_question") is not True
+        ):
+            raise ValueError("installed_preflight_not_verified_or_runtime_changed")
     requests = requests_from(plan_dir / "requests.jsonl")
     gold = json.loads((plan_dir / "gold.json").read_bytes())
     intents = {i["intent_id"]: i for i in gold["intents"]}
-    _, chunks = load_source(Path(plan["source_root"]))
+    source_manifest, chunks = load_source(Path(plan["source_root"]))
+    if not context_available and (
+        installed_before.get("version") != source_manifest.get("version")
+        or installed_before.get("knowledge_id") != source_manifest.get("knowledge_id")
+        or installed_before.get("prepared_digest") != plan["prepared_digest"]
+        or installed_before.get("release_manifest_sha256") != plan["release_manifest_sha256"]
+    ):
+        raise ValueError("installed_preflight_gold_source_mismatch")
+    snapshot_ids = {c["snapshot_id"] for c in chunks.values()} if not context_available else set()
+    if not context_available and len(snapshot_ids) != 1:
+        raise ValueError("gold_snapshot_inventory_invalid")
+    snapshot_id = next(iter(snapshot_ids)) if snapshot_ids else None
     index = json.loads((run_dir / "execution-index.json").read_bytes())
     count = index["requested_cases"]
     if type(count) is not int or not 1 <= count <= 50:
@@ -352,14 +519,35 @@ def score_run(root: Path, plan_dir: Path, run_dir: Path, output: Path, review_pa
     ):
         raise ValueError("execution_case_inventory_changed")
     records = {}
+    response_ids = set()
     for request, filename in zip(cohort[:attempted], filenames, strict=True):
         path = run_dir / filename
         if digest(path) != binding["case_sha256"][filename]:
             raise ValueError("execution_case_hash_changed")
         record = json.loads(path.read_bytes())
-        bind_record(record, request, plan["prepared_digest"])
+        bind_record(
+            record,
+            request,
+            plan["prepared_digest"],
+            execution_kind=binding["execution_kind"],
+            snapshot_id=snapshot_id,
+        )
+        if not context_available and record["http_status"] == 200 and record.get("error") is None:
+            response_id = UUID(record["response"]["request_id"]).hex
+            if response_id in response_ids:
+                raise ValueError("response_request_id_reused_in_cohort")
+            response_ids.add(response_id)
         records[request["case_id"]] = record
     expected = review_template(cohort, list(intents.values()))
+    if not context_available:
+        expected["internal_context_available"] = False
+        expected["instruction"] = (
+            "Human source review only; null means unreviewed, never pass. "
+            "For each factual claim provide text, correct and supported_by_cited_sources booleans. "
+            "Judge the exact cited public sources; actual model context is unavailable, "
+            "so supported_by_context and faithfulness cannot be judged. "
+            "Cited witness coverage does not measure retrieval recall."
+        )
     for row in expected["cases"]:
         record = records.get(row["case_id"])
         row["case_file_sha256"] = digest(run_dir / f"{row['case_id']}.json") if record else None
@@ -371,6 +559,8 @@ def score_run(root: Path, plan_dir: Path, run_dir: Path, output: Path, review_pa
     reviews = {}
     if review_path:
         actual = json.loads(review_path.read_bytes())
+        if not context_available and actual.get("internal_context_available") is not False:
+            raise ValueError("human_review_context_availability_mismatch")
         reviews = {r["case_id"]: r for r in actual["cases"]}
         if len(reviews) != len(actual["cases"]) or reviews.keys() != {r["case_id"] for r in cohort}:
             raise ValueError("human_review_case_inventory_changed")
@@ -381,7 +571,11 @@ def score_run(root: Path, plan_dir: Path, run_dir: Path, output: Path, review_pa
     for request in cohort:
         case_id = request["case_id"]
         metrics = case_metrics(
-            records.get(case_id), intents[case_id.split("-")[0]], reviews.get(case_id), chunks
+            records.get(case_id),
+            intents[case_id.split("-")[0]],
+            reviews.get(case_id),
+            chunks,
+            context_available=context_available,
         )
         scored.append({"case_id": case_id, "language": request["language"], **metrics})
     output.mkdir(parents=True, exist_ok=False)
@@ -397,21 +591,37 @@ def score_run(root: Path, plan_dir: Path, run_dir: Path, output: Path, review_pa
                 language: aggregate([r for r in scored if r["language"] == language])
                 for language in {r["language"] for r in scored}
             },
-            "limitations": [
-                "Known positive witness groups, not exhaustive relevance or semantic recall.",
-                "Candidate recall is a union of top-k per planned search part, "
-                "not one global ranking.",
-                "Dense call/part association is unavailable; dense coverage is request-level only.",
-                "Writer coverage uses actual offered eligible IDs; "
-                "provenance-only duplicates do not count.",
-                "Search recall excludes source-read/hours-only paths; "
-                "scored denominators are explicit.",
-                "Human precision requires relevance labels for every observed candidate; "
-                "unjudged is null.",
-                "Structural citation validity does not prove semantic entailment.",
-                "Arabic/English pairs share intents and are not independent statistical samples.",
-                "HTTP latency is in-process ASGI application time, "
-                "not deployed network or load performance.",
-            ],
+            "limitations": (
+                [
+                    "Installed portable HTTP observes responses only; internal retrieval, "
+                    "writer context, provider usage and cost remain unavailable (null).",
+                    "Cited witness coverage counts source groups in validated citations; "
+                    "it does not measure retrieval recall or exhaustive semantic coverage.",
+                    "Source support judgments use cited public sources. Faithfulness to the actual "
+                    "model context is unavailable, even when complete question success is judged.",
+                    "Structural citation validity does not prove semantic entailment.",
+                    "Arabic/English pairs share intents; they are not independent samples.",
+                    "HTTP latency includes loopback networking and API processing; "
+                    "this serial cohort is not a load test.",
+                ]
+                if not context_available
+                else [
+                    "Known positive witness groups, not exhaustive relevance or semantic recall.",
+                    "Candidate recall is a union of top-k per planned search part, "
+                    "not one global ranking.",
+                    "Dense call/part association is unavailable; "
+                    "dense coverage is request-level only.",
+                    "Writer coverage uses actual offered eligible IDs; "
+                    "provenance-only duplicates do not count.",
+                    "Search recall excludes source-read/hours-only paths; "
+                    "scored denominators are explicit.",
+                    "Human precision requires relevance labels for every observed candidate; "
+                    "unjudged is null.",
+                    "Structural citation validity does not prove semantic entailment.",
+                    "Arabic/English pairs share intents; they are not independent samples.",
+                    "HTTP latency is in-process ASGI application time, "
+                    "not deployed network or load performance.",
+                ]
+            ),
         },
     )

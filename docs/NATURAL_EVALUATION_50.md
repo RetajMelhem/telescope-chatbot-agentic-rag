@@ -1,134 +1,145 @@
-# Approved 50-question evaluation
+# Installed v0.1.0 evaluation: 50 approved questions
 
-The user approved the [25 Jordanian Arabic / English pairs](NATURAL_QUESTIONS_50_DRAFT.md)
-on 2026-10-18, including the two price questions. Preparation is complete offline;
-no evaluation requests, embeddings, database operations or paid model calls ran.
-The user will supply/configure the API key when it is needed.
+The user selected `install-mvp.ps1 -Version v0.1.0` as the evaluation target.
+The evaluator sends real HTTP requests to that installed Docker API. It does not
+construct a second host application or change the released image, prompts,
+retrieval settings, corpus, ports, mounts or credentials. The user runs the
+installer and configures its OpenRouter key; the evaluator never reads that key.
 
-## Prepared inputs
+The [50 approved questions](NATURAL_QUESTIONS_50_DRAFT.md) are unchanged: 25
+Jordanian Arabic / English pairs, including two exact-price questions. Preparation
+is offline. The user confirmed installation and key setup on 2026-10-19;
+see [current status](../PROJECT_STATUS.md) for the actual run result.
 
-The current local package is `artifacts/natural-evaluation-50-v2/`:
+## Prepared package
 
-- `requests.jsonl`: the unchanged 50 approved requests; no gold fields.
-- `gold.json`: 50 minimum required fact groups shared across the 25 intents,
-  with 470 exact positive witness quotations from 299 distinct admitted chunks.
-- `ANSWER_KEY.md`: readable bilingual expected facts, response notes and prohibited claims.
-- `human-review-template.json`: unfilled source-review judgments, never automatic passes.
-- `plan.json`: hashes for requests/gold/source/serving code/evaluation code,
-  model-call limits and honest cost/prerequisite limitations.
-- `PREPARATION_VERIFICATION.json`: source/file/count/hash checks and missing runtime resources.
+The current package is `artifacts/natural-evaluation-50-v3/`:
 
-Two sibling agents independently reviewed each other's authored gold against the
-actual saved sources. A required doctor-assessment sentence was removed from the
-PRK/LASIK comparison; optional detail is not a completeness requirement. A typical
-visit answer such as “Usually around 20–40 minutes” is sufficient. Exact wording
-is not required. Detailed gold and all source quotes stay outside Git and serving
-knowledge. The earlier unexecuted `natural-evaluation-50-v1` package is superseded
-because the evaluation capture code changed during offline verification.
+- `requests.jsonl`: exact approved request bytes, without gold fields.
+- `gold.json`: 50 minimum required fact groups, 470 exact witness quotations from
+  299 distinct admitted chunks. Both authored sections have independent reviews.
+- `ANSWER_KEY.md`: readable bilingual expected facts and review notes.
+- `human-review-template.json`: null judgments; source support is judged from
+  citations, with actual internal context explicitly unavailable.
+- `plan.json`: frozen source/question/gold/code hashes, v0.1.0 image identities,
+  transport and call limits. Earlier ASGI plans v1/v2 remain historical and are
+  superseded; changed code or inputs require a new preparation directory.
 
-The source is the public v0.1.0 knowledge release, not a refreshed website. All
-116 runtime file hashes/sizes and the prepared digest were checked against the
-107-document / 955-chunk bundle. Expected facts were written before seeing any
-bot response. Witnesses are selected known positives, not an exhaustive set of
-all relevant source occurrences; valid unlisted evidence needs adjudication.
+The reviewed source is the saved v0.1.0 release: 107 documents / 955 chunks.
+All 116 runtime file hashes/sizes and the prepared corpus digest are checked.
+Witnesses are selected known positives, not exhaustive relevance judgments.
+Gold is used only for offline scoring, never sent to the chatbot.
 
-## Runner and live prerequisites
+## Installation and readiness
 
-`scripts/natural_evaluation.py` has separate `prepare`, `run` and `score` modes.
-Preparation and scoring do not create network clients or read credentials. The
-live mode requires `--execute`, the sealed plan directory, an explicit runtime
-root and a new output directory. It uses `create_local_app` and the actual
-`POST /api/v1/chat` route through an in-process ASGI HTTP client. Serving code,
-prompts, model choices, corpus and retrieval settings are unchanged.
+Run the installer from the project checkout and provide the key through its
+normal hidden prompt or supported local key configuration:
 
-The API input supports `ar`, not `ar-JO`; the runner sends `ar` while preserving
-the approved Jordanian question and the `ar-JO` label in evaluation receipts.
+```powershell
+.\install-mvp.ps1 -Version v0.1.0
+```
 
-The selected host runtime needs its reviewed source/tokenizer/hour/link files,
-project `.env` OpenRouter key, `.tools/qdrant-m3/read.key`, and the existing
-compatible read-only Qdrant collection at localhost. This clone currently lacks
-those serving-root files and credentials. Its downloaded inspection bundle is
-kept separately under ignored artifacts. Docker CLI presence alone does not prove
-Docker/Qdrant readiness. The runner never installs, starts, restores or writes a
-database and does not substitute a different retrieval implementation.
+Its default installation root is `%LOCALAPPDATA%\TelescopeRag`; default API
+address is `http://127.0.0.1:8000`. If the installer uses a different port, the
+runner reads that port from the validated installation record. Use `--install-root`
+only when you deliberately installed to another directory. There is no arbitrary
+remote URL option, host-runtime fallback, redirect following or environment proxy.
 
-Check current provider route/pricing/allowance and the spend boundary before an
-authorized live run. Limits are 50 serial requests, one HTTP attempt each, at most
-100 Luna calls and 50 Qwen query batches, no retries/fallbacks or judge calls.
-Normal per-question application limits remain two Luna calls, one embedding batch,
-150 seconds and the existing evidence/output ceilings. The outer client timeout
-is 155 seconds. The runner stops at the first non-200/unknown dispatch failure,
-preserves completed receipts and does not automatically repeat or resume.
+Before sending questions the runner checks the installation owner/state/release
+records, exact API/Qdrant image identities, container ownership/configuration,
+read-only data/secret mount locations, loopback API port and private Qdrant
+network. It makes readiness/OpenAPI GET requests without inference. The API key
+remains mounted inside the installed service. Health readiness does not establish
+provider authentication, current provider balance or answer quality.
 
-These call/deadline limits are **not a hard dollar cap**. An estimate is not yet
-available because planner-selected query/context lengths and current pricing are
-not known. A provider-side key limit is needed for a hard spending boundary;
-missing costs/usages remain unknown. Do not claim the run is affordable or paid
-execution-ready from the offline checks.
+The runner rechecks installation/container identity after the run and binds the
+before/HTTP/after receipts to case files and the execution index. Configuration
+changes or incomplete installation verification cannot be scored as a verified
+installed run. Completed/failed receipts are retained without automatic replay.
+The runner never runs the installer, starts containers or writes a database.
 
 ## Commands
 
-Run from the repository root with the locked environment and `PYTHONPATH=src`.
-Use `uv` on PATH, or this workspace's `.tools/uv-runtime/bin/uv.exe`.
+Use the locked environment from the repository root. On this workspace, `uv` is
+available at `.tools/uv-runtime/bin/uv.exe`; `PYTHONPATH=src` resolves the local
+package on this non-ASCII Windows path.
 
-Preparation refuses an existing directory; use a new version after changing code
-or approved inputs. It needs the separately stored authored gold and independent
-reviews under the source-inspection directory.
+Preparation is offline and refuses to overwrite an existing package:
 
 ```powershell
 uv run --locked python -m scripts.natural_evaluation prepare --output artifacts/NEW_PREPARATION
 ```
 
-The following is a later explicitly authorized live action, not part of preparing
-or opening these files. `RUNTIME_ROOT` must identify the prepared project runtime.
+Once the user confirms the installation is ready, a read-only preflight can run
+without sending any question or requiring `--execute`:
 
 ```powershell
-uv run --locked python -m scripts.natural_evaluation run --plan artifacts/natural-evaluation-50-v2 --runtime-root RUNTIME_ROOT --output artifacts/NEW_LIVE_RUN --execute
+uv run --locked python -m scripts.natural_evaluation preflight --plan artifacts/natural-evaluation-50-v3 --output artifacts/NEW_PREFLIGHT
 ```
 
-After every attempted case is saved, offline scoring creates candidate/context
-coverage and a case-bound human-review template. It does not invent semantic
-answer judgments or use another model:
+An authorized evaluation uses a new output directory:
 
 ```powershell
-uv run --locked python -m scripts.natural_evaluation score --plan artifacts/natural-evaluation-50-v2 --run artifacts/NEW_LIVE_RUN --output artifacts/NEW_SCORE
+uv run --locked python -m scripts.natural_evaluation run --plan artifacts/natural-evaluation-50-v3 --output artifacts/NEW_LIVE_RUN --execute
 ```
 
-Fill the new score directory's human-review template against the answer key,
-actual response and actual writer context. For every factual claim, record its
-text, `correct` and `supported_by_context` booleans. Mark the complete claim
-inventory explicitly, every required fact and each response/citation/language
-judgment. An honest unsupported answer on an answerable question is a reviewed
-failure with fact recall zero; it does not remain unreviewed. Then repeat offline
-scoring into another new directory with `--review PATH_TO_FILLED_REVIEW`.
+Limits are 50 serial requests, one HTTP attempt per question, no client retries,
+no additional judge/model requests and no automatic fallback/resume. The unchanged
+application permits at most two Luna calls and one Qwen batch per question, with
+a 150-second application deadline; the client timeout is 155 seconds. Non-200,
+timeout, invalid response or unknown dispatch outcome stops further questions.
+These call limits are not a hard USD cap. Provider spending is governed by the
+key configured through the installer; the evaluator cannot inspect its balance.
 
-## Metrics and interpretation
+Score completed receipts offline, then fill the resulting case-bound review
+against the answer key, returned answer and cited source text:
 
-| Metric | Definition and limit |
+```powershell
+uv run --locked python -m scripts.natural_evaluation score --plan artifacts/natural-evaluation-50-v3 --run artifacts/NEW_LIVE_RUN --output artifacts/NEW_SCORE
+```
+
+For each factual claim record its text, `correct` and
+`supported_by_cited_sources` booleans. Complete every required-fact, citation,
+language, prohibited-claim and missing-information judgment, and mark the claim
+inventory complete. Equivalent wording is accepted. An honestly reviewed
+abstention on an answerable question scores fact recall zero, not unreviewed.
+Re-score into another new directory with `--review PATH_TO_FILLED_REVIEW`.
+
+## What this installation exposes
+
+| Metric | Available measurement |
 | --- | --- |
-| Candidate witness recall at 5/10 per search part | Required known evidence groups found in the union of each search part's first k merged candidates, divided by required groups. This is not one global ranking or dense-only recall. |
-| Dense witness coverage | Request-level group coverage at actual dense query limits, normally five per query. Dense calls have no authenticated part association; do not relabel them dense recall@10/20. |
-| Writer-eligible coverage | Required witness groups among IDs actually offered in the writer's prompt, including validated hours evidence where applicable. Provenance-only duplicates do not count as model exposure. No writer means zero positive-fact exposure; price-amount coverage stays null. |
-| Retrieval precision | Requires human relevance labels for every distinct candidate being measured. Unlisted/unjudged witnesses are not automatically irrelevant. The recorded fraction concerns the unique top-k-per-part candidate union, not fixed-denominator TREC precision@k. |
-| Answer fact recall | Required facts correctly included, divided by required facts, from a completed source review. Equivalent wording is accepted. |
-| Answer claim precision / faithfulness | Correct claims / all factual claims, and claims supported by actual supplied evidence / all factual claims. A complete claim inventory is required; no factual claims gives a null precision rather than a perfect score. |
-| Citations | Automated ID/URL/owner/quote/question checks are separate from human semantic entailment. One part cannot borrow another part's citation. |
-| Complete-question success | Correct HTTP response, required facts covered, claims correct and grounded, all parts accounted for, correct language, correct citations and no prohibited claims. HTTP failures/unattempted cases after a stop remain in the requested run's denominator. |
-| Missing-information handling | U25-ar-JO/U25-en acknowledge missing exact price without inventing an amount. Estimate-after-consultation text is optional context, never positive amount support. Exact-amount retrieval recall is null. |
-| Latency / usage / cost | Median and nearest-rank p95 ASGI application HTTP time, separately reported actual usage and existing-response `usage.cost` when available. Reserved token ceilings are never reported as actual usage. Missing costs are not zero. |
+| Answer fact recall | Correct required facts included / required facts, judged against the frozen key. |
+| Claim correctness and source support | Correct factual claims / all claims; claims supported by cited sources / all claims. Requires complete human claim inventory. |
+| Citation validity and entailment | Literal source/quote/owner/question checks, plus human review of whether the cited passage supports the claim. |
+| Complete-question success | Required facts covered, correct source-supported claims, correct citations/language, no prohibited claims and all question parts handled. |
+| Missing-information handling | U25 in each language acknowledges missing exact price without inventing an amount. Price-estimate context is optional, not evidence of an amount. |
+| Cited-witness coverage | Required known evidence groups represented among returned citations. This is not retrieval recall. |
+| Response latency and failures | Client wall-clock time for real HTTP requests, median/p95, HTTP errors and timeouts. This includes the installed API path; it is a serial cohort, not a load test. |
+| Retrieval recall/precision and writer-context coverage | Unavailable: the unchanged v0.1.0 API does not return internal candidates or writer prompts. Null, never inferred from citations. |
+| Actual-context faithfulness, provider tokens and cost | Unavailable through this response schema. Citation-supported correctness is distinct from proof of actual model exposure. Missing values are not zero. |
 
-Report overall and by language with scored/reviewed denominators. Search recall
-is null for complete-source/hours-only paths; final-context and answer judgments
-still apply. Directory questions require full roster review, not one top-k hit.
-This is a small, visible set of authored everyday questions: 50 requests represent
-25 paired intents. It is not unseen statistical acceptance, load testing, deployed
-network/container latency, clinical validation or proof of production readiness.
+Report by language and overall with reviewed/scored denominators. HTTP failures
+and unattempted questions after a stop remain in the requested run's denominator;
+label the stopped cohort explicitly. The two price cases have no positive amount
+facts, so exact-amount recall is null. Full staff listings require completeness
+review against the roster. These visible, authored questions represent 25 paired
+intents, not 50 independent observations or production acceptance.
+
+The older in-process capture code remains an offline diagnostic helper. It is
+not the selected execution path, and its trace metrics must not be mixed with
+installed HTTP observations.
 
 ## Verification
 
-Meaningful offline cases cover request-only payloads/dialect mapping, OR witnesses
-versus AND groups, source ownership, provenance versus writer exposure, missing
-price/usage/cost, unjudged candidates, completed abstentions, cross-question
-citations, swapped/tampered receipts, no duplicate dispatch, stop-on-failure,
-transparent tracing and bounded cost capture. The full guarded test suite and
-Ruff checks are recorded in current [project status](../PROJECT_STATUS.md).
+Tests use synthetic installation files, mocked Docker/HTTP responses and fake
+services. They cover exact release/configuration binding, no credential access,
+real-client request formatting, stop-on-failure, unavailable trace metrics,
+source/case/citation ownership, changed receipt rejection and completed human
+judgments. Current test results are recorded in [project status](../PROJECT_STATUS.md).
+
+An offline AI source review can fill the same rubric as a provisional assessment.
+Label its reviewer and review kind explicitly, preserve claim-level judgments,
+and report its scores as provisional AI-reviewed results. Such a review is not
+independent human validation, even though the scorer retains its historical
+`human` field names. No additional provider judge is called by this runner.

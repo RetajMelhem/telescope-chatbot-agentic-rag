@@ -85,8 +85,8 @@ The downloaded knowledge and local source-review receipts remain under ignored
 `artifacts/natural-questions-50-source-v1/`; they are not Git content or serving data.
 The receipt records source bindings and selected passages separately from requests.
 
-**Next:** configure the selected runtime and project API key, check current
-allowance/pricing and agree the live run's spend boundary before execution. The
-user asked to be notified when the API is needed. Do not infer paid execution
-authorization from this prepared artifact. The approved question bytes remain
-unchanged.
+The user selected `install-mvp.ps1 -Version v0.1.0` and confirmed installation
+and key setup on 2026-10-19. The evaluator uses that installed Docker API over
+HTTP; credentials stay with the installer. The approved question bytes remain
+unchanged. See [current status](../PROJECT_STATUS.md) for the execution result
+and [the runbook](NATURAL_EVALUATION_50.md) for measurement limits.
