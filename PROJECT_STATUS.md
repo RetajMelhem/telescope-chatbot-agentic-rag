@@ -2,6 +2,15 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Same-day testing recheck: all 38 recovery/PowerShell tests pass again; current
+955 full IDs/vectors/payloads/configuration and 116 runtime files match the release.
+All six public asset digests/sizes match; UI/live/ready/docs/OpenAPI return 200.
+No generation, new restore, corpus write or model call ran in this recheck.
+The prior 2,293-test full run and isolated fresh-clone/restore/update/rollback
+remain separate recorded evidence. Second-physical-machine installation and
+new live-answer acceptance are unverified. Evidence:
+`artifacts/portable-verification-v1/recheck.json` and `recheck-pytest.xml`.
+
 Portable MVP v0.1.0 published and recovery verified (2026-10-18).
 Code/main and tag are pushed to the supplied repository. All six assets are live:
 https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.1.0
