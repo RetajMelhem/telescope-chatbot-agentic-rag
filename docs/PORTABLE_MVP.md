@@ -109,6 +109,42 @@ snapshot does not automatically refresh changing clinic facts.
 
 ## Preparing a future release
 
+### Repeat an isolated installation test on this laptop
+
+From the updated checkout, run:
+
+```powershell
+powershell.exe -NoProfile -File .\scripts\test_portable_cold_install.ps1
+```
+
+The [test script](../scripts/test_portable_cold_install.ps1) requires Git, Windows
+PowerShell 5.1, Docker Desktop's `desktop-linux` context and internet access. It
+starts a pinned official [Docker-in-Docker image](https://hub.docker.com/_/docker/)
+as a temporary privileged test engine, without mounting the host Docker socket.
+It verifies that the inner engine has zero images, containers and volumes, clones
+public GitHub `main` into a new directory, then runs that clone's unchanged
+installer. A Docker command adapter translates only test-directory mount paths
+and forwards commands into the inner engine; the cloned installer and Compose
+file are not patched. Public source/release revisions are recorded separately.
+
+Both application image archives, the knowledge ZIP and database snapshot must
+be downloaded into the new install root and match their manifest hashes. The
+test verifies restored data, source/tokenizer resources, read-only API mounts and
+five HTTP endpoints. It supplies an explicit synthetic OpenRouter key and sends
+no questions, so this checks startup/data recovery without private credentials
+or model calls. Provider authentication and live answers remain untested.
+
+The owned test engine and its nested database are removed afterward. Existing
+containers are checked for unchanged IDs/start times. Reports and downloaded
+assets remain under ignored `artifacts/portable-cold-install-*/`; generated
+installation secrets retain the installer's private ACLs. The public installer
+may print port 8000, but its test API is inside the disposable engine and is not
+published on the laptop. This test shares the host Windows/Docker Desktop/kernel;
+it is stronger than reusing the existing image cache, but is not a second-machine
+or pristine-Windows verification.
+
+### Build and publish a release
+
 Use the reviewed development installation. Complete offline checks and commit the
 scoped changes first. Build the API with its actual source revision label:
 

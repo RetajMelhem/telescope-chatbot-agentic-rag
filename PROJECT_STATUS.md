@@ -2,6 +2,32 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Latest portability check: **public GitHub main installs healthy without existing
+application resources on this laptop**. `scripts/test_portable_cold_install.ps1`
+cloned public revision `1fbdd6d2b2a04c9ff12dae5e133dba8f0cb8076b` into a new
+directory and ran its unchanged Windows installer against a disposable Docker
+29.9.1 engine. The inner engine began with zero images, containers and volumes;
+only new test-directory paths were mounted. Both image archives, the knowledge
+ZIP and native snapshot were freshly downloaded from public v0.1.0 and their
+sizes/SHA256s matched. All 116 runtime files and the full 955-point database
+fingerprint verified; UI/live/ready/docs/OpenAPI returned 200. API mounts were
+read-only, user was `10001:10001`, and the root filesystem was read-only.
+
+The test supplied a synthetic key: no saved OpenRouter key, old knowledge/cache,
+old database or existing application image was used, and no model calls ran.
+The owned test engine/nested volumes were removed; both original container IDs
+and start times remained unchanged, with original readiness still 200. Evidence:
+`artifacts/portable-cold-install-eba6a9babdea/report.json` and
+`docker-commands.json`. Actual cold-install execution, Windows PowerShell parsing,
+Ruff lint/format, locked dependencies, local documentation targets and Git
+whitespace checks pass. The prior 2,300-test Python run is separate evidence.
+The test shares the host Windows/Docker Desktop/kernel and uses an explicit Docker
+command adapter for nested mount paths; a pristine Windows/second-machine install,
+provider authentication and new live answers remain unverified. **Next:** ordinary
+local use or a separately authorized live-answer test. The missing-volume fix and
+this repeatable test helper still exist only in local commits; no push/release
+publication was performed in this task.
+
 Latest local repair: the saved portable installation record survived but its
 database volume was absent in Docker's `desktop-linux` context. Matching knowledge
 identity alone no longer selects reuse: `install-mvp.ps1` also checks the volume
