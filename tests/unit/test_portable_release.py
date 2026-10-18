@@ -208,6 +208,13 @@ def test_secret_scan_reaches_nested_image_layers(tmp_path):
         r.scan_bytes(b"sk-or-v1-" + b"z" * 40)
 
 
+def test_crypto_parser_header_is_not_private_key_material():
+    header = b"-----BEGIN PRIVATE KEY-----"
+    r.scan_bytes(b"library parser constant " + header)
+    with pytest.raises(ValueError, match="secret_detected"):
+        r.scan_bytes(header + b"\n" + b"A" * 64 + b"\n-----END PRIVATE KEY-----")
+
+
 def test_database_checks_all_payloads_vectors_and_pages(monkeypatch):
     rows = [
         {"id": 1, "payload": {"owner": "لينا"}, "vector": [0.1]},

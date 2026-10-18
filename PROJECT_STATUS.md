@@ -14,6 +14,11 @@ offline tests and the full 2,287-test suite pass; Ruff and Compose/PowerShell pa
 checks pass. Native snapshot capture, isolated cold restore, update/rollback and
 remote publication are next and not yet claimed verified. No model call ran.
 
+First capture stopped before publication on an isolated PEM header constant in
+the official base image's GnuTLS library; no private key body was present. The
+scanner now distinguishes complete PEM material from parser markers while
+retaining exact known-key and provider-key checks. A regression case covers both.
+
 Documentation review: the README, scope, architecture, pipeline, provider/API
 contracts, roadmap and deployment guides now distinguish the current local MVP
 from earlier experiments and future production work. `docs/README.md` maps the

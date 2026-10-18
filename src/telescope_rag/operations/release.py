@@ -257,8 +257,9 @@ def extract(root: Path, archive: Path, release: Release, *, resources: bool = Tr
 
 def scan_bytes(data: bytes, known: Iterable[bytes] = ()) -> None:
     if any(secret and secret in data for secret in known) or re.search(
-        rb"sk-or-v1-[A-Za-z0-9_-]{30,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"
-        rb"|github_pat_[A-Za-z0-9_]{30,}",
+        rb"sk-or-v1-[A-Za-z0-9_-]{30,}|github_pat_[A-Za-z0-9_]{30,}"
+        rb"|-----BEGIN ((?:RSA |EC |OPENSSH )?PRIVATE KEY)-----\r?\n"
+        rb"(?:[A-Za-z0-9+/=]{16,}\r?\n)+-----END \1-----",
         data,
     ):
         raise ValueError("release_secret_detected")
