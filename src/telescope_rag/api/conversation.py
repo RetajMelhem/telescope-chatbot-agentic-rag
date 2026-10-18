@@ -64,7 +64,10 @@ def project_conversation(response: HoursChatResponse, run: WorkflowRun) -> Hours
                 # Validate support IDs above, but keep technical references in
                 # the structured sources panel rather than the chat prose.
                 sentences.append(sentence.text.strip())
-            answer = " ".join(sentences)
+            # Preserve the writer's explicit list layout. This only joins already
+            # validated text segments; it does not parse names or assign facts.
+            separator = "\n\n" if any(s.startswith(("• ", "- ")) for s in sentences) else " "
+            answer = separator.join(sentences)
         elif question.hours is None and (
             question.status == "excluded"
             or (question.status == "unknown" and question.reason_code == "not_found")

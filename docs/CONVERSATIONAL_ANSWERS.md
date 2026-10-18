@@ -1,5 +1,13 @@
 # Local conversational answering
 
+The v10 writer now uses a separate bullet item for each person/service in long
+lists, keeping that item's supported role and qualifications with its owner.
+The presenter preserves blank lines between explicit list segments while short
+prose stays compact. Six Arabic/English/Jordanian API cases verify the layout and
+unchanged owner-bound citations. The actual container doctor-directory request
+also returns readable bullets; related role/qualification parts can still repeat
+names. Original chunks, schema, quotation checks and call allowances are unchanged.
+
 The local profile also supports [separately verified website social links](PUBLIC_WEBSITE_LINKS.md).
 Link-only prose uses exact question-owned link references and separate provenance,
 without creating a vector-chunk citation or crawling the external destination.

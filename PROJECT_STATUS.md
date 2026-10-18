@@ -2,6 +2,16 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Latest formatting checkpoint — long generated lists now use separate bullet items
+and blank lines, preserving each doctor's source-owned role/qualifications.
+Short prose remains compact. Six focused multilingual API checks pass, plus an
+actual container doctor-list request. Compound role/qualification parts can still
+repeat names; no semantic merge is performed. The current local MVP completion
+task has also built a healthy container on test port 8001 and run five actual
+requests / nine parts, with 19 citation occurrences / 17 chunks / 127 original DOM
+spans verified. Packaging documentation, final checks and the default-port handoff
+are still in progress. No production readiness or full-corpus re-audit is claimed.
+
 Latest repair — **official social-page links restored locally**:
 The English/Arabic homepages contain eight literal href occurrences for Facebook,
 Instagram, LinkedIn and YouTube, previously absent from all 955 vector chunks.
