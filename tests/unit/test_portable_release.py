@@ -9,6 +9,7 @@ import subprocess
 import tarfile
 import zipfile
 from contextlib import nullcontext
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -350,3 +351,162 @@ Write-Output 'private-repeatable'
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "private-repeatable"
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    ["fresh", "missing", "present", "code_update", "collision", "bad_snapshot", "restore_failure"],
+)
+def test_windows_installer_restores_missing_volume_without_overwriting_existing_data(
+    package, tmp_path, scenario
+):
+    shell = shutil.which("powershell.exe")
+    if shell is None:
+        pytest.skip("Windows PowerShell recovery case")
+    _, _, release, _ = package
+    root = tmp_path / "install dir"
+    root.mkdir()
+    owner = {"schema_version": "portable-installation-v1", "instance": "telescope-portable-test"}
+    owner["id"] = "a" * 32
+    (root / "installation.json").write_text(json.dumps(owner))
+    data = root / "knowledge" / release.knowledge_id
+    data.mkdir(parents=True)
+    secrets = root / "secrets"
+    secrets.mkdir()
+    (secrets / "openrouter.key").write_text("sk-or-v1-" + "z" * 40)
+    snapshot = root / "downloads" / "database.snapshot"
+    snapshot.parent.mkdir()
+    snapshot_bytes = b"synthetic snapshot"
+    manifest = release.model_dump(mode="json")
+    manifest["assets"]["database"] = {
+        "name": snapshot.name,
+        "bytes": len(snapshot_bytes),
+        "sha256": hashlib.sha256(snapshot_bytes).hexdigest(),
+    }
+    if scenario not in {"present", "code_update"}:
+        snapshot.write_bytes(b"corrupt" if scenario == "bad_snapshot" else snapshot_bytes)
+    version = "v0.1.1" if scenario == "code_update" else "v0.1.0"
+    manifest["version"] = version
+    manifest["images"]["api"]["reference"] = f"telescope-rag-mvp:{version}"
+    release_dir = root / "releases" / version
+    release_dir.mkdir(parents=True)
+    (release_dir / "release.json").write_text(json.dumps(manifest))
+    volume = f"{owner['instance']}-knowledge-{release.knowledge_id[:24]}"
+    state = {
+        "version": "v0.1.0",
+        "knowledge_id": release.knowledge_id,
+        "data_root": str(data),
+        "snapshot": str(snapshot),
+        "volume": volume,
+        "api_image": "telescope-rag-mvp:v0.1.0",
+        "qdrant_image": manifest["images"]["qdrant"]["image_id"],
+        "port": 8123,
+    }
+    state_path = root / "current.json"
+    has_current = scenario not in {"fresh", "collision"}
+    if has_current:
+        state_path.write_text(json.dumps(state))
+    original_state = state_path.read_bytes() if has_current else None
+    fixture = {
+        "installer": str(Path(__file__).resolve().parents[2] / "install-mvp.ps1"),
+        "root": str(root),
+        "version": version,
+        "images": manifest["images"],
+        "volume_present": scenario in {"present", "code_update", "collision"},
+        "restore_failure": scenario == "restore_failure",
+        "log": str(tmp_path / "docker.json"),
+    }
+    fixture_path = tmp_path / "fixture.json"
+    fixture_path.write_text(json.dumps(fixture))
+    runner = tmp_path / "run.ps1"
+    runner.write_text(
+        r"""
+param([string]$FixturePath)
+$ErrorActionPreference='Stop'
+$env:PSModulePath=(Join-Path $PSHOME 'Modules')+[IO.Path]::PathSeparator+$env:PSModulePath
+$fixture=Get-Content -LiteralPath $FixturePath -Raw | ConvertFrom-Json
+$global:recoveryCalls=New-Object Collections.ArrayList
+$global:recoveryVolumePresent=$fixture.volume_present
+function Invoke-WebRequest { throw 'Network forbidden in recovery test' }
+function docker {
+    $command=@($args | ForEach-Object { [string]$_ })
+    [void]$global:recoveryCalls.Add($command)
+    $global:LASTEXITCODE=0
+    if ($command[0] -eq 'inspect') { $global:LASTEXITCODE=1; return }
+    if ($command[0] -eq 'image' -and $command[1] -eq 'inspect') {
+        if ($command[-1] -like 'telescope-rag-mvp:*') { return $fixture.images.api.image_id }
+        return $fixture.images.qdrant.image_id
+    }
+    if ($command[0] -eq 'volume' -and $command[1] -eq 'inspect') {
+        if ($global:recoveryVolumePresent) { return '[{"Name":"synthetic"}]' }
+        $global:LASTEXITCODE=1; return
+    }
+    if ($command[0] -eq 'volume' -and $command[1] -eq 'create') {
+        if ($global:recoveryVolumePresent) { throw 'Existing volume must not be overwritten' }
+        $global:recoveryVolumePresent=$true; return $command[-1]
+    }
+    if ($command[0] -eq 'run') { return }
+    if ($command[0] -eq 'compose') {
+        if (-not $global:recoveryVolumePresent) { throw 'External volume missing' }
+        if ($fixture.restore_failure -and $command -contains 'up' -and
+            $command -contains 'qdrant_restore') { $global:LASTEXITCODE=1 }
+        return
+    }
+    throw 'Unexpected Docker operation'
+}
+$code=0
+try {
+    $parameters=@{Version=$fixture.version;InstallRoot=$fixture.root;Instance='telescope-portable-test'}
+    & $fixture.installer @parameters
+} catch { Write-Output $_.Exception.Message; $code=1 }
+$log=ConvertTo-Json -InputObject @($global:recoveryCalls) -Depth 10
+[IO.File]::WriteAllText($fixture.log, $log)
+exit $code
+""",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        [shell, "-NoProfile", "-File", str(runner), str(fixture_path)],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    calls = json.loads(Path(fixture["log"]).read_text(encoding="utf-8-sig"))
+    creates = [call for call in calls if call[:2] == ["volume", "create"]]
+    restores = [
+        call for call in calls if call[0] == "compose" and "up" in call and "qdrant_restore" in call
+    ]
+    failures = {"collision", "bad_snapshot", "restore_failure"}
+    assert result.returncode == (1 if scenario in failures else 0), result.stdout + result.stderr
+    if scenario in failures:
+        expected_error = {
+            "collision": "A target volume already exists",
+            "bad_snapshot": "Cached asset does not match this release",
+            "restore_failure": "Portable Docker operation failed",
+        }
+        assert expected_error[scenario] in result.stdout
+        assert (state_path.read_bytes() if has_current else None) == original_state
+        assert not any(call[0] == "compose" and "api" in call for call in calls)
+        if scenario != "restore_failure":
+            assert not creates and not restores
+        return
+    actual_state = json.loads(state_path.read_text(encoding="utf-8-sig"))
+    assert actual_state["knowledge_id"] == release.knowledge_id
+    assert actual_state["volume"] == volume
+    assert actual_state["port"] == (8123 if has_current else 8000)
+    assert actual_state["version"] == version
+    assert data.is_dir()
+    if scenario in {"present", "code_update"}:
+        assert not creates and not restores
+        assert not snapshot.exists()  # Code-only reuse must not need a snapshot/download.
+    else:
+        assert len(creates) == len(restores) == 1
+        assert creates[0][-1] == volume
+        restore_check = next(
+            call for call in calls if "verify-db" in call and call[-1] == "restore"
+        )
+        startup = next(call for call in calls if call[0] == "compose" and "api" in call)
+        assert calls.index(creates[0]) < calls.index(restores[0])
+        assert calls.index(restores[0]) < calls.index(restore_check) < calls.index(startup)
+        assert snapshot.read_bytes() == snapshot_bytes
+    assert any("verify-db" in call and call[-1] == "installed" for call in calls)

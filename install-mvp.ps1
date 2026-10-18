@@ -244,6 +244,10 @@ if (Test-Path -LiteralPath $dataRoot) {
 }
 Prepare-Secrets
 $reuse = $current -and $current.knowledge_id -ceq $manifest.knowledge_id
+if ($reuse -and -not (Probe-Docker -Arguments @('volume','inspect',$current.volume))) {
+    Write-Host 'Saved database volume is missing. Restoring the verified release snapshot.'
+    $reuse = $false
+}
 if ($reuse) {
     $volume = $current.volume
     $snapshotFile = $current.snapshot

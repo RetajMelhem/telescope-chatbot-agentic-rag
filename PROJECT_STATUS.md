@@ -2,6 +2,28 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Latest local repair: the saved portable installation record survived but its
+database volume was absent in Docker's `desktop-linux` context. Matching knowledge
+identity alone no longer selects reuse: `install-mvp.ps1` also checks the volume
+exists, otherwise restoring the hash-verified release snapshot into a new volume.
+Existing restore volumes remain protected; no existing volume is overwritten.
+Seven mocked PowerShell 5.1 regression scenarios cover fresh/missing/present
+volumes, code-only reuse without a snapshot, collisions, corrupt snapshots and
+restore failure with preserved installation records. **2,300 full offline tests
+pass**, including **45 portable recovery/PowerShell cases**; Ruff lint/format,
+lockfile validation, PowerShell parsing and Git whitespace checks pass. Host tests
+used `PYTHONPATH=src` to resolve this checkout's non-ASCII editable-package path.
+
+The repaired installer actually restored local v0.1.0 from the intact cached
+snapshot, verified runtime files and the complete database fingerprint both before
+and after API startup, and left API + Qdrant running. UI/live/ready/docs/OpenAPI
+return 200 at `http://127.0.0.1:8000/`; only the API loopback port is published.
+Knowledge identity remains `a16414530c40e991c3b0b506d9b30d2bac3d57587d36aa39759cafaaa56faccb`.
+No model call, embedding, release/image change or remote publication ran.
+**Next:** use the local chatbot; rerun `-Version` (rather than `-Action Start`)
+to recover if a saved installation's database volume is missing again. The fix
+is local source only; the public release/tag has not been changed.
+
 Same-day testing recheck: all 38 recovery/PowerShell tests pass again; current
 955 full IDs/vectors/payloads/configuration and 116 runtime files match the release.
 All six public asset digests/sizes match; UI/live/ready/docs/OpenAPI return 200.

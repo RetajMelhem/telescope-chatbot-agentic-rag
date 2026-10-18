@@ -83,6 +83,16 @@ images or edit manifests. Failed startup leaves the successful state record inta
 and attempts to restart the prior version; a failed initial restore volume is
 retained for diagnosis rather than overwritten automatically.
 
+If Docker loses the installed database volume while the installation directory
+survives (for example, after a Docker reset or switching to an empty Docker context),
+rerun `.\install-mvp.ps1 -Version v0.1.0` using the version you want installed.
+The installer checks that the saved volume actually exists before reusing it.
+A missing volume is recreated from the hash-verified release snapshot and all
+stored points are checked before serving; intact volumes are reused. Existing
+restore volumes are still refused, and failed recovery preserves the successful
+installation record. `-Action Start` requires the existing database volume; use
+`-Version` to recover missing data. Restoration makes no model calls.
+
 For a second remote copy, download all assets plus matching source ZIP/tag and put
 them together in Drive. Keep their original names and SHA256SUMS. A local copy can
 be installed using `-ReleaseDirectory C:\path\to\release-assets`. No Drive
