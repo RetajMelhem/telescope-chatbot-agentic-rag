@@ -2,6 +2,30 @@
 
 Last updated: 2026-10-19 (Asia/Amman).
 
+Latest remaining-502 investigation (2026-10-19): **30/30 diagnostic HTTP requests
+passed, ten per historical error question; zero causes identified or confirmed
+fixed.** Only U10-ar-JO, U15-ar-JO and U19-en were sent. All 90 physical provider
+attempts succeeded with retries disabled. Original container logs contain no
+diagnostic entries for the failed historical IDs. No application change was
+justified by this run; all three failures remain unconfirmed.
+
+The separate loopback diagnostic listener used the original v0.1.0 image, settings,
+source, read-only database and mounted credentials. All 99 application Python files
+match historical Git after LF normalization. Its explicit observer/factory is
+separate from the product; diagnostic results do not prove the historical cause
+or task completeness. The probe was stopped at its 30-request cap. Original
+installation before/after receipts agree, and all 116 source files/955 chunks and
+sealed question/gold/plan hashes verify unchanged. R1 at port 8001 is unchanged.
+
+Evidence: `artifacts/remaining-502-investigation-v1/REPORT.md`, `RESPONSES.md`,
+`FINAL_VERIFICATION.json`, sealed trials and per-request traces. The diagnostic
+helper's current transparent stream observer was verified offline separately
+from the observer revision used in this completed run. **2,428 guarded offline
+tests and full Ruff lint/format pass.** No subagents, release, push or installer
+changes. See [investigation details](docs/NATURAL_EVALUATION_FIXES.md#remaining-502-investigation).
+**Next:** an actual recurrence with a request-correlated R1 failure event is needed
+to reproduce a specific defect, fix its demonstrated cause and verify that fix.
+
 Latest targeted fixes (2026-10-19): **all seven exact problem questions returned
 HTTP 200 and passed provisional AI source review on a separate local candidate**;
 43/43 required facts delivered. No subagents were used, following the user's

@@ -82,3 +82,42 @@ Use the candidate for local review. If a 502 recurs, use its request-correlated
 safe failure event to identify the failing stage before changing validation or
 adding retry behavior. Distribution through the installer requires a separate
 versioned release; no publication is part of this verification.
+
+## Remaining 502 investigation
+
+On 2026-10-19, a separate diagnostic HTTP listener repeated only U10-ar-JO,
+U15-ar-JO and U19-en ten times each. **All 30 returned HTTP 200** and reached
+`draft_ready`; all 90 provider attempts succeeded, with no retries. The three
+original request IDs have no diagnostic details in the original container logs.
+**No root cause was identified or fixed.** Successful repeated samples cannot
+establish why the earlier failures occurred. HTTP success here is not a new
+answer-completeness score.
+
+The diagnostic image extends the original v0.1.0 image with an explicit probe
+factory and observer. All 99 product Python files match historical Git after LF
+normalization. It preserves settings, models, call budgets, source and read-only
+database access; only the exact three configured request payloads are accepted,
+with empty history and a 30-request cap. Each response and local trace was saved.
+The loopback probe was stopped after completing the cap. Before/after preflight
+receipts confirm the original installation is unchanged. All 116 source files,
+955 chunks and sealed question/gold/plan hashes still verify.
+
+The completed probe revision buffered chat bodies and forwarded status and
+content-type, rather than every upstream response header. No failing, malformed
+or oversized response occurred in that run. The checked-in diagnostic helper
+now observes the original stream without replacing response identity, chunks or
+headers; nine offline tests cover scope/cap enforcement, failure preservation,
+header/vector exclusions, malformed/oversized bodies and stream exceptions. This
+observer revision was not substituted into the completed run. These are temporary,
+caller-owned diagnostics, not default product logging or a new public debug API.
+
+`artifacts/remaining-502-investigation-v1/` contains `REPORT.md`, `RESPONSES.md`,
+the raw `trials/` and `captures/`, `trial-index.json` hash bindings, image/source
+identity, original-log check and `FINAL_VERIFICATION.json`. Full guarded offline
+verification: **2,428 tests pass**, with Ruff lint/format passing. No subagents,
+speculative application change, release, tag, installer modification or push ran.
+
+The three errors remain **unconfirmed**. R1's existing content-free
+`chat_workflow_failed` event can identify the stage/code/provider outcome of an
+actual recurrence. Use that specific failure for an offline reproduction and
+targeted correction before claiming a cause was fixed.
