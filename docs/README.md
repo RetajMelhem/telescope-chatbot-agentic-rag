@@ -12,6 +12,7 @@ experiments remain documented for traceability; their dated counts, balances and
 | [Current status](../PROJECT_STATUS.md) | Current result, limits and next action; older entries follow |
 | [Docker runbook](LOCAL_MVP_DOCKER.md) | Existing-installation Start/Stop/Status/Restart and exact prerequisites |
 | [GitHub and handoff](GITHUB_AND_HANDOFF.md) | Code versus excluded data/secrets, containers and new-machine limitations |
+| [Portable MVP](PORTABLE_MVP.md) | Minimal two-container release, saved vectors, installer, updates and rollback |
 | [Local API/host alternative](LOCAL_MVP.md) | API examples, response behavior and alternative host launcher |
 | [Acceptance evidence](LOCAL_MVP_ACCEPTANCE.md) | Checks actually run, failures/fixes, spend observations and unverified areas |
 
@@ -54,6 +55,6 @@ important; no result implies a global retrieval or semantic guarantee.
   provider-injection requirements describe those profiles, not the local
   conversational factory.
 
-Public hosting, a website widget, scheduled refresh, database restoration and
+Public hosting, a website widget, scheduled refresh and
 broad independent quality acceptance remain separate work. The local MVP does
 not need another prerequisite architecture milestone before ordinary use.

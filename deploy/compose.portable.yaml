@@ -1,0 +1,90 @@
+# Standalone release installation. Data is restored into a new external volume.
+services:
+  qdrant:
+    image: ${PORTABLE_QDRANT_IMAGE}
+    pull_policy: never
+    container_name: ${PORTABLE_PROJECT}-qdrant
+    restart: unless-stopped
+    volumes:
+      - knowledge:/qdrant/storage
+      - type: bind
+        source: ${PORTABLE_SECRET_DIR}/qdrant.yaml
+        target: /qdrant/config/production.yaml
+        read_only: true
+        bind: {create_host_path: false}
+    networks:
+      knowledge:
+        aliases: [telescope-m3-qdrant]
+    labels:
+      telescope.installation_id: ${PORTABLE_INSTALLATION_ID}
+  qdrant_restore:
+    profiles: [restore]
+    image: ${PORTABLE_QDRANT_IMAGE}
+    pull_policy: never
+    container_name: ${PORTABLE_PROJECT}-restore
+    command: ["./qdrant", "--storage-snapshot", "/restore/database.snapshot"]
+    volumes:
+      - knowledge:/qdrant/storage
+      - type: bind
+        source: ${PORTABLE_SECRET_DIR}/qdrant.yaml
+        target: /qdrant/config/production.yaml
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${PORTABLE_SNAPSHOT}
+        target: /restore/database.snapshot
+        read_only: true
+        bind: {create_host_path: false}
+    networks: [knowledge]
+    labels:
+      telescope.installation_id: ${PORTABLE_INSTALLATION_ID}
+  api:
+    image: ${PORTABLE_API_IMAGE}
+    pull_policy: never
+    container_name: ${PORTABLE_PROJECT}-api
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 128
+    mem_limit: 1g
+    cpus: 2
+    restart: unless-stopped
+    ports: ["127.0.0.1:${PORTABLE_PORT}:8000"]
+    environment: {APP_ENV: development, LANGSMITH_TRACING: "false"}
+    volumes:
+      - type: bind
+        source: ${PORTABLE_DATA_DIR}
+        target: /runtime
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${PORTABLE_SECRET_DIR}/openrouter.key
+        target: /run/secrets/openrouter_key
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${PORTABLE_SECRET_DIR}/read.key
+        target: /run/secrets/qdrant_read_key
+        read_only: true
+        bind: {create_host_path: false}
+    tmpfs: ["/tmp:size=32m,mode=1777"]
+    networks: [knowledge, egress]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.build_opener(urllib.request.ProxyHandler({})).open('http://127.0.0.1:8000/health/ready', timeout=3).close()"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 4
+    labels:
+      telescope.installation_id: ${PORTABLE_INSTALLATION_ID}
+volumes:
+  knowledge:
+    external: true
+    name: ${PORTABLE_VOLUME}
+networks:
+  knowledge:
+    name: ${PORTABLE_PROJECT}-knowledge
+    internal: true
+  egress:
+    name: ${PORTABLE_PROJECT}-egress

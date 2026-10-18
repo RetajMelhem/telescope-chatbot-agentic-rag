@@ -1,5 +1,9 @@
 # Run the local Docker MVP
 
+For a new computer, use [the portable installer](PORTABLE_MVP.md). It runs only
+API and Qdrant from Release assets. This guide describes the preserved older
+development installation, whose Nginx gateway supports host tools/dashboard access.
+
 On the existing prepared computer, open Docker Desktop in Linux-container mode,
 then run from PowerShell:
 
@@ -104,8 +108,9 @@ Desktop, the selected port and prerequisites if startup fails; do not recreate
 Qdrant or change source digests to bypass failures. Stop the API, restore the
 intended reviewed resources/image and start again. The host launcher is a fallback.
 
-Database backup/restore, new-machine data transfer, HTTPS, public hosting, source
-refresh and website integration remain separate. See [acceptance](LOCAL_MVP_ACCEPTANCE.md).
+Portable data/snapshot transfer is covered by [the release runbook](PORTABLE_MVP.md).
+HTTPS, public hosting, source refresh and website integration remain separate.
+See [acceptance](LOCAL_MVP_ACCEPTANCE.md).
 
 Implementation references: [FastAPI containers](https://fastapi.tiangolo.com/deployment/docker/),
 [uv Docker](https://docs.astral.sh/uv/guides/integration/docker/) and

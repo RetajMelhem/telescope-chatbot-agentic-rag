@@ -21,7 +21,7 @@ running installation also depends on excluded resources and credentials.
 `deploy/local-mvp.env` is a tracked, nonsecret interpolation file. It is distinct
 from the ignored project `.env`, which contains the real provider credential.
 
-## What stays outside GitHub and the API image
+## What stays outside Git history and the API image
 
 | Local resource | Current location / handling |
 | --- | --- |
@@ -38,8 +38,10 @@ from the ignored project `.env`, which contains the real provider credential.
 
 The complete required runtime paths are listed in
 [the Docker runbook](LOCAL_MVP_DOCKER.md#required-local-resources).
-Do not force-add ignored resources to make a clone appear runnable. Public origin
-does not change this repository's rule excluding collected content from Git.
+Do not force-add ignored resources. The user authorized the required public website
+knowledge, tokenizer/license and native database snapshot as versioned GitHub
+Release downloads. They remain excluded from Git history and the API image.
+See [portable installation](PORTABLE_MVP.md) for the minimal asset inventory.
 
 ## What publishing the code means
 
@@ -84,13 +86,15 @@ See [the runbook](LOCAL_MVP_DOCKER.md) for Status, Restart and alternative ports
 
 ## Another computer
 
-A clone alone is incomplete. It needs compatible Docker/host tooling, the exact
-reviewed files/tokenizer/plans, separately supplied credentials, and a restored
-compatible Qdrant database plus the required fixed container/network names.
-The checked-in gateway Compose file creates the gateway, not the database.
-The API launcher requires the database/gateway containers to exist already.
+Use [the portable installer](PORTABLE_MVP.md). Matching GitHub Release assets
+provide the prepared knowledge, exact tokenizer and native Qdrant snapshot, plus
+ready-built API and database images. The installer runs only those two containers;
+it generates database keys and requires a separately supplied OpenRouter key.
+It does not parse, chunk or re-embed the corpus. Code-only updates reuse the
+knowledge and database; data updates use new volumes, preserving the old copy.
 
-There is no verified clean-machine provisioning or database backup/restore
-procedure in this MVP. Preserve the current volume and source provenance. A
-separate tested data-transfer/restore package is needed before claiming portable
-installation. Do not rerun paid corpus embedding to compensate for missing files.
+A clone still needs those Release assets and your key. Raw crawls, old audits,
+test caches, environments and model weights are excluded. The native snapshot and
+images live outside Git history. An optional Drive copy of the complete release
+assets and matching source provides another remote copy. Verification/publication
+status is recorded in `PROJECT_STATUS.md`; do not infer it from these instructions.

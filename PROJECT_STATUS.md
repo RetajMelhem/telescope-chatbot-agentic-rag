@@ -2,6 +2,18 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Portable-release preparation (2026-10-18): user approved GitHub code + public
+Release assets, with secrets separate. New installer/manifest/archive validation
+and capture tooling use only API + Qdrant; Nginx is unnecessary for direct
+container reads and is excluded, while existing development containers stay
+unchanged. Minimal runtime inventory is 116 files / 68,870,239 uncompressed bytes,
+excluding old bundles/raw/audits/model weights and 90 cached test queries. Empty
+query cache is created for the existing adapter. Code-only updates retain a
+knowledge identity and volume; data changes restore into a new volume. 32 focused
+offline tests and the full 2,287-test suite pass; Ruff and Compose/PowerShell parse
+checks pass. Native snapshot capture, isolated cold restore, update/rollback and
+remote publication are next and not yet claimed verified. No model call ran.
+
 Documentation review: the README, scope, architecture, pipeline, provider/API
 contracts, roadmap and deployment guides now distinguish the current local MVP
 from earlier experiments and future production work. `docs/README.md` maps the

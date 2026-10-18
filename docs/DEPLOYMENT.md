@@ -1,5 +1,9 @@
 # Local Docker deployment and production design
 
+The [portable release](PORTABLE_MVP.md) adds an isolated API/Qdrant installation
+with saved corpus vectors and no Nginx gateway. The existing development runtime
+below remains unchanged. Check current restore verification in `PROJECT_STATUS.md`.
+
 The local API image/Compose/launcher are now implemented and verified; use
 [LOCAL_MVP_DOCKER.md](LOCAL_MVP_DOCKER.md). They reuse the existing reviewed database
 and mount required data/tokenizer/secrets read-only. The broader production design
@@ -11,7 +15,7 @@ application and production acceptance remain separate; earlier checkpoints below
 describe their original scope.
 
 Status: bounded local API packaging is delivered. Full M6 production deployment,
-ingestion-service packaging, backup/restore and public hosting remain separate.
+ingestion-service packaging and public hosting remain separate.
 The local M3 Qdrant gateway remains unchanged; no index is published by this delivery.
 
 ## Current runtime
@@ -48,7 +52,8 @@ Both containers now use `unless-stopped`. The authenticated checker and its expl
 ## Future production services
 
 The following is a broader design, not an alternative command to run the local
-MVP. Ingestion/TLS profiles and clean-machine database provisioning are not delivered.
+MVP. Ingestion/TLS profiles are not delivered; the portable installer provisions
+the fixed local snapshot only.
 
 | Service | Responsibility and exposure |
 | --- | --- |

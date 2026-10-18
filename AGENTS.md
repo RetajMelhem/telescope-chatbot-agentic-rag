@@ -44,6 +44,13 @@ Before substantive work, read [PROJECT_STATUS.md](PROJECT_STATUS.md) to learn th
 
 ## Where work belongs
 
+The user authorized public website knowledge/tokenizer and the existing Qdrant
+snapshot as GitHub Release assets for portable installation. Keep them out of Git
+history and the API image; secrets stay private. The portable product uses API
+and Qdrant only, excluding the development Nginx gateway, historical experiments,
+raw crawls and test query cache. See `docs/PORTABLE_MVP.md`. Preserve the existing
+development containers/volume; recovery tests use a separate owned installation.
+
 The explicit local Docker factory is `telescope_rag.api.container:create_container_app`.
 Use `run-mvp.ps1` and `docs/LOCAL_MVP_DOCKER.md` for local Start/Stop/Restart. It
 mounts reviewed data and file secrets, uses only the fixed existing Qdrant DNS

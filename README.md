@@ -6,6 +6,17 @@ It accepts English, Arabic and everyday Jordanian Arabic questions.
 
 ## Run the local MVP
 
+For another Windows computer, use the versioned [portable installation](docs/PORTABLE_MVP.md):
+
+```powershell
+.\install-mvp.ps1 -Version v0.1.0
+```
+
+It downloads the reviewed data, existing Qdrant vectors and two ready-built images
+from the matching GitHub Release. No corpus parsing/chunking/embedding is required.
+Supply your own OpenRouter key for new questions. Release/restore verification is
+recorded in [project status](PROJECT_STATUS.md).
+
 On the existing prepared computer, open Docker Desktop, then run in PowerShell:
 
 ```powershell
@@ -33,6 +44,10 @@ with current mounted resources/secrets. Stop leaves the database intact.
 
 ## What Docker runs
 
+The portable distribution runs only **API + Qdrant**. Nginx is excluded because
+the API reads Qdrant directly. The table below describes the older development
+installation, which is preserved:
+
 | Container | Current responsibility | Host access |
 | --- | --- | --- |
 | `telescope-local-mvp-api` | Python/FastAPI, browser UI, LangGraph, prompts, retrieval and OpenRouter adapters | `127.0.0.1:8000` |
@@ -53,10 +68,9 @@ collected pages/chunks, embeddings, database storage, tokenizer, local environme
 and generated audit results remain excluded. Docker images/volumes are separate
 from the Git repository. See [GitHub and handoff](docs/GITHUB_AND_HANDOFF.md).
 
-**A fresh clone cannot run the chatbot by itself.** The current launcher requires
-the existing reviewed resources, keys, Qdrant container/volume and networks. It
-does not provision a new database or recreate the reviewed corpus. New-machine
-transfer and database restoration remain unverified.
+**A fresh clone alone does not contain the knowledge/database.** The portable
+installer supplies those through versioned Release assets, while keys remain
+private. Historical raw crawls/audits and cached test queries are excluded.
 
 ## Answer behavior
 
@@ -91,6 +105,7 @@ returns unavailable; use the explicit local launcher above.
 
 - [Documentation map: current guides and historical experiments](docs/README.md)
 - [Docker startup](docs/LOCAL_MVP_DOCKER.md) and [GitHub/handoff](docs/GITHUB_AND_HANDOFF.md)
+- [Portable installation, data assets and updates](docs/PORTABLE_MVP.md)
 - [Project scope](docs/PROJECT_SPECIFICATION.md)
 - [Architecture](docs/ARCHITECTURE.md) and [pipeline](docs/PIPELINE.md)
 - [Provider contracts](docs/PROVIDERS.md)
