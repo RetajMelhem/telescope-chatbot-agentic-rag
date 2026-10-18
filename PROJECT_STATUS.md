@@ -2,35 +2,56 @@
 
 Last updated: 2026-10-19 (Asia/Amman).
 
-Latest evaluation: **installed v0.1.0 HTTP runner prepared and live run in progress**
-(2026-10-19). The user selected `install-mvp.ps1 -Version v0.1.0`, then confirmed
-installation/key setup. The evaluator uses the installed Docker factory over real
-HTTP at the saved loopback port; it never reads the installer API key or constructs
-a second host app. Exact release/image/configuration/ownership/mount/network
-checks and readiness/OpenAPI GETs passed before inference. No runtime, prompt,
-retrieval, corpus, installer or dependency change was made.
+Latest evaluation: **all 50 approved questions completed once against the installed
+v0.1.0 HTTP API** (2026-10-19). The user selected `install-mvp.ps1 -Version v0.1.0`
+and confirmed installation/key setup. Exact release/images/command/configuration,
+mount/port/network/owner checks and readiness/OpenAPI passed. The first batch
+stopped at 19; the user explicitly authorized the 31 unsent questions, preserving
+per-case failures. Parent/scorer/runtime/hash checks prevented repeats; both
+batches' identities agree. No app, prompt, retrieval, corpus, installer, image,
+release tag, key or dependency was changed.
 
-`artifacts/natural-evaluation-50-v3/` seals the unchanged 50 approved requests and
-v2 gold (50 minimum facts/groups, 470 witnesses, 299 chunks), code hashes and
-released knowledge/image identities. Earlier ASGI v1/v2 plans remain historical.
-The installed runner captures responses/HTTP latency, keeps internal retrieval,
-writer context, tokens/cost and actual-context faithfulness unavailable, binds
-before/HTTP/after receipts, and stops on failed requests without retries. Cited
-witness coverage is not retrieval recall. See `docs/NATURAL_EVALUATION_50.md`.
+**47/50 HTTP 200, 3 HTTP 502; 43/50 complete-question passes in provisional offline
+AI source review.** Arabic 22/25 and English 21/25 task passes. HTTP failures:
+U10-ar-JO (parking), U15-ar-JO (eye doctors), U19-en (cataracts), each generic
+`offline_draft_failed`; hidden cause is unavailable. Incomplete lists:
+U06-ar-JO 6/11 staff, U06-en 4/11 staff, U15-en 6/8 eye doctors. U24-en abstained
+although the three specialty categories are supported. Both price cases safely
+acknowledged missing information without inventing an amount. Seven exact problem
+requests are preserved for post-fix verification; no fixes/reruns have occurred.
 
-**2,399 full guarded offline tests pass**, with 257 focused evaluation cases
-passing again after preparation metadata cleanup; Ruff lint/format pass.
-Evidence: `artifacts/natural-questions-50-source-v1/portable-http-offline-suite.xml`
-and `portable-http-evaluation-final.xml`. The actual read-only installed preflight
-passed at `artifacts/natural-evaluation-50-installed-preflight-v1/`.
+Macro answer fact recall 94.80% over 45 reviewed answerable responses; 73/90 facts
+in reviewed responses and 73/100 delivered over the entire cohort. Median/p95 HTTP
+latency 8.26/12.75 seconds. Returned factual claims/citations passed provisional
+source checks; this is not independent human validation. Internal retrieval,
+actual writer context/faithfulness, usage and cost remain unavailable; cited known
+witness coverage 79.24% is not retrieval recall. Raw scorer `human` fields are
+explicitly identified as AI-review rubric results. These 25 paired intents are not
+production acceptance or 50 independent observations.
 
-The authorized live run is `artifacts/natural-evaluation-50-installed-run-v1/`,
-50 serial questions, one attempt each, no extra provider judge, no fallback or
-automatic replay. Execution is in progress; no quality result is claimed yet.
-Call/deadline bounds are not a hard USD cap. Offline AI source review, if used,
-will be labeled provisional and does not establish independent human validation.
-**Next:** finish the run, verify unchanged runtime receipts, score returned
-citations/latency/failures and complete the source-based response review.
+Frozen inputs: `artifacts/natural-evaluation-50-v3/` (unchanged approved requests,
+v2 gold, 50 minimum facts/groups, 470 witnesses, 299 chunks; all 116 source files
+verified).
+Raw first batch: `artifacts/natural-evaluation-50-installed-run-v1/`.
+Continuation and assembled cohort:
+`artifacts/natural-evaluation-50-installed-continuation-v1/combined/`, containing
+`REPORT.md`, `RESPONSES.md`, `PROBLEMS.md`, `problem-cases.json`, seven request-only
+`rerun-requests.jsonl`, exact case JSON, both batches' receipts/provenance and
+`FINAL_VERIFICATION.json`. Score:
+`artifacts/natural-evaluation-50-installed-final-score-v1/`. Original case bytes
+and source/gold/question bindings remain intact. No evaluator credential read,
+extra provider judge request, database write or remote publication ran.
+
+**2,399 full guarded offline tests passed** before the continuation helper; all
+268 evaluation tests (including 11 new continuation cases) then passed. Ruff
+lint/format, secret-pattern/scope checks and local links pass. Evidence lives
+under `artifacts/natural-questions-50-source-v1/`. The separate continuation
+helper pins its own hash without changing sealed evaluation module bytes.
+See `docs/NATURAL_EVALUATION_50.md` for commands and limits.
+**Next agreed workflow:** diagnose/fix observed problems, then rerun each of the
+seven exact problem questions against an identified candidate, preserve this
+v0.1.0 baseline, and compare outcomes/citations/completeness/latency. Use subagents
+sparingly; the user asked to conserve their limit.
 
 Earlier evaluation preparation: **50 everyday questions drafted for user review,
 not approved for execution**. `docs/NATURAL_QUESTIONS_50_DRAFT.md` contains 25
