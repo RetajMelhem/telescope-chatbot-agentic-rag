@@ -15,7 +15,7 @@ $interpolation = Join-Path $PSScriptRoot 'deploy/local-mvp.env'
 $root = [IO.Path]::GetFullPath($InstallRoot)
 $baseUrl = "https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/download/$Version/"
 function Run-Docker {
-    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
+    param([string[]]$Arguments)
     & docker @Arguments
     if ($LASTEXITCODE -ne 0) { throw 'Portable Docker operation failed. Existing knowledge is preserved.' }
 }
@@ -71,10 +71,10 @@ function Ensure-Image([string]$Category) {
     if ($reference -cne $allowed -or $image.image_id -cnotmatch '^sha256:[0-9a-f]{64}$') { throw 'Release image binding is invalid.' }
     # Docker save/load need not preserve repository digests; the image ID is exact.
     $probe = if ($Category -eq 'qdrant') { $image.image_id } else { $reference }
-    $actual = Probe-Docker @('image','inspect','--format','{{.Id}}',$probe)
+    $actual = Probe-Docker -Arguments @('image','inspect','--format','{{.Id}}',$probe)
     if ($actual -ceq $image.image_id) { return }
     $file = Asset-File $manifest.assets.$Category
-    Run-Docker @('image','load','--input',$file)
+    Run-Docker -Arguments @('image','load','--input',$file)
     $actual = & docker image inspect --format '{{.Id}}' $probe
     if ($LASTEXITCODE -ne 0 -or $actual -cne $image.image_id) { throw 'Loaded image differs from the release.' }
 }
@@ -138,8 +138,8 @@ function Compose-Settings($State) {
     foreach ($pair in $values.GetEnumerator()) { [Environment]::SetEnvironmentVariable($pair.Key, $pair.Value, 'Process') }
 }
 function Compose {
-    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
-    Run-Docker (@('compose','--env-file',$interpolation,'-f',$compose,'--project-name',$Instance) + $Arguments)
+    param([string[]]$Arguments)
+    Run-Docker -Arguments (@('compose','--env-file',$interpolation,'-f',$compose,'--project-name',$Instance) + $Arguments)
 }
 function Helper([string]$Operation, [string]$Data, [string]$Target='installed', [string]$Archive='') {
     $argsList = @('run','--rm','--read-only','--user','10001:10001')
@@ -151,14 +151,14 @@ function Helper([string]$Operation, [string]$Data, [string]$Target='installed', 
     $argsList += @('--entrypoint','python',$manifest.images.api.reference,'-m','telescope_rag.operations.release',$Operation,'--manifest','/input/release.json','--root','/runtime')
     if ($Archive) { $argsList += @('--archive','/input/knowledge.zip') }
     if ($Operation -eq 'verify-db') { $argsList += @('--target',$Target) }
-    Run-Docker $argsList
+    Run-Docker -Arguments $argsList
 }
 function Start-State($State) {
     Compose-Settings $State
-    Compose @('up','-d','--force-recreate','--wait','--wait-timeout','100','qdrant','api')
+    Compose -Arguments @('up','-d','--force-recreate','--wait','--wait-timeout','100','qdrant','api')
 }
 function Probe-Docker {
-    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
+    param([string[]]$Arguments)
     $saved = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
@@ -181,7 +181,7 @@ $owner = Read-Json $ownerPath
 if ($owner.schema_version -ne 'portable-installation-v1' -or $owner.instance -cne $Instance -or $owner.id -cnotmatch '^[0-9a-f]{32}$') { throw 'Installation identity mismatch.' }
 Private-Directory $root
 foreach ($name in @('api','qdrant','restore')) {
-    $existing = Probe-Docker @('inspect',"$Instance-$name")
+    $existing = Probe-Docker -Arguments @('inspect',"$Instance-$name")
     if ($existing) {
         $container = ($existing | ConvertFrom-Json)[0]
         if ($container.Config.Labels.'telescope.installation_id' -cne $owner.id) { throw 'Container belongs to another installation.' }
@@ -202,8 +202,8 @@ if ($Action -ne 'Install') {
         Compose-Settings $current
         switch ($Action) {
             'Start' { Start-State $current }
-            'Stop' { Compose @('stop','api','qdrant') }
-            'Status' { Compose @('ps') }
+            'Stop' { Compose -Arguments @('stop','api','qdrant') }
+            'Status' { Compose -Arguments @('ps') }
         }
     }
     return
@@ -244,18 +244,18 @@ if ($reuse) {
 } else {
     $snapshotFile = Asset-File $manifest.assets.database
     $volume = "$Instance-knowledge-$($manifest.knowledge_id.Substring(0,24))"
-    $existingVolume = Probe-Docker @('volume','inspect',$volume)
+    $existingVolume = Probe-Docker -Arguments @('volume','inspect',$volume)
     if ($existingVolume) { throw 'A target volume already exists. Refusing to restore over it.' }
-    Run-Docker @('volume','create','--label',"telescope.installation_id=$($owner.id)",'--label',"telescope.knowledge_id=$($manifest.knowledge_id)",$volume)
+    Run-Docker -Arguments @('volume','create','--label',"telescope.installation_id=$($owner.id)",'--label',"telescope.knowledge_id=$($manifest.knowledge_id)",$volume)
 }
 if ($current -and -not $PSBoundParameters.ContainsKey('Port')) { $Port = $current.port }
 $next = [PSCustomObject]@{version=$Version;knowledge_id=$manifest.knowledge_id;data_root=$dataRoot;snapshot=$snapshotFile;volume=$volume;api_image=$manifest.images.api.reference;qdrant_image=$manifest.images.qdrant.image_id;port=$Port}
 Compose-Settings $next
 if (-not $reuse) {
-    Compose @('--profile','restore','up','-d','qdrant_restore')
+    Compose -Arguments @('--profile','restore','up','-d','qdrant_restore')
     Helper 'verify-db' $dataRoot 'restore'
-    Compose @('--profile','restore','stop','qdrant_restore')
-    Compose @('--profile','restore','rm','-f','qdrant_restore')
+    Compose -Arguments @('--profile','restore','stop','qdrant_restore')
+    Compose -Arguments @('--profile','restore','rm','-f','qdrant_restore')
 }
 try {
     Start-State $next
