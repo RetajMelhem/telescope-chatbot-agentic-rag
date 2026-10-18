@@ -2,6 +2,24 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Latest evaluation preparation: **50 everyday questions drafted for user review,
+not approved for execution**. `docs/NATURAL_QUESTIONS_50_DRAFT.md` contains 25
+Jordanian Arabic / English intent pairs; request-only JSONL is in
+`tests/fixtures/evaluation/natural_questions_50_v1/requests.jsonl`. The first six
+intents follow the user's examples. These are plausible authored user questions,
+not actual traffic or an independent statistical holdout. Inspection of the public
+v0.1.0 knowledge asset verified its SHA256 and all 116 runtime file hashes/sizes,
+then found source support for 24 intents / 48 questions. The remaining price pair
+has no documented exact amount in the reviewed knowledge and expects explicit
+uncertainty; price-estimate context cannot establish an amount. Source receipts
+and the 107-document / 955-chunk bundle stay under ignored
+`artifacts/natural-questions-50-source-v1/`. Offline checks pass for exact language
+and pair counts, request-only fields, table/JSONL correspondence, 116 selected
+source-passage bindings and 39 local links; `draft-verification.json` records them.
+No application/prompt/index change, bot query, provider call, database operation,
+Docker action or remote publication ran. **Next:** user reviews the questions;
+then finalize source-based answer rubrics before any separately authorized run.
+
 Latest installer entry point: **`install-mvp.cmd` avoids the downloaded unsigned
 PowerShell script block without changing saved execution policy**. With no
 arguments it runs the existing installer for v0.1.0 and pauses to display the
