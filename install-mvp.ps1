@@ -145,7 +145,9 @@ function Helper([string]$Operation, [string]$Data, [string]$Target='installed', 
     $argsList = @('run','--rm','--read-only','--user','10001:10001')
     $argsList += @('--network', $(if ($Operation -eq 'verify-db') { "$Instance-knowledge" } else { 'none' }))
     $argsList += @('--mount',"type=bind,source=$manifestPath,target=/input/release.json,readonly")
-    $argsList += @('--mount',"type=bind,source=$Data,target=/runtime" + $(if ($Operation -eq 'extract') { '' } else { ',readonly' }))
+    $dataMount = "type=bind,source=$Data,target=/runtime"
+    if ($Operation -ne 'extract') { $dataMount += ',readonly' }
+    $argsList += @('--mount',$dataMount)
     if ($Operation -eq 'verify-db') { $argsList += @('--mount',"type=bind,source=$secretDir/read.key,target=/run/secrets/qdrant_read_key,readonly") }
     if ($Archive) { $argsList += @('--mount',"type=bind,source=$Archive,target=/input/knowledge.zip,readonly") }
     $argsList += @('--entrypoint','python',$manifest.images.api.reference,'-m','telescope_rag.operations.release',$Operation,'--manifest','/input/release.json','--root','/runtime')

@@ -3,7 +3,9 @@
 import hashlib
 import io
 import json
+import shutil
 import stat
+import subprocess
 import tarfile
 import zipfile
 from contextlib import nullcontext
@@ -282,3 +284,38 @@ def test_database_checks_all_payloads_vectors_and_pages(monkeypatch):
 def test_restore_reader_cannot_fetch_arbitrary_targets_or_write_routes(base, route):
     with pytest.raises(ValueError, match="refused"):
         r.request_json(base, route, "synthetic")
+
+
+@pytest.mark.parametrize("action", ["extract", "verify-files", "verify-db"])
+def test_windows_installer_keeps_mounts_as_single_docker_arguments(action):
+    shell = shutil.which("powershell.exe")
+    if shell is None:
+        pytest.skip("Windows PowerShell compatibility case")
+    script = r"""
+$source=Join-Path $PWD 'install-mvp.ps1'
+$ast=[Management.Automation.Language.Parser]::ParseFile($source,[ref]$null,[ref]$null)
+$definition=$ast.FindAll({param($node)
+    $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Helper'
+},$false)[0]
+Invoke-Expression $definition.Extent.Text
+$manifestPath='C:\release dir\release.json'
+$Instance='telescope-portable-test'
+$secretDir='C:\private dir'
+$manifest=[PSCustomObject]@{images=[PSCustomObject]@{api=[PSCustomObject]@{reference='telescope-rag-mvp:v0.1.0'}}}
+function Run-Docker { param([string[]]$Arguments) ConvertTo-Json -InputObject $Arguments -Compress }
+Helper -Operation 'ACTION' -Data 'C:\data dir' -Target 'installed'
+""".replace("ACTION", action)
+    result = subprocess.run(
+        [shell, "-NoProfile", "-Command", script],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+    arguments = json.loads(result.stdout)
+    mount = arguments[arguments.index("--mount", arguments.index("--mount") + 1) + 1]
+    assert mount == "type=bind,source=C:\\data dir,target=/runtime" + (
+        "" if action == "extract" else ",readonly"
+    )
+    assert arguments[arguments.index("--entrypoint") + 2] == "telescope-rag-mvp:v0.1.0"
+    assert ",readonly" not in arguments
