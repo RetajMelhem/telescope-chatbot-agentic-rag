@@ -2,6 +2,34 @@
 
 Last updated: 2026-10-19 (Asia/Amman).
 
+Latest offline remeasurement (2026-10-19): **zero new bot/provider/judge requests**.
+Recomputed the original full-50 baseline from saved raw replies and case-bound
+provisional AI reviews; every per-case score and original aggregate matched.
+Built a separately labeled saved-answer view: **43 baseline replies carried
+forward plus all seven existing R1 rerun replies**, with one fixed selection per
+question. The 30 diagnostic repeats are excluded. This is not a fresh full-50 R1
+test; those 43 carried cases have no R1 regression observation.
+
+Original versus updated selection: complete questions **43/50 -> 50/50**; required
+answer facts **73/100 -> 100/100**; reviewed correct claims **86/86 -> 115/115**;
+saved HTTP 200 **47/50 -> 50/50**. Arabic **22/25 -> 25/25**, English **21/25 ->
+25/25**; missing-price handling remains **2/2**. Reviews are reused provisional AI
+judgments, not independent human validation. Retrieval recall/precision, actual
+writer-context faithfulness, usage and cost remain unavailable for these full HTTP
+cohorts. Historical 502 causes remain unconfirmed.
+
+All 57 input case hashes, review bindings, frozen plan/gold/questions, candidate
+receipt and all 116 source files/955 chunks verified. Network/subprocess dispatch
+was denied during analysis, with zero attempts. Original data, reviews, scores,
+application and installer remain unchanged. New local artifacts:
+`artifacts/natural-evaluation-50-offline-remeasurement-v1/REPORT.md`, all 50 selected
+answers, per-question comparison, summary, selection and provenance. See
+[metric definitions and limits](docs/NATURAL_EVALUATION_50.md#offline-remeasurement-of-saved-responses).
+Verification: **49 focused offline scoring tests**, full Ruff lint/format and
+75 local document link targets pass; all selected copies and input hashes verify.
+**Next:** review the saved-answer report; current R1 performance on the remaining
+43 questions is unmeasured. No further requests are authorized by this analysis.
+
 Latest remaining-502 investigation (2026-10-19): **30/30 diagnostic HTTP requests
 passed, ten per historical error question; zero causes identified or confirmed
 fixed.** Only U10-ar-JO, U15-ar-JO and U19-en were sent. All 90 physical provider

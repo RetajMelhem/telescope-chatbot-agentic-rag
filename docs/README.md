@@ -33,6 +33,9 @@ experiments remain documented for traceability; their dated counts, balances and
   English pairs; installed v0.1.0 HTTP execution, source review and metric limits.
 - [Targeted diagnosis and fixes](NATURAL_EVALUATION_FIXES.md): seven problem cases,
   preserved baseline, local candidate verification and unconfirmed historical 502 causes.
+- [Offline saved-answer remeasurement](NATURAL_EVALUATION_50.md#offline-remeasurement-of-saved-responses):
+  original 50-case scores versus 43 carried baseline replies plus seven saved R1
+  replies; zero new requests, with mixed-version and review limits explicit.
 
 These documents may retain dated development sections. Current local serving is
 the explicit Docker/host factory; the default `api.main:create_app` still fails

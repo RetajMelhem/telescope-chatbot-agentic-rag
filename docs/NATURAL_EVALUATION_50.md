@@ -11,6 +11,57 @@ Jordanian Arabic / English pairs, including two exact-price questions. Preparati
 is offline. The user confirmed installation and key setup on 2026-10-19;
 see [current status](../PROJECT_STATUS.md) for the actual run result.
 
+## Offline remeasurement of saved responses
+
+On 2026-10-19 the user requested remeasurement without new requests. The original
+50 saved replies were rescored using the unchanged evaluator/gold and their
+existing case-bound provisional AI reviews. Original per-case scores and the
+aggregate matched the saved baseline exactly. No endpoint, provider judge,
+credential, current runtime or database was queried.
+
+A separate **updated saved-answer view** carries forward 43 original baseline
+replies and uses the seven existing R1 HTTP rerun replies for the seven previously
+identified problem cases. The entire fixed seven-case rerun is used once per
+question; the 30 original-code diagnostic repeats are excluded. This is not a
+fresh full-50 R1 evaluation, and the carried 43 cases have not been checked for
+regressions on R1.
+
+| Metric | Original baseline | Updated saved-answer view |
+| --- | --- | --- |
+| Complete-question success | 43/50 (86%) | 50/50 (100%) |
+| Arabic / English complete questions | 22/25 / 21/25 | 25/25 / 25/25 |
+| Required answer facts delivered, micro recall | 73/100 (73%) | 100/100 (100%) |
+| Macro fact recall, all 48 answerable questions, failed HTTP = zero | 88.87% | 100% |
+| Correct reviewed claims, micro precision | 86/86 | 115/115 |
+| Claims supported by cited sources | 86/86 | 115/115 |
+| Missing-price handling | 2/2 | 2/2 |
+| Saved HTTP 200 responses | 47/50 | 50/50 |
+
+All semantic judgments are reused **provisional AI reviews**, not independent
+human validation. The two missing-price cases have no positive amount in the
+gold and are excluded from positive-fact recall. Fact recall and claim precision
+use different units; no F1 is derived by combining them. Retrieval recall and
+precision, ranking metrics, actual-context faithfulness, provider usage and cost
+remain unavailable for these complete HTTP cohorts. Cited known-witness coverage
+(79.24% original / 81.25% updated) is a separate citation-overlap observation,
+not retrieval recall or a substitute for answer completeness.
+
+Original saved median/p95 latency is 8.26/12.75 seconds. The updated selection is
+8.32/12.30 seconds, spanning two versions and different requests; it is not a
+current R1 latency benchmark or proof of a speed improvement. These same 25 paired
+intents guided fixes, so this is not independent holdout or production acceptance.
+The three historical 502 causes remain unconfirmed.
+
+Evidence is in `artifacts/natural-evaluation-50-offline-remeasurement-v1/`:
+`REPORT.md`, `RESPONSES.md`, `CASE_RESULTS.md`, both per-case score files,
+`summary.json`, all 50 selected raw replies, exact origin/review hashes in
+`selection.json`, and `provenance.json` with the offline analysis source. All 57
+input case hashes and their reviews, frozen question/gold/plan seals, candidate
+receipt, 116 source files and 955 chunks verified. Network/subprocess dispatch
+was denied during analysis, with zero attempts. Original artifacts remain intact.
+Verification also passed 49 focused offline scoring tests, full Ruff lint/format
+and 75 local document link targets; all selected copies match their source bytes.
+
 ## Prepared package
 
 The current package is `artifacts/natural-evaluation-50-v3/`:
