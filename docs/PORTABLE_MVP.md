@@ -122,5 +122,11 @@ asset set; keep generated files outside Git history. Each asset is below GitHub'
 2 GiB limit. See [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
 and [Qdrant snapshots](https://qdrant.tech/documentation/snapshots/) for format/hosting limits.
 
-The recovery evidence for this version is recorded in `PROJECT_STATUS.md`.
+Verified on Windows PowerShell 5.1 and Docker Desktop Linux amd64: image save/load,
+restore into a new volume, exact comparison of all 955 IDs/vectors/payloads and
+configuration, 116 runtime files, source/tokenizer/plan loading, five HTTP endpoints,
+read-only permissions, synthetic code-only reuse and rollback. All 2,293 offline
+tests pass. The test used an isolated installation on the existing machine;
+a different physical machine and other platforms remain unverified. No model call
+ran during these recovery checks. Details are recorded in `PROJECT_STATUS.md`.
 Restore equivalence does not establish new answer-quality or production acceptance.

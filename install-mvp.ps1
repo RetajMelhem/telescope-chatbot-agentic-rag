@@ -91,7 +91,11 @@ function Private-Directory([string]$Path) {
         $rule = New-Object Security.AccessControl.FileSystemAccessRule($id, 'FullControl', $inheritance, 'None', 'Allow')
         $acl.AddAccessRule($rule)
     }
-    Set-Acl -LiteralPath $Path -AclObject $acl
+    # Set only the DACL. PowerShell 5's Set-Acl can request audit privileges on
+    # repeat installation even though no audit/owner change was requested.
+    $directory = New-Object IO.DirectoryInfo($Path)
+    if ($PSVersionTable.PSEdition -eq 'Desktop') { $directory.SetAccessControl($acl) }
+    else { [IO.FileSystemAclExtensions]::SetAccessControl($directory, $acl) }
 }
 function New-Key {
     $bytes = New-Object byte[] 32

@@ -2,23 +2,39 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
-Portable-release preparation (2026-10-18): user approved GitHub code + public
-Release assets, with secrets separate. New installer/manifest/archive validation
-and capture tooling use only API + Qdrant; Nginx is unnecessary for direct
-container reads and is excluded, while existing development containers stay
-unchanged. Minimal runtime inventory is 116 files / 68,870,239 uncompressed bytes,
-excluding old bundles/raw/audits/model weights and 90 cached test queries. Empty
-query cache is created for the existing adapter. Code-only updates retain a
-knowledge identity and volume; data changes restore into a new volume. 32 focused
-offline tests and the full 2,287-test suite pass; Ruff and Compose/PowerShell parse
-checks pass. Native snapshot capture, isolated cold restore, update/rollback and
-remote publication are next and not yet claimed verified. No model call ran.
+Portable MVP recovery verified locally (2026-10-18); remote publication is next.
+The user authorized GitHub code plus public Release assets, with secrets separate.
+The product uses **two containers: API + Qdrant**. Nginx is excluded because the
+API reads Qdrant directly; existing development containers/volume remain unchanged.
+The release contains 116 required files (68,870,239 uncompressed bytes), a native
+snapshot and two ready-built images, about 188 MiB total compressed. Raw crawls,
+old audits/bundles, model weights and 90 cached test queries are excluded. Source
+text/ownership/URLs/timestamps/spans and sealed admission metadata stay unchanged.
 
-Capture stopped before publication on public PEM parser/test material in the
-official base image's GnuTLS library. Its exact file SHA was independently matched
-against the pinned official Python image. Only that exact vendor file may bypass
-pattern matches; known project keys remain checked everywhere. Regressions cover
-parser markers, complete PEMs and the vendor exception's known-key protection.
+Actual Windows PowerShell 5.1 / Docker Desktop Linux-amd64 checks: API image
+save/load; empty-directory/new-volume restore; all **955 IDs, full vectors and
+payloads** plus configuration match fingerprint
+`67d27140e93684efa650cf5562e6aba7c56e2f238b5f4003e2d672e28e934d6a`;
+source/tokenizer/hour/link validations pass; UI/docs/OpenAPI/live/ready return 200.
+Non-root/read-only/loopback mounts pass; database read key denies PATCH with 403.
+A synthetic code-only version fixture reuses the same knowledge/volume without
+having ZIP/snapshot assets available, and rollback restores a healthy prior API.
+No synthetic version will be published. Original database/aliases and `.env` are
+unchanged. Existing-device isolation proves recovery, not a second physical
+machine, ARM support, refreshed website facts or broader answer-quality acceptance.
+
+**2,293 full offline tests pass**, including 38 new recovery/PowerShell cases;
+Ruff/format, lock, Compose and PowerShell parsing pass. Recovery tests caught/fixed
+PowerShell 5 argument-array, read-only mount and repeated-ACL defects. A public PEM
+fixture in the base GnuTLS library is byte-matched to the pinned official Python
+image; only that exact vendor file may bypass pattern matches, never known-key
+checks. Known-key/pattern scans cover tracked code/history, required source,
+native snapshot and nested image archives. This is bounded secret checking, not
+proof against every secret format. Evidence: `artifacts/portable-verification-v1/`.
+See `docs/PORTABLE_MVP.md` for install/update/rollback and optional Drive copies.
+**Next:** capture the final image/source-bound assets, publish code/tag and complete
+GitHub Release, then verify remote downloads. No model call/corpus embedding or
+active-alias change ran. Remaining OpenRouter credit is reserved for user questions.
 
 Documentation review: the README, scope, architecture, pipeline, provider/API
 contracts, roadmap and deployment guides now distinguish the current local MVP

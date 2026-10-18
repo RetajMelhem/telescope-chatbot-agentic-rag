@@ -319,3 +319,34 @@ Helper -Operation 'ACTION' -Data 'C:\data dir' -Target 'installed'
     )
     assert arguments[arguments.index("--entrypoint") + 2] == "telescope-rag-mvp:v0.1.0"
     assert ",readonly" not in arguments
+
+
+def test_windows_secret_acl_is_private_and_repeatable(tmp_path):
+    shell = shutil.which("powershell.exe")
+    if shell is None:
+        pytest.skip("Windows PowerShell ACL case")
+    script = r"""
+$ErrorActionPreference='Stop'
+$source=Join-Path $PWD 'install-mvp.ps1'
+$ast=[Management.Automation.Language.Parser]::ParseFile($source,[ref]$null,[ref]$null)
+$definitions=$ast.FindAll({param($node)
+    $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+    $node.Name -in @('Private-Directory','Safe-Directory')
+},$false)
+foreach ($definition in $definitions) { Invoke-Expression $definition.Extent.Text }
+Private-Directory 'TARGET'
+Private-Directory 'TARGET'
+$acl=(New-Object IO.DirectoryInfo('TARGET')).GetAccessControl()
+$rules=$acl.GetAccessRules($true,$false,[Security.Principal.SecurityIdentifier])
+if (-not $acl.AreAccessRulesProtected -or $rules.Count -ne 3) { throw 'ACL invalid' }
+Write-Output 'private-repeatable'
+""".replace("TARGET", str(tmp_path / "private").replace("'", "''"))
+    result = subprocess.run(
+        [shell, "-NoProfile", "-Command", script],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "private-repeatable"
