@@ -71,6 +71,7 @@ Required local files already present in this workspace:
 - `artifacts/public-website-links-v1/reviewed-links-plan.json`: reviewed outgoing links.
 - `.tools/qwen-tokenizer/1d8ad4ca9b3dd8059ad90a75d4983776a23d44af/tokenizer.json`:
   exact hash-verified tokenizer; no download at startup.
+- `data/processed/m4-query-cache-v1/`: existing read-only query-cache directory.
 
 The collection is `telescope_public_018817ac10ec05ecad92adb9`, at
 `http://127.0.0.1:6333`, with 955 points and 4,096 dimensions. Startup validates the
@@ -96,10 +97,13 @@ you submit a query. Startup, static UI and health checks make no inference calls
 Default logs contain request metadata only. The explicit acceptance runner stores
 public test payloads under ignored `artifacts/`; this is not default chat logging.
 
-This MVP depends on local files excluded from Git and Docker. Copying the Git
+This MVP depends on local files excluded from Git and the Docker image, mounted
+at runtime when using Docker. Copying the Git
 repository alone is not a portable installation. The separate production app,
 public deployment, widget, source refresh and broad
 independent accuracy acceptance are outside this local delivery.
+See [GitHub and handoff](GITHUB_AND_HANDOFF.md) for exactly what is tracked and
+which resources need separate transfer.
 
 
 ## Conversational answer stage

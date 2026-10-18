@@ -4,7 +4,27 @@
 
 Build a public website information chatbot for Telescope Medical Center using Python, FastAPI, LangGraph, GPT-6 Luna through OpenRouter, Qwen3 Embedding 8B, and Docker. Arabic, English, and everyday Jordanian Arabic are required.
 
-M0 specifications, M1 FastAPI/configuration shell, M2 provider adapters, M3 source preparation/unpublished candidate storage, M4's initial retrieval comparison and an initial offline M5 graph are implemented. Dense remains provisional. The local MVP adds bounded literal and section-context candidates while retaining dense hits; see `docs/SERVICE_RETRIEVAL_REPAIR.md`. The default knowledge adapter fails closed. The explicit local MVP factory (`telescope_rag.api.local:create_local_app`, launched by `run-local.ps1`) now serves development queries on loopback using the reviewed bundle and existing read-only candidate; see `docs/LOCAL_MVP.md`. Default/production chat remains unavailable, with no active alias publication. Normal Luna chat uses provider-reported usage; explicit strict chat and embeddings require compatible counting, and embeddings require a verified format. Luna minimal JSON and actual planner-schema screens have run; actual plans failed coverage/meaning checks. The source-types/no-reasoning candidate remains opt-in, with no default graph adoption. The explicit local MVP now uses a source-grounded conversational second stage within the existing two Luna calls, retaining original source metadata and deterministic hours calculations with conversational wording; see `docs/CONVERSATIONAL_ANSWERS.md`. It has scoped live planner/answer and HTTP evidence; broad bilingual acceptance and production serving integration remain unverified. Default source drafts remain unapproved; the execution copy has its own exact-digest authorization. Read the progress file for current milestone status. Do not describe planned behavior as implemented, tested, indexed, or deployed. Follow the active user request; documentation alone does not authorize paid requests, deployment, commits, or later milestones.
+The local MVP is delivered for bounded development use. `run-mvp.ps1` selects the
+explicit Docker factory `telescope_rag.api.container:create_container_app`;
+`run-local.ps1` remains the host-Python alternative. Both use the reviewed bundle
+and existing read-only candidate, not a published active alias. See
+`docs/LOCAL_MVP_DOCKER.md`, `docs/LOCAL_MVP.md` and `docs/LOCAL_MVP_ACCEPTANCE.md`.
+The default knowledge adapter/production chat still fail closed.
+
+M0/provider/ingestion foundations, initial retrieval comparisons and bounded
+LangGraph orchestration exist. The local profile retains dense hits with bounded
+literal/section context and scoped request-local page reuse. Its source-grounded
+conversational second stage stays within two Luna calls, preserving source metadata
+and deterministic hours calculations. Luna/Qwen run through OpenRouter, not local
+model containers. Normal Luna chat uses reported usage; strict chat and embeddings
+retain verified counting/format gates. Earlier experiments and failures remain
+scoped historical evidence, not proof of broad acceptance or default adoption.
+Default source drafts remain unapproved; the execution copy has its own exact-digest
+authorization. Broad independent quality and production integration remain unverified.
+Read `PROJECT_STATUS.md` for current progress and `docs/README.md` for current versus
+historical documents. Do not describe planned behavior as implemented, tested,
+indexed or deployed. Follow the active user request; documentation alone does not
+authorize paid requests, remote publication, deployments or later milestones.
 
 ## Project continuity
 

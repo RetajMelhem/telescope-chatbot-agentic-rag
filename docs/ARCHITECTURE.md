@@ -1,22 +1,27 @@
 # Architecture and folder ownership
 
-Status: M1 API/configuration shell, M2 provider adapters and M3 corpus preparation/embedding/unpublished candidate verification are implemented. M4 has evaluation-only retrieval and evidence assembly; M5 now has an initial offline LangGraph prototype. Serving retrieval, verified semantic planning/answer admission and active-index publication remain pending. Actual scoped evidence is in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+Status: the local MVP is implemented with a Docker API, browser UI, bounded
+LangGraph planner/retrieval/writer flow and read-only access to the pinned reviewed
+candidate. The default/production factory remains unavailable; no active alias is
+published. Scoped live checks and remaining limitations are recorded in
+[acceptance](LOCAL_MVP_ACCEPTANCE.md) and [current status](../PROJECT_STATUS.md).
 
 ## Stack
 
 | Component | Choice and purpose |
 | --- | --- |
-| Runtime | Python 3.11.9 verified locally; manifest permits 3.11 through 3.13, with 3.12/3.13 untested |
+| Runtime | Python 3.11.17 in the verified container; earlier host checks used 3.11.9. Manifest permits 3.11 through 3.13; 3.12/3.13 remain untested |
 | HTTP API | FastAPI with Pydantic request/response models |
-| Orchestration | Pinned LangGraph 1.2.15 `StateGraph`; initial offline conditional workflow tested |
+| Orchestration | Pinned LangGraph 1.2.15 `StateGraph`; bounded local conversational workflow |
 | Planning and answers | `openai/gpt-6-luna`, accessed through OpenRouter |
-| Embeddings | `qwen/qwen3-embedding-8b`, hosted through OpenRouter by default |
+| Embeddings | `qwen/qwen3-embedding-8b`, OpenRouter with the verified `deepinfra/us` route and 4,096 dimensions |
 | Knowledge store | Qdrant, cosine vectors plus source metadata |
-| Packaging | Implemented `pyproject.toml` and `uv.lock`; dependencies verified through M1 tests |
-| Deployment | Linux Docker image and Compose services |
+| Packaging | `pyproject.toml`, `uv.lock`, pinned Python/uv build images and locked runtime installation |
+| Deployment | Local API Docker image, existing Qdrant and separate Nginx gateway; loopback host ports |
 | Verification | pytest with mocked network dependencies; Ruff |
 
-Qdrant and hosted embedding delivery are design defaults. Hosting the 8B model locally would require a separate inference service and resource sizing; the initial deployment does not require a GPU.
+Luna and Qwen run remotely through OpenRouter. No model weights, local GPU inference
+service or model container is part of this installation.
 
 ## Directory layout
 
@@ -28,7 +33,7 @@ clinic_agentic_rag/
   pyproject.toml               Package and tool configuration
   uv.lock                      Exact dependency resolution
   .python-version              Python 3.11 for local uv selection
-  .env.example                 Planned configuration, no secrets
+  .env.example                 General configuration template, no secrets
   .env                         Ignored local configuration
   .gitignore
   .gitattributes               Consistent source line endings
@@ -59,27 +64,54 @@ clinic_agentic_rag/
     unit/                      Pure logic and schema checks
     integration/               API/graph/provider contracts with fakes
     evaluation/                Bilingual source-backed evaluation fixtures
-  scripts/                     Future evaluation helpers; ingestion has a package CLI
-  deploy/                      Future Dockerfile, compose.yaml, proxy config
+  scripts/                     Explicit preparation/evaluation/diagnostic helpers
+  deploy/                      API Dockerfile, local API/gateway Compose and proxy config
+  run-mvp.ps1                  Docker Start/Stop/Status/Restart
+  run-local.ps1                Alternative host-Python API launcher
   data/
     raw/                       Ignored source snapshots
     processed/                 Ignored extracted documents and chunks
     manifests/                 Ignored snapshot/index audit manifests
 ```
 
-Unimplemented directories retain `.gitkeep` files. Package metadata, lockfile, settings, schemas, middleware, health/chat routes, app factory, knowledge readiness interface, provider adapters, ingestion package/CLI and offline tests exist. A separate local Qdrant gateway Compose file exists; application Dockerfile/Compose packaging remains unimplemented.
+The application, provider/ingestion/retrieval packages, graph, tests and local Docker
+packaging exist. Data placeholders do not contain the reviewed corpus. Exact runtime
+resources and keys are supplied outside Git and the API image; see
+[GitHub and handoff](GITHUB_AND_HANDOFF.md).
 
-The implemented app entry point is `telescope_rag.api.main:create_app` with Uvicorn's `--factory`. Importing the module does not read secrets or start clients. The lifecycle closes its injected knowledge adapter with a configurable shutdown deadline and fixed, content-free failure events. The default adapter makes no network request and cannot claim an approved index exists. Production requires a knowledge credential to be present, but actual read-only permission enforcement belongs to the live Qdrant implementation and deployment checks.
+The Docker entry point is `telescope_rag.api.container:create_container_app`, which
+explicitly composes `api.local:create_local_app` with `/runtime` resources and file
+secrets. `run-local.ps1` selects the host composition and project dotenv. The original
+`api.main:create_app` remains the fail-closed default; a production setting is not a
+switch that enables the local MVP. The application lifecycle owns and closes its
+provider/database clients. Health checks validate local knowledge without inference.
 
 ## Two execution paths
 
-The [public-hours layer](PUBLIC_HOURS.md) now supplies source-bound reviewed schedule records and pure typed comparisons under `knowledge/`. It distinguishes facility/doctor owners, separate language claims, weekly/date scope and actual attendance, with explicit uncertainty for missing evidence and ambiguous clocks. Trusted callers must authenticate the review plan and exact catalog. The separate [hours graph](HOURS_GRAPH.md) now supplies opt-in typed question inputs and computation receipts. Earlier profiles retain unavailable time behavior; live question interpretation and public serving are unverified.
+**Offline ingestion:** allowlisted public pages become immutable snapshots, structured
+chunks, reviewed admission metadata, counted embedding inputs and a separately
+authorized candidate collection. It is not executed by chat or API startup.
 
-The [offline response presenter](OFFLINE_RESPONSE.md) now projects actual graph runs into a closed plain-text/citation envelope through explicit `offline_response_format="rendered"` construction. Every question, status/reason, exact selected quotation and separate owner remains visible; source bindings are rechecked without semantic promotion, translation, another model call or prompt changes. The previous draft wire remains the default for injected services, and default/production serving remains unavailable. Live acceptance and the accepted public answer contract are still pending.
+**Local serving:** Luna plans bounded question parts against issued source handles.
+Search parts use at most one Qwen query batch and scoped read-only Qdrant retrieval;
+complete-source parts read the admitted catalog directly. The local search pool
+retains dense hits with bounded literal and section-context additions. Already
+requested/retrieved same-page candidates can be offered to another search part only
+under that receiving part's exact scope and source policy. Global assembly caps and
+separate per-part citation bindings remain enforced.
 
-The [request-scoped dense bridge](REQUEST_RETRIEVAL_BRIDGE.md) now implements the injected retrieval contract using verified query formatting, optional exact read-only cache reuse and pinned candidate point filters before top-k. It shares the graph budget and never writes knowledge/cache data, creates a second ledger or interprets source ownership by similarity. Its HTTP-to-reader integration and cancellation/scope contracts are tested with mocked providers/database transport; an actual immutable corpus/tokenizer binding passes with dispatch forbidden. Production/default serving and source/index publication remain unavailable.
+The [public-hours layer](PUBLIC_HOURS.md) computes supported time comparisons using
+reviewed owner-bound records. The [second Luna stage](CONVERSATIONAL_ANSWERS.md)
+writes conversational prose from the original question and supplied evidence,
+including computed hours and separately proven [website links](PUBLIC_WEBSITE_LINKS.md).
+Reference/scope checks precede presentation; source IDs remain in metadata/details,
+while the visible answer uses readable prose/bullets and isolated numeric runs.
 
-An explicit nonproduction [HTTP draft service](OFFLINE_SERVICE.md) now composes the existing offline graph with caller-injected chat/retrieval/catalog/counter/authority dependencies. `create_app` selects it only through a trusted Python argument; default chat remains unavailable and production configuration is refused. The boundary returns source-linked per-question drafts with offline/unverified flags, preserves request-owned budgets and keeps resources caller-owned. The actual HTTP/graph/provider adapter path is tested with synthetic data and mocked transport; live retrieval, model acceptance, accepted public answer generation and production composition remain pending. It performs no automatic credential loading, client creation, source approval or index publication.
+Normal local requests have two Luna stages and at most one query embedding batch,
+one retrieval round and no automatic retry/fallback. The query cache is read-only;
+new vectors stay request-local. Earlier injected [offline draft](OFFLINE_SERVICE.md)
+and [extractive rendering](OFFLINE_RESPONSE.md) profiles retain their own contracts
+and unverified flags; they are not the local conversational response wire.
 
 ```mermaid
 flowchart LR
@@ -96,7 +128,10 @@ flowchart LR
     Graph --> Response[Answer with citations]
 ```
 
-The ingestion process can write candidate index versions. The chat process can read the active approved version only. Neither process integrates with patient databases or private calendars. Website forms and arbitrary user URLs are not executable graph tools.
+The ingestion process can write candidate index versions under independent gates.
+The current local chat reads one exact pinned candidate with the server-enforced
+read key; it does not resolve a published active alias. No path accesses patient
+databases or private calendars. Website forms and arbitrary user URLs are not tools.
 
 ## Ownership and dependencies
 
@@ -124,7 +159,15 @@ The M4 comparison reader is explicitly supplied the complete pinned candidate po
 
 The initial API accepts bounded conversation history and does not persist conversations on the server. Compile the graph without a durable conversation checkpointer for this phase. Preserve knowledge snapshots and ingestion manifests independently of chat state.
 
-The implemented `graph/workflow.py` compiles an acyclic offline graph with no checkpointer/retry policy. Provider/retrieval/catalog dependencies stay on the service, while the per-run budget stays in runtime context outside state. The default public API does not construct or call this graph; explicit nonproduction services can inject it. `graph/bindings.py` issues exact source handles and validates literal spans/history links; `graph/contracts.py` separates strict provider wire models from convenience assembly models. `prompts/offline_v1.py` defines planner and full-passage extractive-draft instructions. Every final part remains explicit, and candidate quotations have per-part source identity/provenance. Semantic interpretation, quote relevance, Luna compatibility and serving admission are still unverified; see [the implemented offline scope](PIPELINE.md#implemented-offline-prototype).
+The base `graph/workflow.py` compiles an acyclic graph with no checkpointer/retry
+policy. Local hours/conversational subclasses add the typed calculations and writer.
+Dependencies stay on the service and the shared request budget stays outside graph
+state in runtime context. `graph/bindings.py` validates issued source handles and
+literal spans/history links. The local writer uses
+`prompts/conversational_answer_v1.py`; `prompts/offline_v1.py` belongs to earlier
+extractive profiles. Every original question part and citation owner remains explicit.
+The browser sends independent requests with empty history; the API accepts bounded
+caller-supplied history as interpretation context, never as factual evidence.
 
 If server-side memory becomes necessary, define ownership, retention, deletion, and multi-worker behavior first. An arbitrary client-supplied conversation ID must never expose another visitor's messages.
 
@@ -135,6 +178,7 @@ A request-owned sidecar retains the clock, literal bindings and computed records
 it is not added to the old provider/source-draft wire. The hours presenter rebinds
 those receipts and offered proof before rendering a versioned response. There is
 no default plan/provider, environment toggle, parsing heuristic or persistence.
-See [HOURS_GRAPH.md](HOURS_GRAPH.md) for the contract and unverified model gate.
+The local factory explicitly selects the supported variant; earlier injected
+profiles remain separate. See [HOURS_GRAPH.md](HOURS_GRAPH.md) for component history.
 
 Source admission, citation validation, exact entity ownership, and deterministic time calculations reduce errors. Structural checks alone cannot prove that every free-text paraphrase is supported. Source-based bilingual evaluation and clinic review remain necessary before release.

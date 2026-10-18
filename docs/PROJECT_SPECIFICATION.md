@@ -1,6 +1,9 @@
 # Project specification
 
-Status: foundation specification, 2026-10-14. Implementation has not started.
+Status: requirements established on 2026-10-14, reviewed for the current local MVP
+on 2026-10-18. The local Docker chatbot is implemented and has scoped live/offline
+verification. This specification records requirements; it does not certify every
+answer or production readiness. See [acceptance](LOCAL_MVP_ACCEPTANCE.md).
 
 ## Purpose
 
@@ -54,7 +57,17 @@ General treatment explanations may summarize the website. The chatbot does not d
 
 Respond in the user's language unless they request otherwise. Keep names and technical terms faithful to source content. Accept bounded previous turns for follow-up questions such as "What about his specialty?"; ambiguous references require clarification. Previous messages can help identify the question, but cannot supply clinic facts.
 
-Use application outcomes `answered`, `partial`, `clarification_required`, `not_found`, and `out_of_scope`. An `answered` result means every requested in-scope part is supported; it does not claim all of the website has been searched. Expose citations, unresolved questions, and the knowledge snapshot timestamp.
+The current local wire is `local-mvp-response-v1`: top-level outcomes are
+`draft_ready`, `not_found`, `out_of_scope` and `clarification_required`. Per-part
+candidate/unknown/excluded/clarification outcomes, citations, unresolved questions
+and source timestamps remain visible in metadata. `draft_ready` is a generated
+development answer, not semantic certification. Citation IDs stay out of visible
+prose; original excerpts remain in source details. See [the API contract](API_CONTRACT.md).
+
+The future production envelope proposes `answered`, `partial`,
+`clarification_required`, `not_found` and `out_of_scope`; it is not the current local
+schema. A future `answered` result would mean all requested public parts have
+support, not that the whole website has been searched.
 
 ## Acceptance criteria
 
@@ -66,4 +79,7 @@ Use application outcomes `answered`, `partial`, `clarification_required`, `not_f
 - Provider/schema failures terminate within budgets and do not create invented fallback answers.
 - Docker deployment starts healthy, preserves the knowledge index across restarts, excludes secrets from images, and separates serving from ingestion.
 
-Concrete evaluation cases and release gates are in [EVALUATION.md](EVALUATION.md). Deployment acceptance is future work; this document records requirements, not test results.
+Concrete evaluation cases and release gates are in [EVALUATION.md](EVALUATION.md).
+Local container checks and scoped answer reviews are recorded in
+[LOCAL_MVP_ACCEPTANCE.md](LOCAL_MVP_ACCEPTANCE.md). Broad independent accuracy,
+public hosting, backup restoration and website integration remain unverified.

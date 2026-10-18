@@ -6,9 +6,10 @@ It accepts English, Arabic and everyday Jordanian Arabic questions.
 
 ## Run the local MVP
 
-From PowerShell in this repository:
+On the existing prepared computer, open Docker Desktop, then run in PowerShell:
 
 ```powershell
+cd C:\CLINIC\clinic_agentic_rag
 .\run-mvp.ps1
 ```
 
@@ -18,6 +19,46 @@ the launcher starts the existing Qdrant containers if stopped, builds the API
 image and starts it at `127.0.0.1:8000` in the background. Stop the API with
 `.\run-mvp.ps1 -Action Stop`. See [the Docker runbook](docs/LOCAL_MVP_DOCKER.md).
 The previous host-Python launcher `.\run-local.ps1` remains available.
+
+Useful controls:
+
+```powershell
+.\run-mvp.ps1 -Action Status
+.\run-mvp.ps1 -Action Stop
+.\run-mvp.ps1 -Action Restart
+```
+
+Start builds current code; Restart uses the existing image. Both recreate the API
+with current mounted resources/secrets. Stop leaves the database intact.
+
+## What Docker runs
+
+| Container | Current responsibility | Host access |
+| --- | --- | --- |
+| `telescope-local-mvp-api` | Python/FastAPI, browser UI, LangGraph, prompts, retrieval and OpenRouter adapters | `127.0.0.1:8000` |
+| `telescope-m3-qdrant` | Existing vectors and payloads in the persistent `telescope-m3-qdrant-storage` volume | Private Docker network |
+| `telescope-m3-qdrant-gateway` | Nginx forwarding for authenticated local Qdrant/dashboard access | `127.0.0.1:6333` |
+
+Luna and Qwen run through OpenRouter, not as local model containers. The API image
+contains application code and locked runtime dependencies. Reviewed source data,
+metadata, tokenizer, query cache and secret files are mounted read-only at runtime.
+The API talks directly to Qdrant on the private network; the gateway is the host's
+local access path. See [container details](docs/LOCAL_MVP_DOCKER.md).
+
+## What belongs on GitHub
+
+Commit source code, prompts, tests/fixtures, scripts, Docker/Compose definitions,
+the lockfile, documentation and the secret-free `.env.example`. Real `.env`/keys,
+collected pages/chunks, embeddings, database storage, tokenizer, local environments
+and generated audit results remain excluded. Docker images/volumes are separate
+from the Git repository. See [GitHub and handoff](docs/GITHUB_AND_HANDOFF.md).
+
+**A fresh clone cannot run the chatbot by itself.** The current launcher requires
+the existing reviewed resources, keys, Qdrant container/volume and networks. It
+does not provision a new database or recreate the reviewed corpus. New-machine
+transfer and database restoration remain unverified.
+
+## Answer behavior
 
 The existing reviewed 107-page / 955-chunk snapshot supplies evidence. Answers
 are written naturally from the retrieved evidence, with citations and retrieval timestamps.
@@ -48,6 +89,8 @@ returns unavailable; use the explicit local launcher above.
 
 ## Project documents
 
+- [Documentation map: current guides and historical experiments](docs/README.md)
+- [Docker startup](docs/LOCAL_MVP_DOCKER.md) and [GitHub/handoff](docs/GITHUB_AND_HANDOFF.md)
 - [Project scope](docs/PROJECT_SPECIFICATION.md)
 - [Architecture](docs/ARCHITECTURE.md) and [pipeline](docs/PIPELINE.md)
 - [Provider contracts](docs/PROVIDERS.md)

@@ -1,6 +1,6 @@
 # Local conversational answering
 
-The v10 writer now uses a separate bullet item for each person/service in long
+The current v11 writer retains v10's separate bullet item for each person/service in long
 lists, keeping that item's supported role and qualifications with its owner.
 The presenter preserves blank lines between explicit list segments while short
 prose stays compact. Six Arabic/English/Jordanian API cases verify the layout and

@@ -1,7 +1,7 @@
 # FastAPI contract
 
-Local MVP replies now include `answer_style=conversational`: `answer` contains generated
-prose with application-owned citation markers; `citations[].quote` retains original
+Local MVP replies include `answer_style=conversational`: `answer` contains generated
+plain-text prose without technical citation IDs; `citations[].quote` retains original
 evidence. Each original part, owner and unresolved outcome remains inspectable.
 See [conversational verification](CONVERSATIONAL_ANSWERS.md).
 
@@ -10,6 +10,38 @@ The explicit loopback entry point now serves live development queries. The defau
 application and production acceptance remain separate; earlier checkpoints below
 describe their original scope.
 
+## Current local MVP contract
+
+Both local launchers serve `POST /api/v1/chat` with the request below. The Docker
+factory is `telescope_rag.api.container:create_container_app`; the host alternative
+is `telescope_rag.api.local:create_local_app`. The current closed response is
+[`LocalChatResponse`](../src/telescope_rag/api/local.py), with:
+
+| Field | Current local meaning |
+| --- | --- |
+| `schema_version` / `mode` | `local-mvp-response-v1` / `local_mvp` |
+| `answer_style` / `answer_format` | `conversational` / `plain_text` |
+| `status` | `draft_ready`, `not_found`, `out_of_scope` or `clarification_required` |
+| `answer` | Natural response, readable bullet/paragraph layout; citation IDs stay in metadata |
+| `language` | `en`, `ar` or `ar-JO` |
+| `questions` | Every original part, with candidate/unknown/excluded/clarification outcome, citation IDs and nullable hours information |
+| `citations` / `knowledge` | Exact source excerpts, ownership, URLs, source times and pinned snapshot/configuration metadata |
+| `unresolved_questions` | Original parts still unsupported, excluded or ambiguous |
+| `website_links` / `website_links_digest` | Separately proven outgoing website links with question/source ownership; no social-site fetch |
+
+`draft_ready` and a part's `candidate` status are development outcomes, not factual
+certification. They can include explicit partial uncertainty in prose. Structural
+checks do not prove entailment. Open [the local OpenAPI page](http://127.0.0.1:8000/docs)
+for the complete current schema. The browser sends empty history for independent
+questions; API callers may supply the bounded interpretation-only history below.
+
+`GET /` serves the UI. Local readiness checks the pinned candidate collection and
+reviewed resources; it does not require a published active alias or make an
+inference call. Invalid input returns sanitized 422; service/provider/projection
+errors remain sanitized and bounded. The API does not expose ingestion or writes.
+
+## Default factory and earlier injected profiles
+
 The separately injected [offline hours response](HOURS_GRAPH.md) uses
 `offline-hours-response-v1`, the same chat request and a nullable per-question
 `hours` summary. It requires `HoursChatService` and explicit nonproduction
@@ -17,9 +49,14 @@ The separately injected [offline hours response](HOURS_GRAPH.md) uses
 the hours receipt. Default serving and the production contract remain unadopted.
 Semantic/model compatibility flags stay false.
 
-Status: health/input/error contracts and opt-in offline draft/rendered/hours responses are implemented. The accepted public RAG response remains planned for M5; default serving is unavailable.
+The earlier injected draft/rendered/hours profiles retain their own contracts and
+unverified flags. A production accepted-answer envelope remains planned; the
+explicit local response above is implemented and distinct from it.
 
-The current chat route is a placeholder: valid input receives `503` / `chat_not_available`; rejected input receives a sanitized `422`. It never calls a provider, searches knowledge, interprets facts, or stores the visitor's message.
+The original default factory's chat route remains a placeholder: valid input
+receives `503` / `chat_not_available`; rejected input receives sanitized `422`.
+That default does not call a provider or search knowledge. This does not describe
+the explicit local factories above.
 
 An explicitly injected, nonproduction [offline draft composition](OFFLINE_SERVICE.md) now connects this transport to the existing graph for contract checks. The default route above is unchanged. Trusted construction can supply `OfflineChatService` to `create_app`; production or mismatched settings are rejected. Its 200 response is the graph's `WorkflowResult` with immutable offline/unverified flags, exact per-question outcomes and quoted provenance, not the planned final answer envelope below. Invalid graph/provider/citation results return sanitized 502; timeouts return 504. This path does not select a default model client, approve sources or enable public serving. Caller-owned provider/retriever lifetime is explicit. No live compatibility or semantic acceptance is established by its mocked tests.
 
@@ -31,7 +68,7 @@ Trusted construction can additionally select `offline_response_format="rendered"
 | --- | --- |
 | `POST /api/v1/chat` | Answer one visitor request using approved public website evidence. |
 | `GET /health/live` | Process liveness; no paid provider call. |
-| `GET /health/ready` | Valid configuration, reachable knowledge store, compatible active approved snapshot. No paid provider call. |
+| `GET /health/ready` | Knowledge readiness for the selected factory: pinned candidate locally, active approved snapshot in the future production design. No paid provider call. |
 
 Ingestion is a separate CLI/job, not a public route. There are no patient, calendar, booking, file-upload, form-submission, or arbitrary web-fetch endpoints.
 

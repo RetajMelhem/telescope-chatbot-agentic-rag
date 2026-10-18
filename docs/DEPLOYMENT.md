@@ -1,4 +1,4 @@
-# Docker deployment design
+# Local Docker deployment and production design
 
 The local API image/Compose/launcher are now implemented and verified; use
 [LOCAL_MVP_DOCKER.md](LOCAL_MVP_DOCKER.md). They reuse the existing reviewed database
@@ -13,6 +13,21 @@ describe their original scope.
 Status: bounded local API packaging is delivered. Full M6 production deployment,
 ingestion-service packaging, backup/restore and public hosting remain separate.
 The local M3 Qdrant gateway remains unchanged; no index is published by this delivery.
+
+## Current runtime
+
+| Container | Content/storage | Access |
+| --- | --- | --- |
+| `telescope-local-mvp-api` | Application, browser UI, LangGraph, provider/retrieval adapters and locked dependencies; reviewed files and two secret files mounted read-only | Loopback `8000`; direct private-network Qdrant reads and OpenRouter egress |
+| `telescope-m3-qdrant` | Existing vector collection and payloads in `telescope-m3-qdrant-storage` | Private `telescope-m3-local` network |
+| `telescope-m3-qdrant-gateway` | Nginx forwarding with a read-only config mount | Loopback `6333` for host tools/dashboard |
+
+`telescope-m3-local` also appears as a Compose project/group in Docker Desktop;
+the group is not an extra running container. Luna/Qwen weights are not present:
+both inference services are accessed through OpenRouter. Start builds/recreates
+the API and starts already-existing database/gateway containers as needed. Stop
+stops only the API.
+See [GitHub and handoff](GITHUB_AND_HANDOFF.md) for the code/data boundary.
 
 ## Current local M3 Qdrant access
 
@@ -30,7 +45,10 @@ docker compose -f deploy/compose.qdrant-local.yaml --project-name telescope-m3-l
 
 Both containers now use `unless-stopped`. The authenticated checker and its explicit non-creating permission-probe flag are documented in [INGESTION_RUNBOOK.md](INGESTION_RUNBOOK.md). Evidence: `artifacts/m3-local-preflight-repair-v1/REPORT.md`. To withdraw host access, stop `telescope-m3-qdrant-gateway`; this leaves the private database, volume and keys intact. Do not delete/reinitialize the existing database or volume as a connectivity repair.
 
-## Planned services
+## Future production services
+
+The following is a broader design, not an alternative command to run the local
+MVP. Ingestion/TLS profiles and clean-machine database provisioning are not delivered.
 
 | Service | Responsibility and exposure |
 | --- | --- |
@@ -50,7 +68,7 @@ production `deploy/compose.yaml` and ingestion profile remain planned.
 - Use an official supported Python slim base, pinned to an evaluated version/digest at release time.
 - Install locked runtime dependencies before copying source, for a reusable build cache.
 - Package only the application and versioned prompts. Exclude `.env`, keys, collected website data, local results, and development caches.
-- Run as a non-root user. Use an exec-form command such as `python -m uvicorn telescope_rag.api.main:create_app --factory --host 0.0.0.0 --port 8000 --no-access-log` with the implemented app factory.
+- Run as a non-root user with an exec-form command. The implemented local image selects `telescope_rag.api.container:create_container_app`. The fail-closed `api.main:create_app` is not a working chatbot entry point.
 - Use container limits and graceful shutdown. Production images do not use `--reload`.
 - Run the ingestion CLI through a separate command once implemented; never perform a crawl or paid warmup during image build or API startup.
 
@@ -60,7 +78,10 @@ describes the underlying container pattern.
 
 ## Networks, secrets, and storage
 
-Inside Compose, override `QDRANT_URL` to `http://qdrant:6333`. The `.env.example` value `http://127.0.0.1:6333` is for a host process; container loopback does not reach the Qdrant service.
+The current local factory pins `http://telescope-m3-qdrant:6333` in the container
+and `http://127.0.0.1:6333` for host Python. A future standalone production Compose
+may use a different fixed service name after implementation/verification; do not
+substitute the generic `http://qdrant:6333` design URL into this local reader.
 
 Keep Qdrant off public host ports. For development, bind the API to `127.0.0.1:8000:8000`. For production, expose HTTPS through the proxy and keep the application/database ports private. Optional local Qdrant inspection must bind only to loopback.
 
@@ -68,13 +89,23 @@ Use separate Qdrant read and ingestion write credentials with server-enforced pe
 
 Mount Qdrant storage on a named persistent volume. Give ingestion persistent snapshot/manifest storage; the API receives only required approved manifest data read-only. Store backups outside the application image and test restoration.
 
-Local development may load `.env`; production should inject secrets at runtime using the deployment platform's secret store or mounted Docker secrets. Implement secret-file loading before using mounted secrets. `.env.example` is a template, not a deployment secret. Do not bake keys into Docker build arguments or image layers.
+Host development loads the project `.env`. The local Docker launcher validates it
+and stages its provider key into an ignored file; the container reads that file
+and the existing database read key through `/run/secrets`. This is implemented,
+not an encrypted production secret store. Future production should inject secrets
+through the deployment platform. `.env.example` is only a template. Do not bake
+keys into build arguments or image layers.
 
 Compose's `.env` interpolation does not automatically put values inside containers: map settings explicitly with `environment` or `env_file`. Select only the secrets each service needs. See [Docker's environment configuration guidance](https://docs.docker.com/compose/how-tos/environment-variables/set-environment-variables/).
 
 ## Startup and health
 
-Start authenticated Qdrant, create and validate the first index through the ingestion job, publish an approved snapshot, then bring the API to readiness. Before an index exists the API may be live, but it must report not ready.
+On this prepared installation run `.\run-mvp.ps1`; it validates required local
+resources, starts the existing authenticated database/gateway if stopped, and
+builds/recreates the API. It requires those database/gateway containers and the
+reviewed corpus to exist already. It does not run ingestion, create an index or
+publish an alias. A future production installation needs its own approved-index
+publication and restore procedure.
 
 Use `/health/live` for process liveness and `/health/ready` for approved knowledge readiness. Health probes must not consume paid inference. Record provider failures through actual request telemetry; a green health endpoint is not a provider compatibility test.
 

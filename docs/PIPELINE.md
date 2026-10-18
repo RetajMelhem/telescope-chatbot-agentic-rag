@@ -3,6 +3,42 @@
 The explicit local MVP now uses a [conversational second stage](CONVERSATIONAL_ANSWERS.md).
 It reuses the original question/evidence and shared two-call budget; default/earlier
 extractive profiles remain unchanged.
+
+## Current local request path
+
+The Docker factory and host alternative explicitly select the local conversational
+profile. The normal path is:
+
+```text
+Validate request -> Luna plan -> validate literal parts/source scopes
+  -> bounded search or complete catalog read
+  -> scoped assembly + reviewed hours calculations + reviewed website links
+  -> Luna conversational writer -> reference/scope checks -> local API/UI response
+```
+
+Search uses one verified Qwen query batch at most, read-only scoped Qdrant access,
+five dense hits plus bounded literal/section context additions. Same-page evidence
+already requested/retrieved within this request can be offered to another search
+part only under its own scope/policy; chunk owners and citation bindings remain
+separate. Complete catalog reads do not require query embeddings. All paths share
+one request budget and global assembly caps; safe paths can finish earlier.
+
+Normal local answering uses two Luna calls, one retrieval round, no automatic
+retry/fallback or judge. Deterministic hours computations are evidence, and the
+writer provides natural wording. The writer keeps supported parts and explicit
+uncertainty/exclusions. Citations retain original excerpts and provenance outside
+visible prose. The local wire is `local-mvp-response-v1`; it does not assert that
+arbitrary generated claims have been semantically certified. See
+[the local contract](API_CONTRACT.md#current-local-mvp-contract) and
+[actual acceptance](LOCAL_MVP_ACCEPTANCE.md).
+
+## Earlier profiles and experiment history
+
+The dated preparation, comparisons and "next" statements below describe earlier
+component checkpoints. They are retained for traceability, not current local
+startup/adoption instructions. The broader production graph remains a design;
+the local graph above is implemented. Current next actions are in
+[PROJECT_STATUS.md](../PROJECT_STATUS.md).
 Validated hours now pass through that same writer for concise day/time replies,
 with deterministic outcomes rechecked before publication. Technical citation IDs
 remain in source metadata instead of the visible chat prose.
@@ -18,7 +54,10 @@ no date/time fields; comparisons preserve unresolved date/AM/PM. It reuses evide
 assembly and the budget with no additional model stage. Earlier planner/source
 draft paths and default unavailable serving retain their behavior.
 
-Status: an initial offline LangGraph prototype is implemented and tested on 2026-10-16. Actual Luna planner development screens have run and exposed coverage/semantic failures. Planner/draft acceptance, semantic admission, production serving retrieval and model-driven hours acceptance remain pending; offline API integration and review-only response rendering are now implemented; see [PROVIDERS.md](PROVIDERS.md). The serving graph below remains the target design.
+Historical status (2026-10-16): the initial offline prototype and planner screens
+exposed coverage/meaning failures. Later scoped local conversational acceptance is
+recorded above; broad semantic/production acceptance is still unverified. The
+planned production graph below is not the current local response contract.
 
 LangGraph can express both fixed workflows and dynamic agents. This MVP is a bounded adaptive RAG workflow: Luna plans the questions and the graph chooses answer, partial-answer, clarification, or refusal paths. It is not an unrestricted tool-selection loop. See [LangGraph's workflow and agent guide](https://docs.langchain.com/oss/python/langgraph/workflows-agents).
 
@@ -159,7 +198,7 @@ If a request cannot fit four subquestions without losing meaning, ask the visito
 
 ## Retrieval and evidence assembly
 
-Use cosine similarity over Qwen vectors, bounded per-question reads, and metadata filtering where the source establishes an identity. Merge repeat hits by chunk ID, then collapse exact repeated formatted evidence within the same literal owner/language/configuration while retaining every source occurrence, citation and question-to-evidence relationship. Shared footer or responsive copies must not consume multiple answer-context slots. Do not merge near matches or let a sibling question's doctor or treatment attribution migrate into another question. This retrieval behavior is M4 work, not implemented by the draft embedding-input manifest.
+Use cosine similarity over Qwen vectors, bounded per-question reads, and metadata filtering where the source establishes an identity. Merge repeat hits by chunk ID, then collapse exact repeated formatted evidence within the same literal owner/language/configuration while retaining every source occurrence, citation and question-to-evidence relationship. Shared footer or responsive copies must not consume multiple answer-context slots. Do not merge near matches or let a sibling question's doctor or treatment attribution migrate into another question. The current local reader/assembler implement scoped reads and exact occurrence grouping; a draft embedding-input manifest alone does not establish this behavior or retrieval quality.
 
 A complete directory listing uses its validated manifest, not just top-k vector hits. Retrieval can suggest relevant material; completeness and doctor ownership come from the source snapshot and its manifest. Do not claim that absent retrieved evidence proves the website contains no answer.
 
@@ -186,6 +225,11 @@ Store `request_id`, `original_query`, bounded `history`, `language`, validated `
 Graph state excludes keys, provider client objects, private records, hidden reasoning, and persistent user identifiers. Do not log state wholesale.
 
 ## Initial budgets
+
+The table below records initial design defaults, not the local factory overrides.
+Current local settings are in [LOCAL_MVP.md](LOCAL_MVP.md): two 4,096-output Luna
+stages within 8,192 output tokens, a 150-second request deadline and 60-second
+provider timeout. Qwen assembly counts are not exact Luna input-token counts.
 
 | Bound | Design default |
 | --- | --- |

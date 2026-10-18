@@ -1,14 +1,32 @@
 # Provider contracts and verified scope
 
+## Current local MVP
+
+The explicit local factory composes the working OpenRouter adapters for Luna
+planning/conversational writing and verified Qwen query embeddings. Scoped actual
+HTTP answers and source reviews are recorded in [acceptance](LOCAL_MVP_ACCEPTANCE.md).
+Default/production chat remains unavailable. Normal chat records provider-reported
+usage, leaving unknown counts null; strict chat and embeddings retain verified
+counting requirements. The two-stage local flow has no automatic retries/fallbacks.
+Docker uses mounted secret files, while host Python uses the designated project
+dotenv; neither logs or exposes keys. See [local settings](LOCAL_MVP.md).
+
+## Earlier development screens
+
+The dated screens below retain their original schema, failure and cost observations.
+Unverified/prepared statements refer to those specific checkpoints, not a claim
+that the current local API has never made actual requests. They do not establish
+broad production acceptance.
+
 The opt-in [source-page clarification contract](HOURS_GRAPH.md) uses a separate
 closed `SourceChoicePlannerReply` only when trusted v14 callers enable it. Every
 part adds required nullable `clarification`; non-null choices carry two to four
 issued document handles and are limited to clarification state. The original
 v14/earlier schemas and default payloads are unchanged. This adds no provider call,
 retry, fallback, token counter or budget; existing reported chat usage remains.
-The new hosted schema and native choice selection are **unverified** until the
-next bounded live screen. Thirty-three new / 2,108 full offline tests and exact
-baseline/candidate controls prove local protocol/ownership behavior only.
+At that preparation checkpoint, hosted schema/native choice selection were still
+unverified. Its 33 new / 2,108 full offline tests and exact controls proved local
+protocol/ownership behavior only. Later local serving evidence is linked above.
 
 `providers/screen_audit.py` supplies an explicitly injected local development-audit
 transport; default adapters/logging do not enable it. It reserves exclusive journal
@@ -39,7 +57,11 @@ planner call for pure hours, up to the existing second draft call for mixed publ
 parts. Calculations/projection make no provider call or new counting guard.
 Earlier payloads, retry policy and usage accounting remain unchanged.
 
-Status: M2 contracts were implemented offline on 2026-10-14. M3's Qwen embedding preparation and the separately authorized 834-input corpus run passed on 2026-10-15; see the dated evidence below. Initial M5 offline stage schemas/prompts and LangGraph orchestration are implemented. Normal chat uses provider-reported usage, while embeddings retain verified counting. Actual Luna planner development screens have now run and exposed coverage/semantic failures; planner/draft acceptance and serving integration remain pending. FastAPI chat still returns `503`.
+M2 contracts were implemented offline on 2026-10-14. M3's Qwen preparation and
+authorized 834-input corpus run passed on 2026-10-15. Earlier Luna screens exposed
+coverage/semantic failures. The current local factory now serves reviewed bounded
+development queries; only the default factory still returns `503`. Broad planner,
+answer quality and production adoption remain unverified.
 
 ## Interfaces and ownership
 
@@ -110,7 +132,12 @@ The first request used an inherited process key and returned 401. The user's exp
 
 The separately authorized corpus run used this unchanged profile for 834 distinct document inputs: 53 successful requests, 71,804 reported tokens exactly matching each local reservation, provider `DeepInfra`, requested model `qwen/qwen3-embedding-8b` and reported model `Qwen/Qwen3-Embedding-8B`. No retry/fallback or extra query/chat call ran. All 955 occurrence payloads and normalized vectors were verified in an unpublished local candidate. Receipts: `artifacts/m3-candidate-execution-v6-v1`; authorization/preservation evidence: `artifacts/m3-candidate-authorization-v1`. This establishes that document batch16 responses fit the configured bounds in this run; future query batch32, retrieval quality and backend revision remain unverified. Pricing/accounting observations are point-in-time receipts, not a final invoice.
 
-The embedding adapter still refuses dispatch unless a counter is explicitly supplied. `candidate_qwen_format()` stays unverified. Normal Luna chat no longer requires local counting. Hosted planner/answer acceptance, Qdrant publication and API wiring remain separate work. Keep the local Qwen tokenizer outside Git/Docker; a later container build must supply this exact verified artifact explicitly rather than downloading at API startup.
+The embedding adapter refuses dispatch unless a counter is explicitly supplied.
+`candidate_qwen_format()` stays unverified; the local factory supplies the verified
+profile instead. Normal Luna chat does not require local counting. Scoped local
+planner/writer/API screens have run, but broad quality and active-alias publication
+remain separate. The local Docker runtime mounts the exact verified tokenizer
+read-only; it stays outside Git and the API image and is never downloaded at startup.
 
 ## Wire and output validation
 

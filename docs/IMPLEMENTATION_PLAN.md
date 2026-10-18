@@ -11,7 +11,14 @@ The explicit loopback entry point now serves live development queries. The defau
 application and production acceptance remain separate; earlier checkpoints below
 describe their original scope.
 
-Status: roadmap. M0 foundation, M1 API/configuration shell, and the initial offline M2 implementation are complete. M3 collection, source admission, Qwen/token preparation and authorized corpus embeddings/unpublished candidate verification are complete for their scoped gates; Qdrant publication and retrieval comparison remain pending. Luna compatibility remains unverified. Track actual verification and next actions in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+Status: roadmap with retained development history. M0/M1 and provider/ingestion
+foundations exist. The admitted corpus is indexed in the pinned candidate, initial
+retrieval comparisons and scoped actual Luna answers have run, and local Docker
+delivery is complete. Broad independent quality, production composition, active
+alias publication, public hosting and website integration remain incomplete.
+The milestone deliverables below also describe that broader scope; they are not
+all prerequisites before using the local MVP. Current evidence/next actions are in
+[PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 ## M0 — Specification and scaffold
 
@@ -67,7 +74,8 @@ Verify missing evidence, similar doctor names, unrelated service attribution, pa
 
 ## M5 — LangGraph chat flow
 
-Current checkpoint (2026-10-17): the offline mixed-path substep passed, followed
+Historical checkpoint (2026-10-17; later local delivery is summarized above):
+the offline mixed-path substep passed, followed
 by a bounded live three-language development screen. Two actual extractive drafts
 preserve their source claims, including a separately recorded Jordanian audit-failure
 continuation. That earlier English doctor-role plan missed available evidence by
@@ -109,7 +117,7 @@ model reasons. Thirty-three new / 2,108 full guarded tests pass. All 12 baseline
 responses replay exactly; candidate changes only three clarification messages.
 No new actual model decision, provider request, source/cache/index change or spend.
 
-**Next:** bounded live Luna schema and end-to-end acceptance after authenticated
+**Next at that historical checkpoint:** bounded live Luna schema and end-to-end acceptance after authenticated
 candidate/key/route preflight, using the separate candidate plan and frozen original
 questions/source expectations. Keep opt-in choices and P02/P04 intended pages
 unresolved until the user chooses; actual model semantics remain unverified.

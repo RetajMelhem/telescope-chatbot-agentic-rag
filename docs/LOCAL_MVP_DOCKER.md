@@ -1,8 +1,10 @@
 # Run the local Docker MVP
 
-From PowerShell in `C:\CLINIC\clinic_agentic_rag`, with Docker Desktop running:
+On the existing prepared computer, open Docker Desktop in Linux-container mode,
+then run from PowerShell:
 
 ```powershell
+cd C:\CLINIC\clinic_agentic_rag
 .\run-mvp.ps1
 ```
 
@@ -26,6 +28,21 @@ one API container. Stop it before running the earlier `run-local.ps1` host launc
 on the same port. The default/production factory remains unavailable; this image
 explicitly selects `telescope_rag.api.container:create_container_app`.
 
+## What runs in Docker
+
+There are three containers: `telescope-local-mvp-api` (the chatbot code/UI),
+`telescope-m3-qdrant` (vectors/payloads) and `telescope-m3-qdrant-gateway` (Nginx for
+authenticated host access). A Docker Desktop Compose project/group is not another
+container. The API uses Qdrant directly over `telescope-m3-local`; the host reaches
+Qdrant through the gateway on loopback port 6333. Database storage is the separate
+named volume `telescope-m3-qdrant-storage`.
+
+Luna and Qwen run remotely through OpenRouter. Their weights are not included in
+the API image. Reviewed files/tokenizer/cache and two file secrets are mounted
+read-only; the vector database is not inside that image either. See
+[GitHub and handoff](GITHUB_AND_HANDOFF.md) for what is committed and what must be
+supplied separately.
+
 ## Required local resources
 
 This is a runnable delivery for the existing reviewed installation. Cloning Git
@@ -44,7 +61,8 @@ machine must receive the reviewed resources separately:
 - Existing `telescope-m3-qdrant` and gateway containers, their private
   `telescope-m3-local` network and persistent database volume.
 
-The host Python/locked uv environment validates resources before startup. The API
+The launcher needs the workspace `.tools/uv/bin/uv.exe` or `uv` on PATH, plus the
+compatible host Python/locked environment used for resource validation. The API
 itself runs with locked dependencies inside the image. No crawl, corpus embedding,
 index replacement, alias publication or automatic source refresh occurs. Missing
 or incompatible resources fail closed.

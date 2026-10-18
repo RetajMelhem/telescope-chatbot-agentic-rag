@@ -2,10 +2,28 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Documentation review: the README, scope, architecture, pipeline, provider/API
+contracts, roadmap and deployment guides now distinguish the current local MVP
+from earlier experiments and future production work. `docs/README.md` maps the
+documents; `docs/GITHUB_AND_HANDOFF.md` separates tracked software from excluded
+data, tokenizer, secrets and Qdrant volume. The supplied GitHub destination is
+configured as `origin`; no remote publication is included in this documentation
+task. Current Docker inventory: API, Qdrant and Nginx gateway (three containers).
+Luna/Qwen are hosted via OpenRouter. Checked 38 Markdown files / 277 local links
+and anchors with no missing targets, unchanged template values, Compose validity,
+runtime mounts/container names, local OpenAPI fields/enums and five non-inference
+HTTP endpoints (all 200). Lint, format and lockfile checks pass. Current tracked
+files pass known-key/pattern and generated
+resource exclusions; Git history was not scanned and no push was performed.
+No runtime code/source data changed or inference calls ran. Evidence:
+`artifacts/mvp-docs-review-v1/verification.json`. Next: ordinary local acceptance;
+remote publication and new-machine data/restore handoff remain separate actions.
+
 **Local MVP delivered for bounded development use.** Start with `run-mvp.ps1` and
 open `http://127.0.0.1:8000/`; Stop/Status/Restart are documented in
-`docs/LOCAL_MVP_DOCKER.md`. FastAPI/LangGraph/Luna/Qwen now run in a verified local
-API image using the existing Qdrant volume/network. Runtime data/tokenizer and
+`docs/LOCAL_MVP_DOCKER.md`. FastAPI/LangGraph run in a verified local API image,
+calling Luna/Qwen through OpenRouter and using the existing Qdrant volume/network.
+Runtime data/tokenizer and
 file secrets stay outside the image, mounted read-only; no admin key is supplied.
 Actual non-root/read-only/loopback settings, missing-secret refusal, server-enforced
 read-key denial and API recreation/readiness pass. No corpus/index/alias change.
@@ -21,7 +39,8 @@ readable, source-owned qualification items. Compound parts can still repeat name
 48 citation occurrences / 20 chunks / 11 original pages / 151 DOM spans verify.
 Only the doctor case was repeated after the final changes, not the whole cohort.
 
-Observed balance: **$0.175885100 remaining**, $0.037776615 key-window increase;
+Last recorded local-acceptance balance: **$0.175885100 remaining**,
+$0.037776615 key-window increase;
 aggregate metadata is not per-request billing reconciliation. Broad doctor replies
 still took about 52 seconds; optimization is deferred. Evidence:
 `artifacts/local-mvp-delivery-v1/`; current acceptance: `docs/LOCAL_MVP_ACCEPTANCE.md`.
