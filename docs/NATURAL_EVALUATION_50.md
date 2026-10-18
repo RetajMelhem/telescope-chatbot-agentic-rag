@@ -91,6 +91,25 @@ timeout, invalid response or unknown dispatch outcome stops further questions.
 These call limits are not a hard USD cap. Provider spending is governed by the
 key configured through the installer; the evaluator cannot inspect its balance.
 
+After a stopped run, an explicitly authorized continuation can collect only its
+unsent suffix. On 2026-10-19 the user chose to complete all remaining questions
+before fixing any problems. The separate helper preserves the original failed
+case, attempts each remaining question once, and records per-case errors while
+continuing. Runtime/configuration drift or a failure to preserve receipts stops
+the continuation. It checks the original run with the strict scorer before any
+request, pins its own code hash and parent hashes, and verifies the same installed
+runtime. It never edits the original run or the sealed evaluation modules.
+
+```powershell
+uv run --locked python -m scripts.continue_installed_evaluation --plan artifacts/natural-evaluation-50-v3 --parent-run artifacts/natural-evaluation-50-installed-run-v1 --output artifacts/NEW_CONTINUATION --execute
+```
+
+Its `combined/` directory assembles the exact original case bytes and the new
+suffix, with provenance and both batches' receipts. This is the original cohort
+observed in two authorized batches, not 50 new requests. Score that combined
+directory with the ordinary offline scorer. The helper's own hash is separately
+bound in continuation provenance; the original sealed module hashes stay intact.
+
 Score completed receipts offline, then fill the resulting case-bound review
 against the answer key, returned answer and cited source text:
 
