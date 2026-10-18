@@ -2,7 +2,10 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
-Portable MVP recovery verified locally (2026-10-18); remote publication is next.
+Portable MVP v0.1.0 published and recovery verified (2026-10-18).
+Code/main and tag are pushed to the supplied repository. All six assets are live:
+https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.1.0
+Release source revision: `603e388a59f88bafd722b560634af2a01363d5f1`.
 The user authorized GitHub code plus public Release assets, with secrets separate.
 The product uses **two containers: API + Qdrant**. Nginx is excluded because the
 API reads Qdrant directly; existing development containers/volume remain unchanged.
@@ -32,9 +35,19 @@ checks. Known-key/pattern scans cover tracked code/history, required source,
 native snapshot and nested image archives. This is bounded secret checking, not
 proof against every secret format. Evidence: `artifacts/portable-verification-v1/`.
 See `docs/PORTABLE_MVP.md` for install/update/rollback and optional Drive copies.
-**Next:** capture the final image/source-bound assets, publish code/tag and complete
-GitHub Release, then verify remote downloads. No model call/corpus embedding or
-active-alias change ran. Remaining OpenRouter credit is reserved for user questions.
+A fresh clone of the public tag used its installer to download the public ZIP and
+snapshot into a new directory, restore a new volume, compare all 955 full points
+and become healthy. Verified image IDs were reused from the local Docker cache;
+image archive save/load was tested separately. Public release manifest/checksum
+bytes match local originals, and GitHub reports matching SHA256s for all six
+assets. Start/Stop/Status also pass. Temporary owned test containers/volumes are
+removed after checks; the original three development containers remain. No Drive
+mirror was created; a matching source/assets copy there is optional.
+**Next:** install from the public tag/Release when needed, supplying a private
+OpenRouter key; ordinary local use remains available through `run-mvp.ps1`.
+No model call/corpus embedding or active-alias change ran in this preservation
+work. Documentation-only handoff updates after the immutable release tag do not
+change its image/data contents. Remaining credit is reserved for user questions.
 
 Documentation review: the README, scope, architecture, pipeline, provider/API
 contracts, roadmap and deployment guides now distinguish the current local MVP

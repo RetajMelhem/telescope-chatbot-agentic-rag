@@ -47,10 +47,13 @@ See [portable installation](PORTABLE_MVP.md) for the minimal asset inventory.
 
 The supplied GitHub destination is
 [RetajMelhem/telescope-chatbot-agentic-rag](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag).
-The local `origin` remote is configured to its HTTPS Git URL. Local commits exist;
-this documentation task does not push them. Inspect tracked files,
-staged changes and history for secrets before the first push; an ignore rule does
-not remove material already committed in history.
+The local `origin` remote is configured to its HTTPS Git URL. Main and the immutable
+`v0.1.0` tag are pushed. The [v0.1.0 Release](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.1.0)
+contains the knowledge ZIP, native database snapshot, two images, manifest and
+checksums. Public downloads and an installation from a fresh tag clone were tested.
+Code/history and assets passed known-key/selected-pattern scanning; that is bounded
+checking, not proof against every secret format. Keep inspecting staged changes
+and future history: an ignore rule cannot remove already committed content.
 
 Useful local inspection commands:
 
