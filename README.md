@@ -9,8 +9,13 @@ It accepts English, Arabic and everyday Jordanian Arabic questions.
 For another Windows computer, use the versioned [portable installation](docs/PORTABLE_MVP.md):
 
 ```powershell
-.\install-mvp.ps1 -Version v0.1.0
+.\install-mvp.cmd -Version v0.1.0
 ```
+
+Start Docker Desktop and extract the complete project ZIP first. You can also
+double-click [install-mvp.cmd](install-mvp.cmd) to install v0.1.0. The launcher
+uses a temporary PowerShell execution-policy bypass for its installer process;
+it does not change the saved Windows policy or remove downloaded-file markers.
 
 It downloads the reviewed data, existing Qdrant vectors and two ready-built images
 from the matching GitHub Release. No corpus parsing/chunking/embedding is required.

@@ -2,6 +2,35 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Latest installer entry point: **`install-mvp.cmd` avoids the downloaded unsigned
+PowerShell script block without changing saved execution policy**. With no
+arguments it runs the existing installer for v0.1.0 and pauses to display the
+result; explicit arguments forward install/update/status/start/stop options and
+the installer exit code. It uses process-only `-ExecutionPolicy Bypass`, resolves
+the sibling script independently of the working directory and clears inherited
+module paths locally so Windows PowerShell 5.1 can load its own modules when
+started from PowerShell 7. README and the portable guide now use this entry point;
+`.cmd` checkouts use CRLF. Existing installer content is unchanged.
+
+Eight actual offline Windows/cmd checks pass against a downloaded-marked fake
+installer: reproduction of the RemoteSigned refusal, successful launcher execution,
+Arabic/spaced/shell-character paths and parameters, no-argument defaults/pause,
+action forwarding, failure exit codes, missing-script handling, unchanged parent
+policy/module path and retained download markers. The count includes the separate
+Windows PowerShell 5.1 module-load check. Evidence:
+`artifacts/installer-launcher-check-47195d1c6f73/report.json`.
+All 47 local Markdown link targets in the changed documents resolve; scoped
+whitespace/credential-pattern and launcher CRLF checks pass. The Python suite was
+not rerun because application Python and the PowerShell installer are unchanged.
+Launcher verification made no real installation, Docker command or model request.
+Publication is limited to the launcher, its line-ending rule and installation/status
+documentation, using a fresh Git clone of current main. Other devices need the
+updated main source or this launcher beside their installer. The immutable v0.1.0
+tag, image/data Release assets and installer implementation are unchanged.
+Organization-enforced policies still apply. A later user-reported Docker image
+lookup failure is separate and remains unresolved. **Next:** diagnose that failure
+and verify the launcher on a second Windows device.
+
 Latest portability check: **public GitHub main installs healthy without existing
 application resources on this laptop**. `scripts/test_portable_cold_install.ps1`
 cloned public revision `1fbdd6d2b2a04c9ff12dae5e133dba8f0cb8076b` into a new

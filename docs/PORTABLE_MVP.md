@@ -8,12 +8,28 @@ Other operating systems and ARM machines have not been validated.
 
 ## Install and run
 
-Clone the repository or download its matching source release, start Docker Desktop,
-then run PowerShell in the project directory:
+Use a source copy containing `install-mvp.cmd` beside `install-mvp.ps1`, start
+Docker Desktop, then run PowerShell in the project directory. Older source ZIPs
+need the new launcher copied into the extracted project folder; the existing
+v0.1.0 data and image assets remain compatible.
 
 ```powershell
-.\install-mvp.ps1 -Version v0.1.0
+.\install-mvp.cmd -Version v0.1.0
 ```
+
+For the simplest installation, extract the complete project ZIP, start Docker
+Desktop and double-click [install-mvp.cmd](../install-mvp.cmd). With no arguments
+it installs v0.1.0 and keeps the window open afterward so you can read the result.
+The launcher also accepts the existing installer's parameters, as shown above.
+
+The `.cmd` launcher starts the existing `install-mvp.ps1` with
+`-ExecutionPolicy Bypass` only for that PowerShell process. Downloaded, unsigned
+scripts can therefore run under the usual `RemoteSigned` policy without manually
+unblocking files. It does not change saved execution policies, unblock files or
+elevate privileges. Only run a project copy you trust. Organization-enforced Group
+Policy and Windows application controls still apply; this launcher does not
+override those restrictions. See Microsoft's
+[PowerShell process options](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_powershell_exe?view=powershell-5.1#-executionpolicy-executionpolicy).
 
 The installer downloads assets from the matching GitHub Release, checks hashes,
 loads the two images, restores a new database volume and checks every stored point,
@@ -28,9 +44,9 @@ installation and health checks make no model calls. Corpus vectors are restored,
 but new queries still need query embeddings and Luna generation.
 
 ```powershell
-.\install-mvp.ps1 -Action Status
-.\install-mvp.ps1 -Action Stop
-.\install-mvp.ps1 -Action Start
+.\install-mvp.cmd -Action Status
+.\install-mvp.cmd -Action Stop
+.\install-mvp.cmd -Action Start
 ```
 
 State, downloads, knowledge and private keys live in `%LOCALAPPDATA%\TelescopeRag`.
@@ -85,7 +101,7 @@ retained for diagnosis rather than overwritten automatically.
 
 If Docker loses the installed database volume while the installation directory
 survives (for example, after a Docker reset or switching to an empty Docker context),
-rerun `.\install-mvp.ps1 -Version v0.1.0` using the version you want installed.
+rerun `.\install-mvp.cmd -Version v0.1.0` using the version you want installed.
 The installer checks that the saved volume actually exists before reusing it.
 A missing volume is recreated from the hash-verified release snapshot and all
 stored points are checked before serving; intact volumes are reused. Existing
