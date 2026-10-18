@@ -24,9 +24,10 @@ whitespace checks pass. The prior 2,300-test Python run is separate evidence.
 The test shares the host Windows/Docker Desktop/kernel and uses an explicit Docker
 command adapter for nested mount paths; a pristine Windows/second-machine install,
 provider authentication and new live answers remain unverified. **Next:** ordinary
-local use or a separately authorized live-answer test. The missing-volume fix and
-this repeatable test helper still exist only in local commits; no push/release
-publication was performed in this task.
+local use or a separately authorized live-answer test. The user-authorized push
+published the missing-volume fix (`d8153a5`) and repeatable test helper (`f774852`)
+to GitHub `main` on 2026-10-18. Existing v0.1.0 release/tag, data and Docker image
+assets remain unchanged.
 
 Latest local repair: the saved portable installation record survived but its
 database volume was absent in Docker's `desktop-linux` context. Matching knowledge
@@ -48,7 +49,7 @@ Knowledge identity remains `a16414530c40e991c3b0b506d9b30d2bac3d57587d36aa39759c
 No model call, embedding, release/image change or remote publication ran.
 **Next:** use the local chatbot; rerun `-Version` (rather than `-Action Start`)
 to recover if a saved installation's database volume is missing again. The fix
-is local source only; the public release/tag has not been changed.
+changes installer source only; the public release/tag has not been changed.
 
 Same-day testing recheck: all 38 recovery/PowerShell tests pass again; current
 955 full IDs/vectors/payloads/configuration and 116 runtime files match the release.
