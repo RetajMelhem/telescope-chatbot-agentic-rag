@@ -436,6 +436,16 @@ def test_request_history_source_and_provider_error_never_enter_default_logs(capl
         )
         assert payload["query"] not in rendered and main.retrieval_text not in rendered
         assert "SYNTHETIC-SECRET-ERROR" not in rendered and "synthetic-only" not in rendered
+        events = [json.loads(line) for line in rendered.splitlines()]
+        failures = [row for row in events if row["event"] == "chat_workflow_failed"]
+        if mode == "provider_failure":
+            assert len(failures) == 1
+            assert failures[0]["failure_code"] == "provider_failed"
+            assert failures[0]["failure_stage"] == "plan_query"
+            assert failures[0]["provider_outcome"] == "provider_authentication_failed"
+            assert failures[0]["request_id"]
+        else:
+            assert failures == []
     finally:
         logging.getLogger("telescope_rag").removeHandler(caplog.handler)
         asyncio.run(providers.aclose())

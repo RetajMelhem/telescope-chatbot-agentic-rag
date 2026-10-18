@@ -31,6 +31,8 @@ experiments remain documented for traceability; their dated counts, balances and
 - [50 approved everyday user questions](NATURAL_QUESTIONS_50_DRAFT.md) and
   [source-backed evaluation runbook](NATURAL_EVALUATION_50.md): 25 Jordanian Arabic /
   English pairs; installed v0.1.0 HTTP execution, source review and metric limits.
+- [Targeted diagnosis and fixes](NATURAL_EVALUATION_FIXES.md): seven problem cases,
+  preserved baseline, local candidate verification and unconfirmed historical 502 causes.
 
 These documents may retain dated development sections. Current local serving is
 the explicit Docker/host factory; the default `api.main:create_app` still fails

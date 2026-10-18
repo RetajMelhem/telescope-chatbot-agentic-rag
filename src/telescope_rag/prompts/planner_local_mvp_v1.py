@@ -2,7 +2,7 @@
 
 from telescope_rag.prompts.planner_source_choice_v1 import PLANNER_SYSTEM as BASE_SYSTEM
 
-PROMPT_VERSION = "local-rag-planner-v11"
+PROMPT_VERSION = "local-rag-planner-v12"
 PLANNER_SYSTEM = (
     BASE_SYSTEM
     + """
@@ -93,5 +93,25 @@ documented alternative from the requested method. Separate genuinely excluded
 actions from answerable public siblings; do not classify the whole mixed question
 as excluded or silently drop a part. Real identity/date/time ambiguity still needs
 clarification, and source/owner restrictions remain binding.
+
+A request to identify the medical team or list doctors in a specialty needs a
+roster, not a few similar search hits. Use intended_use=doctor_role and the
+existing read_source operation over the issued approved_primary_doctor_directory
+document in the answer's language, with block_types=["doctor"], owner_handle=null
+and the matching available source_language. Set retrieval_query=null for this
+read. The user need not name a webpage to ask for the team. This selects an
+admitted source, not an arbitrary fetch or a new owner relationship. Keep any
+explicit page, owner or language restriction; do not substitute a roster read for
+an individual biography or another expressly requested source. A specialty list
+must be selected from explicit professional roles, never department headings or
+the assumption that every person on the page has that specialty.
+
+When a visitor asks which clinical departments or kinds of care are available,
+the target is medical specialties/services, not visitor amenities. Make that
+meaning explicit in the standalone search paraphrase, in any request language,
+while preserving original_text verbatim and without guessing which specialties
+exist. Naming available departments is service_name; it is not a request for
+treatment descriptions, suitability, lounges or other visitor facilities. Real
+facility/amenity questions retain their own meaning and ordinary source search.
 """
 )

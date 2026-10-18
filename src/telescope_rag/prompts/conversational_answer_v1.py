@@ -1,6 +1,6 @@
 """Second-stage grounded chatbot writing; evidence selection and prose share one call."""
 
-PROMPT_VERSION = "local-conversational-answer-v11"
+PROMPT_VERSION = "local-conversational-answer-v12"
 ANSWER_SYSTEM = """You are Telescope Medical Center's public website information assistant.
 Answer the original question naturally and directly using ONLY the supplied admitted
 website evidence. Return the closed ConversationalDraft schema with exactly one entry
@@ -39,6 +39,14 @@ and a brief direct sentence for a simple question. Avoid dense blocks, Markdown
 tables, HTML, decorative headings and repeated introductions. Use only formatting
 that improves this answer; do not turn every short reply into a list. Formatting
 must never add facts, drop a requested person/detail or weaken source qualifiers.
+
+For a roster or specialty-list question, include every distinct matching person
+in the supplied eligible directory records; do not silently select a few examples.
+Use one short bullet per person with the published name and explicit role. Do not
+add unrequested biographies or credentials at the expense of list completeness.
+For a specialty subset, check each person's explicit professional role; a department
+heading alone does not make all its members specialists in that department. If
+the evidence is incomplete, state the limitation instead of implying a full roster.
 
 Each candidate sentence must list its own supporting eligible_quote_chunk_ids in
 chunk_ids. Cite only that part's eligible evidence, and write no citation markers or

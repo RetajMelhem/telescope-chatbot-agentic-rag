@@ -1,5 +1,6 @@
 """Explicit nonproduction composition; no default clients, credentials or acceptance claims."""
 
+import logging
 from typing import Literal
 from uuid import UUID
 
@@ -8,6 +9,7 @@ from telescope_rag.api.responses import OfflineChatResponse
 from telescope_rag.api.schemas import ChatRequest
 from telescope_rag.api.validation import validate_chat_limits
 from telescope_rag.core.errors import ApplicationError
+from telescope_rag.core.logging import safe_workflow_failure
 from telescope_rag.core.settings import Settings
 from telescope_rag.graph.contracts import (
     EvidenceRetriever,
@@ -82,6 +84,18 @@ class OfflineChatService:
         if result.request_id != request_id.hex:
             raise ApplicationError(502, "offline_draft_failed", "The offline draft is invalid.")
         if result.outcome == "failed":
+            receipts = run.usage.receipts
+            logging.getLogger("telescope_rag").warning(
+                "chat_workflow_failed",
+                extra={
+                    "request_id": request_id.hex,
+                    **safe_workflow_failure(
+                        failure_code=result.error_code,
+                        failure_stage=run.stages[-1] if run.stages else "unknown",
+                        provider_outcome=receipts[-1].outcome if receipts else "not_attempted",
+                    ),
+                },
+            )
             if result.error_code == "deadline_exceeded":
                 raise ApplicationError(
                     504, "request_timeout", "The request could not finish within its deadline."

@@ -2,6 +2,49 @@
 
 Last updated: 2026-10-19 (Asia/Amman).
 
+Latest targeted fixes (2026-10-19): **all seven exact problem questions returned
+HTTP 200 and passed provisional AI source review on a separate local candidate**;
+43/43 required facts delivered. No subagents were used, following the user's
+limit preference. Original v0.1.0 and all baseline answers remain unchanged.
+
+Traces from ten bounded unchanged-image diagnostic requests reproduced partial
+rosters and the English clinics retrieval miss. Planner/writer v12 use the existing
+complete primary-directory read for rosters, concise exhaustive matching roles,
+and faithful clinical-specialty search meaning. Eleven staff fit existing limits
+(3,573 English / 3,859 Arabic tokens). Rerun staff lists are 11/11 in both languages;
+eye-doctor lists are 8/8 in both; parking, cataract and specialties now answer.
+No corpus/index, model, budget, provider retry, semantic runtime classifier or
+benchmark-specific rule was added.
+
+**The exact causes of the three historical 502s remain unconfirmed.** Each passed
+two unchanged-image diagnostic attempts and the candidate HTTP rerun. New closed,
+content-free operational failure events record request ID, stage, workflow code
+and provider outcome; secrets/request/source/upstream bodies remain excluded.
+Strict public errors/validation and no-retry behavior are preserved. Passing
+stochastic reruns do not prove permanent resolution of an unreproduced error.
+
+Candidate: `http://127.0.0.1:8001/`, container `telescope-evalfix-r1-api`, image
+`sha256:408debd82ea942430cfae3558695d2da0365065f8fdcf51916ccea60a88bd174`.
+All 99 Python package files match this checkout. Factory/command, mounted source,
+credentials, private read-only database, dependencies and settings match the local
+profile. Installed v0.1.0 stays at `http://127.0.0.1:8000/`; original container
+identity/start time, mounts, networks and installation records still match.
+No installer/release/tag update or remote publication ran.
+
+Evidence: `artifacts/natural-evaluation-fixes-candidate-r1/` contains `REPORT.md`,
+`RESPONSES.md`, `diagnosis-each-case.json`, identity/final verification and seven
+raw HTTP responses/review/scores/comparison in `rerun-v1/`. Diagnostic ASGI data
+under `artifacts/natural-evaluation-fixes-diagnostic-v1/` and `-v2/` is distinct
+from the real HTTP rerun. Targeted median/p95: 10.11/12.89 seconds. This is not a
+new full-50 score, independent human validation or production acceptance.
+
+**2,415 full guarded offline tests pass**, followed by nine focused logging and
+diagnostic-selection checks; Ruff lint/format pass. Original source/gold/questions
+are preserved; the historical v3 code seal was verified from Git `92b6652`, while
+candidate hashes are separate. See `docs/NATURAL_EVALUATION_FIXES.md`.
+**Next:** local candidate review/use; investigate any recurrent 502 from its safe
+failure event. Publish a versioned installer release only when requested.
+
 Latest evaluation: **all 50 approved questions completed once against the installed
 v0.1.0 HTTP API** (2026-10-19). The user selected `install-mvp.ps1 -Version v0.1.0`
 and confirmed installation/key setup. Exact release/images/command/configuration,

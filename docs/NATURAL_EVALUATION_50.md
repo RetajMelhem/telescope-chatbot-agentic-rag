@@ -149,6 +149,11 @@ The older in-process capture code remains an offline diagnostic helper. It is
 not the selected execution path, and its trace metrics must not be mixed with
 installed HTTP observations.
 
+The completed baseline is preserved at checkpoint `92b6652`. After application
+changes, its v3 code seal must be verified against that historical checkout rather
+than overwritten. [Targeted diagnosis and candidate results](NATURAL_EVALUATION_FIXES.md)
+retain separate code/image/response bindings and do not replace the original run.
+
 ## Verification
 
 Tests use synthetic installation files, mocked Docker/HTTP responses and fake
