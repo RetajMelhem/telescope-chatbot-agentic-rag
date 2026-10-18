@@ -2,7 +2,38 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
-Latest evaluation preparation: **50 everyday questions drafted for user review,
+Latest evaluation preparation: **all 50 questions approved; source-backed answer
+key, capture runner and scoring protocol prepared offline**. The user approved
+the two price cases and will supply/configure the API key when needed. The current
+package is `artifacts/natural-evaluation-50-v2/`: unchanged request bytes, reviewed
+gold, readable `ANSWER_KEY.md`, null human judgments and sealed `plan.json`.
+Two sibling source reviews plus one repaired review establish 50 minimum required
+fact/groups with 470 exact positive quotations from 299 admitted chunks. Optional
+doctor-assessment advice is not required for the PRK/LASIK comparison; U25 has no
+positive price-amount group. All 116 source file hashes and the prepared digest
+were reverified. Preparation v1 is preserved but superseded after capture fixes.
+
+The evaluation-only scripts use the existing local MVP factory/HTTP route without
+serving/prompt/retrieval/index changes. Receipts distinguish dense hits, merged
+candidates, actual writer eligibility, citations, reported usage and available
+existing-response costs. Case/code/source/plan bindings, no repeat after failures,
+honest nulls and human semantic review are enforced. `ar-JO` inputs map to API `ar`
+without changing the approved question. Latency is in-process application HTTP
+time, not deployed network/load performance. **2,334 full guarded offline tests
+pass**, including 34 new runner/trace/review cases; Ruff lint and format pass.
+Evidence: `artifacts/natural-questions-50-source-v1/offline-suite-final.xml` and
+the v2 preparation verification. See `docs/NATURAL_EVALUATION_50.md`.
+
+No live evaluation, provider/embedding/billing call, database/Docker operation,
+runtime credential change or remote publication ran. This clone still lacks its
+serving-root source files, project `.env` key and Qdrant read key; an existing
+compatible database, current provider pricing/allowance and a spend boundary must
+be verified before live execution. Call/deadline caps are not a hard USD cap.
+**Next:** obtain/configure the user's project OpenRouter key, prepare/verify the
+selected local runtime, then authorize the bounded live run. Do not approve the
+questions again or infer answer-quality results from offline tests.
+
+Earlier evaluation preparation: **50 everyday questions drafted for user review,
 not approved for execution**. `docs/NATURAL_QUESTIONS_50_DRAFT.md` contains 25
 Jordanian Arabic / English intent pairs; request-only JSONL is in
 `tests/fixtures/evaluation/natural_questions_50_v1/requests.jsonl`. The first six

@@ -1,6 +1,8 @@
-# Everyday user questions: 50-question review draft
+# Approved everyday user questions: 50 requests
 
-Prepared 2026-10-18. **Awaiting user review; evaluation is not authorized to run.**
+Prepared and approved by the user on 2026-10-18, including both price questions.
+**Question approval is complete. Paid evaluation has not run.** The original
+filename is retained so existing links continue to work.
 
 There are 25 everyday intents, each written as one independent Jordanian Arabic
 question and one natural English question: **25 Arabic + 25 English = 50 requests**.
@@ -68,9 +70,8 @@ saved knowledge, not whether the chatbot can retrieve it or answer correctly.
 - Keep each language pair together in any later development/evaluation split.
   Fifty requests represent 25 paired intents, not 50 independent observations.
   This visible draft is not an unseen holdout or a frozen, fully scored benchmark.
-- Source witnesses are selected known positives. Detailed required facts,
-  acceptable alternatives and per-question scoring rubrics remain to be finalized
-  after the user approves the questions, before any evaluation is run.
+- Source witnesses are selected known positives. The source-backed answer key and
+  scoring rules are now prepared; see the [evaluation runbook](NATURAL_EVALUATION_50.md).
 
 ## Files and next step
 
@@ -84,6 +85,8 @@ The downloaded knowledge and local source-review receipts remain under ignored
 `artifacts/natural-questions-50-source-v1/`; they are not Git content or serving data.
 The receipt records source bindings and selected passages separately from requests.
 
-**Next:** the user reviews/edits these 50 questions. No evaluation has run. Do not
-treat preparation, a local checkpoint or approval of a file edit as permission to
-send questions to the bot or a paid provider.
+**Next:** configure the selected runtime and project API key, check current
+allowance/pricing and agree the live run's spend boundary before execution. The
+user asked to be notified when the API is needed. Do not infer paid execution
+authorization from this prepared artifact. The approved question bytes remain
+unchanged.

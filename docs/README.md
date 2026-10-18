@@ -28,8 +28,9 @@ experiments remain documented for traceability; their dated counts, balances and
   [local service/context repair](SERVICE_RETRIEVAL_REPAIR.md).
 - [Deployment](DEPLOYMENT.md), [roadmap](IMPLEMENTATION_PLAN.md),
   [evaluation plan](EVALUATION.md) and [completion/budget policy](COMPLETION_BUDGET.md).
-- [50 everyday user questions, awaiting review](NATURAL_QUESTIONS_50_DRAFT.md):
-  25 Jordanian Arabic / English pairs; no evaluation execution yet.
+- [50 approved everyday user questions](NATURAL_QUESTIONS_50_DRAFT.md) and
+  [source-backed evaluation runbook](NATURAL_EVALUATION_50.md): 25 Jordanian Arabic /
+  English pairs; offline preparation complete, live execution not started.
 
 These documents may retain dated development sections. Current local serving is
 the explicit Docker/host factory; the default `api.main:create_app` still fails
