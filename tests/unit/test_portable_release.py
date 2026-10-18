@@ -215,6 +215,23 @@ def test_crypto_parser_header_is_not_private_key_material():
         r.scan_bytes(header + b"\n" + b"A" * 64 + b"\n-----END PRIVATE KEY-----")
 
 
+def test_public_vendor_exception_never_bypasses_known_keys(tmp_path, monkeypatch):
+    raw = b"sk-or-v1-" + b"z" * 40  # Synthetic public fixture.
+    name = "vendor.bin"
+    monkeypatch.setattr(r, "PUBLIC_VENDOR_FILES", {name: hashlib.sha256(raw).hexdigest()})
+    path = tmp_path / "vendor.tar"
+    with tarfile.open(path, "w") as archive:
+        info = tarfile.TarInfo(name)
+        info.size = len(raw)
+        archive.addfile(info, io.BytesIO(raw))
+    r.inspect_archive(path, ())
+    with pytest.raises(ValueError, match="secret_detected"):
+        r.inspect_archive(path, (raw,))
+    monkeypatch.setattr(r, "PUBLIC_VENDOR_FILES", {name: "a" * 64})
+    with pytest.raises(ValueError, match="secret_detected"):
+        r.inspect_archive(path, ())
+
+
 def test_database_checks_all_payloads_vectors_and_pages(monkeypatch):
     rows = [
         {"id": 1, "payload": {"owner": "لينا"}, "vector": [0.1]},

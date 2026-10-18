@@ -50,6 +50,11 @@ REQUIRED = (
 )
 Hex = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 MAX_UNPACKED = 600_000_000
+# GnuTLS includes public PEM test material. Verified byte-for-byte against the
+# pinned official Python base image, without mounting any project files/secrets.
+# This exact vendor file alone may bypass pattern matches; known keys never do.
+GNUTLS_SHA256 = "779b25d20249988bea2c1aa6bbeb218f5ae7ea8a9d30ce4f54ea37372965cc4b"
+PUBLIC_VENDOR_FILES = {"usr/lib/x86_64-linux-gnu/libgnutls.so.30.34.3": GNUTLS_SHA256}
 
 
 class Record(BaseModel):
@@ -282,9 +287,13 @@ def inspect_archive(path: Path, known: tuple[bytes, ...]) -> int:
                 source = archive.extractfile(member)
                 raw = source.read()
                 total += len(raw)
-                scan_bytes(raw, known)
+                if any(secret and secret in raw for secret in known):
+                    raise ValueError("release_secret_detected")
+                scan_bytes(member.name.encode(), known)
                 if raw[:2] == b"\x1f\x8b" or raw[257:262] == b"ustar":
                     inspect(io.BytesIO(raw), depth + 1)
+                elif PUBLIC_VENDOR_FILES.get(member.name) != hashlib.sha256(raw).hexdigest():
+                    scan_bytes(raw)
 
     with path.open("rb") as source:
         inspect(source, 0)

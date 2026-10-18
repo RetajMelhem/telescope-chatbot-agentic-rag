@@ -14,10 +14,11 @@ offline tests and the full 2,287-test suite pass; Ruff and Compose/PowerShell pa
 checks pass. Native snapshot capture, isolated cold restore, update/rollback and
 remote publication are next and not yet claimed verified. No model call ran.
 
-First capture stopped before publication on an isolated PEM header constant in
-the official base image's GnuTLS library; no private key body was present. The
-scanner now distinguishes complete PEM material from parser markers while
-retaining exact known-key and provider-key checks. A regression case covers both.
+Capture stopped before publication on public PEM parser/test material in the
+official base image's GnuTLS library. Its exact file SHA was independently matched
+against the pinned official Python image. Only that exact vendor file may bypass
+pattern matches; known project keys remain checked everywhere. Regressions cover
+parser markers, complete PEMs and the vendor exception's known-key protection.
 
 Documentation review: the README, scope, architecture, pipeline, provider/API
 contracts, roadmap and deployment guides now distinguish the current local MVP
