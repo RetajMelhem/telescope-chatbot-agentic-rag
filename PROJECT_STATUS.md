@@ -2,6 +2,20 @@
 
 Last updated: 2026-10-19 (Asia/Amman).
 
+v0.2.0 release preparation (2026-10-19): the user explicitly authorized pushing
+and publishing the tested fixes as **v0.2.0**, and requested a Windows Qdrant
+dashboard port for future installations. Package/API metadata and the launcher
+default now select 0.2.0. The installer publishes authenticated Qdrant REST on
+`127.0.0.1:6333` with a persisted `-QdrantPort` override; it keeps gRPC private and
+prints the dashboard URL and read-only key file path without printing credentials.
+The existing 955-vector knowledge and original v0.1.0 installation are preserved.
+Publication and isolated install/upgrade/rollback checks are in progress; no new
+model requests are authorized or needed. See [release scope](docs/RELEASE_V0_2_0.md).
+All **2,445 guarded offline tests** and full Ruff lint/format pass, including
+legacy state migration, custom/default dashboard ports, saved-port validation
+and existing volume protection. The lockfile changes only this package's version;
+runtime dependency pins are unchanged.
+
 Latest offline remeasurement (2026-10-19): **zero new bot/provider/judge requests**.
 Recomputed the original full-50 baseline from saved raw replies and case-bound
 provisional AI reviews; every per-case score and original aggregate matched.

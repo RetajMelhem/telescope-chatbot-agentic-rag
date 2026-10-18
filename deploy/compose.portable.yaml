@@ -5,6 +5,7 @@ services:
     pull_policy: never
     container_name: ${PORTABLE_PROJECT}-qdrant
     restart: unless-stopped
+    ports: ["127.0.0.1:${PORTABLE_QDRANT_PORT:-6333}:6333"]
     volumes:
       - knowledge:/qdrant/storage
       - type: bind

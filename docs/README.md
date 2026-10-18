@@ -13,6 +13,7 @@ experiments remain documented for traceability; their dated counts, balances and
 | [Docker runbook](LOCAL_MVP_DOCKER.md) | Existing-installation Start/Stop/Status/Restart and exact prerequisites |
 | [GitHub and handoff](GITHUB_AND_HANDOFF.md) | Code versus excluded data/secrets, containers and new-machine limitations |
 | [Portable MVP](PORTABLE_MVP.md) | Minimal two-container release, saved vectors, installer, updates and rollback |
+| [v0.2.0 release](RELEASE_V0_2_0.md) | Tested answer fixes, localhost Qdrant dashboard, and release limits |
 | [Local API/host alternative](LOCAL_MVP.md) | API examples, response behavior and alternative host launcher |
 | [Acceptance evidence](LOCAL_MVP_ACCEPTANCE.md) | Checks actually run, failures/fixes, spend observations and unverified areas |
 

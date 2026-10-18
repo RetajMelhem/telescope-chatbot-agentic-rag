@@ -7,7 +7,7 @@ No existing installation, application image, volume or private key is supplied.
 #>
 [CmdletBinding()]
 param(
-    [ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version = 'v0.1.0',
+    [ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version = 'v0.2.0',
     [string]$OutputDirectory,
     [string]$DockerContext = 'desktop-linux'
 )
@@ -167,6 +167,13 @@ try {
     $report.api_read_only_root = $inspection.HostConfig.ReadonlyRootfs
     $report.api_health = $inspection.State.Health.Status
     if ($report.api_health -cne 'healthy') { throw 'The isolated API is not healthy.' }
+    $databaseInspection = (Inner-Docker -Arguments @('inspect',"$instance-qdrant") | ConvertFrom-Json)[0]
+    $bindings = @($databaseInspection.HostConfig.PortBindings.'6333/tcp')
+    if ($bindings.Count -ne 1 -or $bindings[0].HostIp -cne '127.0.0.1' -or
+        $bindings[0].HostPort -cne '6333' -or $databaseInspection.HostConfig.PortBindings.'6334/tcp') {
+        throw 'The dashboard must publish only the REST port on localhost.'
+    }
+    $report.qdrant_dashboard_loopback_binding = $true
     $httpCheck = @'
 import json, urllib.request
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -175,6 +182,15 @@ for route in ('/', '/health/live', '/health/ready', '/docs', '/openapi.json'):
     with opener.open('http://127.0.0.1:8000' + route, timeout=10) as response:
         results[route] = response.status
 assert all(code == 200 for code in results.values())
+with opener.open('http://telescope-m3-qdrant:6333/dashboard/', timeout=10) as response:
+    assert response.status == 200 and b'<html' in response.read().lower()
+results['qdrant_dashboard'] = 200
+from pathlib import Path
+key = Path('/run/secrets/qdrant_read_key').read_text().strip()
+request = urllib.request.Request('http://telescope-m3-qdrant:6333/collections', headers={'api-key': key})
+with opener.open(request, timeout=10) as response:
+    assert len(json.load(response)['result']['collections']) == 1
+results['qdrant_read_only_collections'] = 200
 print(json.dumps(results))
 '@
     $report.http_endpoints = Inner-Docker -Arguments @('exec',$apiName,'python','-c',$httpCheck) | ConvertFrom-Json

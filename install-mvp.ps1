@@ -6,6 +6,7 @@ param(
     [string]$InstallRoot = (Join-Path $env:LOCALAPPDATA 'TelescopeRag'),
     [ValidatePattern('^telescope-portable(?:-[a-z0-9-]{1,30})?$')][string]$Instance = 'telescope-portable',
     [ValidateRange(1024,65535)][int]$Port = 8000,
+    [ValidateRange(1024,65535)][int]$QdrantPort = 6333,
     [string]$OpenRouterKeyFile,
     [string]$EnvFile
 )
@@ -131,6 +132,20 @@ function Prepare-Secrets {
     $config = "telemetry_disabled: true`nlog_level: WARN`nservice:`n  enable_cors: false`n  api_key: $admin`n  read_only_api_key: $read`n"
     [IO.File]::WriteAllText((Join-Path $secretDir 'qdrant.yaml'), $config, [Text.Encoding]::ASCII)
 }
+function Get-QdrantPort($State) {
+    $savedPort = 6333
+    if ($State.PSObject.Properties['qdrant_port']) { $savedPort = [int]$State.qdrant_port }
+    if ($savedPort -lt 1024 -or $savedPort -gt 65535 -or $savedPort -eq [int]$State.port) {
+        throw 'The API and Qdrant need distinct valid localhost ports.'
+    }
+    return $savedPort
+}
+function Show-Endpoints($State) {
+    $dashboardPort = Get-QdrantPort $State
+    Write-Host "Portable MVP: http://127.0.0.1:$($State.port)/"
+    Write-Host "Qdrant dashboard: http://127.0.0.1:$dashboardPort/dashboard/"
+    Write-Host "Dashboard login: use the read-only key in $(Join-Path $secretDir 'read.key')"
+}
 function Compose-Settings($State) {
     $values = @{
         PORTABLE_PROJECT=$Instance; PORTABLE_INSTALLATION_ID=$owner.id
@@ -138,6 +153,7 @@ function Compose-Settings($State) {
         PORTABLE_SNAPSHOT=$State.snapshot; PORTABLE_VOLUME=$State.volume
         PORTABLE_API_IMAGE=$State.api_image; PORTABLE_PORT=[string]$State.port
         PORTABLE_QDRANT_IMAGE=$State.qdrant_image
+        PORTABLE_QDRANT_PORT=[string](Get-QdrantPort $State)
     }
     foreach ($pair in $values.GetEnumerator()) { [Environment]::SetEnvironmentVariable($pair.Key, $pair.Value, 'Process') }
 }
@@ -197,6 +213,12 @@ $secretDir = Join-Path $root 'secrets'
 $statePath = Join-Path $root 'current.json'
 $previousPath = Join-Path $root 'previous.json'
 $current = if (Test-Path -LiteralPath $statePath) { Read-Json $statePath } else { $null }
+if ($Action -eq 'Install') {
+    if ($current -and -not $PSBoundParameters.ContainsKey('Port')) { $Port = $current.port }
+    if ($current -and $current.PSObject.Properties['qdrant_port'] -and
+        -not $PSBoundParameters.ContainsKey('QdrantPort')) { $QdrantPort = $current.qdrant_port }
+    if ($Port -eq $QdrantPort) { throw 'The API and Qdrant need distinct valid localhost ports.' }
+}
 if ($Action -ne 'Install') {
     if (-not $current) { throw 'No successful portable installation exists here.' }
     if ($Action -eq 'Rollback') {
@@ -204,6 +226,7 @@ if ($Action -ne 'Install') {
         Start-State $previous
         Save-Json $current $previousPath
         Save-Json $previous $statePath
+        Show-Endpoints $previous
     } else {
         Compose-Settings $current
         switch ($Action) {
@@ -211,6 +234,7 @@ if ($Action -ne 'Install') {
             'Stop' { Compose -Arguments @('stop','api','qdrant') }
             'Status' { Compose -Arguments @('ps') }
         }
+        if ($Action -ne 'Stop') { Show-Endpoints $current }
     }
     return
 }
@@ -258,8 +282,7 @@ if ($reuse) {
     if ($existingVolume) { throw 'A target volume already exists. Refusing to restore over it.' }
     Run-Docker -Arguments @('volume','create','--label',"telescope.installation_id=$($owner.id)",'--label',"telescope.knowledge_id=$($manifest.knowledge_id)",$volume)
 }
-if ($current -and -not $PSBoundParameters.ContainsKey('Port')) { $Port = $current.port }
-$next = [PSCustomObject]@{version=$Version;knowledge_id=$manifest.knowledge_id;data_root=$dataRoot;snapshot=$snapshotFile;volume=$volume;api_image=$manifest.images.api.reference;qdrant_image=$manifest.images.qdrant.image_id;port=$Port}
+$next = [PSCustomObject]@{version=$Version;knowledge_id=$manifest.knowledge_id;data_root=$dataRoot;snapshot=$snapshotFile;volume=$volume;api_image=$manifest.images.api.reference;qdrant_image=$manifest.images.qdrant.image_id;port=$Port;qdrant_port=$QdrantPort}
 Compose-Settings $next
 if (-not $reuse) {
     Compose -Arguments @('--profile','restore','up','-d','qdrant_restore')
@@ -276,5 +299,5 @@ try {
 }
 if ($current -and $current.version -cne $Version) { Save-Json $current $previousPath }
 Save-Json $next $statePath
-Write-Host "Portable MVP ready: http://127.0.0.1:$Port/"
+Show-Endpoints $next
 Write-Host "Knowledge reused: $reuse. Installation made no model calls. New questions can spend OpenRouter credit."

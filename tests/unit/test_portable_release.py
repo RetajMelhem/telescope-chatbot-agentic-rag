@@ -353,12 +353,39 @@ Write-Output 'private-repeatable'
     assert result.stdout.strip() == "private-repeatable"
 
 
+@pytest.mark.parametrize("saved_port", [0, 65536, 8123])
+def test_saved_dashboard_port_cannot_be_invalid_or_overlap_api(saved_port):
+    shell = shutil.which("powershell.exe")
+    if shell is None:
+        pytest.skip("Windows PowerShell state validation")
+    script = r"""
+$ast=[Management.Automation.Language.Parser]::ParseFile(
+    (Join-Path $PWD 'install-mvp.ps1'),[ref]$null,[ref]$null)
+$definition=$ast.FindAll({param($node)
+    $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+    $node.Name -eq 'Get-QdrantPort'
+},$false)[0]
+Invoke-Expression $definition.Extent.Text
+try { Get-QdrantPort ([PSCustomObject]@{port=8123;qdrant_port=SAVED}); exit 2 }
+catch { Write-Output $_.Exception.Message }
+""".replace("SAVED", str(saved_port))
+    result = subprocess.run(
+        [shell, "-NoProfile", "-Command", script],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+    assert "distinct valid localhost ports" in result.stdout
+
+
 @pytest.mark.parametrize(
     "scenario",
     ["fresh", "missing", "present", "code_update", "collision", "bad_snapshot", "restore_failure"],
 )
+@pytest.mark.parametrize("dashboard_port", [None, 6444, "override"])
 def test_windows_installer_restores_missing_volume_without_overwriting_existing_data(
-    package, tmp_path, scenario
+    package, tmp_path, scenario, dashboard_port
 ):
     shell = shutil.which("powershell.exe")
     if shell is None:
@@ -402,6 +429,8 @@ def test_windows_installer_restores_missing_volume_without_overwriting_existing_
         "qdrant_image": manifest["images"]["qdrant"]["image_id"],
         "port": 8123,
     }
+    if dashboard_port is not None:
+        state["qdrant_port"] = 6444
     state_path = root / "current.json"
     has_current = scenario not in {"fresh", "collision"}
     if has_current:
@@ -415,6 +444,7 @@ def test_windows_installer_restores_missing_volume_without_overwriting_existing_
         "volume_present": scenario in {"present", "code_update", "collision"},
         "restore_failure": scenario == "restore_failure",
         "log": str(tmp_path / "docker.json"),
+        "override_dashboard_port": dashboard_port == "override",
     }
     fixture_path = tmp_path / "fixture.json"
     fixture_path.write_text(json.dumps(fixture))
@@ -457,6 +487,7 @@ function docker {
 $code=0
 try {
     $parameters=@{Version=$fixture.version;InstallRoot=$fixture.root;Instance='telescope-portable-test'}
+    if ($fixture.override_dashboard_port) { $parameters.QdrantPort=6550 }
     & $fixture.installer @parameters
 } catch { Write-Output $_.Exception.Message; $code=1 }
 $log=ConvertTo-Json -InputObject @($global:recoveryCalls) -Depth 10
@@ -494,6 +525,11 @@ exit $code
     assert actual_state["knowledge_id"] == release.knowledge_id
     assert actual_state["volume"] == volume
     assert actual_state["port"] == (8123 if has_current else 8000)
+    assert actual_state["qdrant_port"] == (
+        6550 if dashboard_port == "override" else 6444 if has_current and dashboard_port else 6333
+    )
+    assert f"http://127.0.0.1:{actual_state['qdrant_port']}/dashboard/" in result.stdout
+    assert "z" * 40 not in result.stdout + result.stderr
     assert actual_state["version"] == version
     assert data.is_dir()
     if scenario in {"present", "code_update"}:

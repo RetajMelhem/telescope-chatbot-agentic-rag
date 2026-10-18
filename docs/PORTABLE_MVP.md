@@ -14,12 +14,12 @@ need the new launcher copied into the extracted project folder; the existing
 v0.1.0 data and image assets remain compatible.
 
 ```powershell
-.\install-mvp.cmd -Version v0.1.0
+.\install-mvp.cmd -Version v0.2.0
 ```
 
 For the simplest installation, extract the complete project ZIP, start Docker
 Desktop and double-click [install-mvp.cmd](../install-mvp.cmd). With no arguments
-it installs v0.1.0 and keeps the window open afterward so you can read the result.
+it installs v0.2.0 and keeps the window open afterward so you can read the result.
 The launcher also accepts the existing installer's parameters, as shown above.
 
 The `.cmd` launcher starts the existing `install-mvp.ps1` with
@@ -42,6 +42,20 @@ Open [the chatbot](http://127.0.0.1:8000/) or [API docs](http://127.0.0.1:8000/d
 If that port is busy, add `-Port 8001`. Each new question may spend OpenRouter credit;
 installation and health checks make no model calls. Corpus vectors are restored,
 but new queries still need query embeddings and Luna generation.
+
+Open the [Qdrant dashboard](http://127.0.0.1:6333/dashboard/) to inspect collections
+and points. In the dashboard's connection/API-key prompt, use the **read-only key**
+from `%LOCALAPPDATA%\TelescopeRag\secrets\read.key` (under your custom `-InstallRoot`
+when applicable). Keep that key private. The installer prints its file path,
+never its value; no key is placed in the dashboard URL. Qdrant authentication
+remains enabled. Read-only access can inspect data but cannot modify collections.
+
+Both the chatbot and dashboard bind only to `127.0.0.1` on this computer. If port
+6333 is occupied, install with `-QdrantPort 6335`, then open
+`http://127.0.0.1:6335/dashboard/`. The selected port is saved and retained by
+Start, later upgrades and rollback. Older installation records without a dashboard
+port default to 6333 when used with this updated installer. The API and dashboard
+ports must differ. Qdrant's gRPC port is not published.
 
 ```powershell
 .\install-mvp.cmd -Action Status
@@ -72,7 +86,8 @@ read-only and the UI binds only to loopback.
 There are **two running containers**: API and Qdrant. During initial restore there
 is one temporary Qdrant restore container; it is removed before normal serving.
 The API reaches Qdrant directly on a private network. Nginx is unnecessary in this
-distribution and no database port is exposed to the host. The existing
+distribution. Since v0.2.0, the authenticated database REST/dashboard port is also
+published on localhost only; its internal Docker network remains private. The existing
 `telescope-m3-qdrant-gateway` supports the older host-Python launcher/dashboard;
 it remains unchanged on the development machine.
 
@@ -101,7 +116,7 @@ retained for diagnosis rather than overwritten automatically.
 
 If Docker loses the installed database volume while the installation directory
 survives (for example, after a Docker reset or switching to an empty Docker context),
-rerun `.\install-mvp.cmd -Version v0.1.0` using the version you want installed.
+rerun `.\install-mvp.cmd -Version v0.2.0` using the version you want installed.
 The installer checks that the saved volume actually exists before reusing it.
 A missing volume is recreated from the hash-verified release snapshot and all
 stored points are checked before serving; intact volumes are reused. Existing
@@ -166,8 +181,8 @@ scoped changes first. Build the API with its actual source revision label:
 
 ```powershell
 $revision = git rev-parse HEAD
-docker build -f deploy/Dockerfile --label "org.opencontainers.image.revision=$revision" -t telescope-rag-mvp:v0.1.1 .
-& .\.tools\uv\bin\uv.exe run --locked python scripts/build_portable_release.py --version v0.1.1 --output artifacts/portable-v0.1.1 --reuse-data-release artifacts/portable-v0.1.0
+docker build -f deploy/Dockerfile --label "org.opencontainers.image.revision=$revision" -t telescope-rag-mvp:v0.2.1 .
+& .\.tools\uv\bin\uv.exe run --locked python scripts/build_portable_release.py --version v0.2.1 --output artifacts/portable-v0.2.1 --reuse-data-release artifacts/portable-v0.2.0
 ```
 
 Use `--reuse-data-release` only when the knowledge identity is unchanged. Omit it

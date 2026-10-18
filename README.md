@@ -9,11 +9,11 @@ It accepts English, Arabic and everyday Jordanian Arabic questions.
 For another Windows computer, use the versioned [portable installation](docs/PORTABLE_MVP.md):
 
 ```powershell
-.\install-mvp.cmd -Version v0.1.0
+.\install-mvp.cmd -Version v0.2.0
 ```
 
 Start Docker Desktop and extract the complete project ZIP first. You can also
-double-click [install-mvp.cmd](install-mvp.cmd) to install v0.1.0. The launcher
+double-click [install-mvp.cmd](install-mvp.cmd) to install v0.2.0. The launcher
 uses a temporary PowerShell execution-policy bypass for its installer process;
 it does not change the saved Windows policy or remove downloaded-file markers.
 
@@ -86,6 +86,11 @@ private records, private calendars, availability and booking actions are exclude
 Missing facts and ambiguous source choices remain explicit. Each submitted question
 uses the project OpenRouter key; opening the page and health checks make no
 inference calls. The browser does not store history.
+
+With the v0.2.0 installer, inspect collections through the
+[local Qdrant dashboard](http://127.0.0.1:6333/dashboard/). Use the installation's
+read-only key; [dashboard login and custom ports](docs/PORTABLE_MVP.md#install-and-run)
+are documented in the portable guide. Both services bind to localhost.
 
 See [LOCAL_MVP.md](docs/LOCAL_MVP.md) for prerequisites, direct API queries, budgets,
 response behavior and limits. Local source files, tokenizer and credentials are
