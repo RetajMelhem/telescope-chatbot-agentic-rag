@@ -113,6 +113,7 @@ class OfflineRagWorkflow:
         directory_authority: DirectoryAuthority | None = None,
         planner_output_tokens: int = 1000,
         draft_output_tokens: int = 1000,
+        reuse_page_candidates: bool = False,
     ) -> None:
         if (
             planner_profile
@@ -142,6 +143,7 @@ class OfflineRagWorkflow:
                 }
             )
             != (directory_authority is not None)
+            or type(reuse_page_candidates) is not bool
             or settings.app_env == "production"
             or token_basis
             not in {
@@ -153,6 +155,7 @@ class OfflineRagWorkflow:
         self._settings, self._chat, self._retriever = settings, chat, retriever
         self._catalog, self._counter, self._token_basis = catalog, counter, token_basis
         self._planner_profile = planner_profile
+        self._reuse_page_candidates = reuse_page_candidates
         self._planner_output_tokens, self._draft_output_tokens = (
             planner_output_tokens,
             draft_output_tokens,
@@ -345,10 +348,28 @@ class OfflineRagWorkflow:
     async def _assemble_evidence(self, state: _State, runtime: Runtime[_RunContext]) -> _State:
         self._enter(runtime, "assemble_evidence")
         try:
+            candidates = state["candidates"]
+            if self._reuse_page_candidates:
+                from telescope_rag.retrieval.request_pages import reuse_page_candidates
+
+                candidates = reuse_page_candidates(
+                    self._catalog,
+                    state["plan"].assembly_request,
+                    candidates,
+                    shareable_parts=frozenset(
+                        p.part_id
+                        for p, operation in zip(
+                            state["plan"].assembly_request.parts,
+                            state["plan"].operations,
+                            strict=True,
+                        )
+                        if operation == "search"
+                    ),
+                )
             evidence = await asyncio.to_thread(
                 self._catalog.assemble,
                 state["plan"].assembly_request,
-                state["candidates"],
+                candidates,
                 counter=self._counter,
                 token_basis=self._token_basis,
                 max_tokens=self._settings.max_evidence_tokens,

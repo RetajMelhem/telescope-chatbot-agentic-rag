@@ -44,6 +44,7 @@ class HoursChatService(OfflineChatService):
         local_mvp_search: bool = False,
         conversational_answers: bool = False,
         website_links: PublicLinksCatalog | None = None,
+        reuse_page_candidates: bool = False,
     ) -> None:
         if type(conversational_answers) is not bool or (
             conversational_answers and not local_mvp_search
@@ -77,6 +78,7 @@ class HoursChatService(OfflineChatService):
             reviewed_profile_limitations=reviewed_profile_limitations,
             source_page_clarifications=source_page_clarifications,
             local_mvp_search=local_mvp_search,
+            reuse_page_candidates=reuse_page_candidates,
             **({"website_links": website_links} if conversational_answers else {}),
         )
 

@@ -11,7 +11,7 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 import httpx2 as httpx
@@ -23,6 +23,7 @@ from telescope_rag.ingestion.models import PreparedChunk
 from telescope_rag.providers.validation import load_json
 
 _LOCAL_TARGET = "http://127.0.0.1:6333/"
+_CONTAINER_TARGET = "http://telescope-m3-qdrant:6333/"
 _CANDIDATE_NAME = re.compile(r"telescope_public_[0-9a-f]{24}")
 _DIMENSIONS = 4096
 _MAX_HITS = 20
@@ -52,8 +53,12 @@ class CandidateDenseReader:
         collection: str,
         chunks: Mapping[str, PreparedChunk],
         transport: httpx.AsyncBaseTransport | None = None,
+        target: Literal["loopback", "local_container"] = "loopback",
     ):
-        if str(settings.qdrant_url) != _LOCAL_TARGET:
+        if target not in {"loopback", "local_container"}:
+            raise ValueError("candidate_reader_local_target_required")
+        address = _LOCAL_TARGET if target == "loopback" else _CONTAINER_TARGET
+        if str(settings.qdrant_url) != address:
             raise ValueError("candidate_reader_local_target_required")
         if not isinstance(collection, str) or _CANDIDATE_NAME.fullmatch(collection) is None:
             raise ValueError("candidate_reader_invalid_collection")
@@ -106,7 +111,7 @@ class CandidateDenseReader:
         self._read_key = read_key
         self._settings = settings
         self._http = httpx.AsyncClient(
-            base_url=_LOCAL_TARGET,
+            base_url=address,
             transport=transport or httpx.AsyncHTTPTransport(retries=0),
             timeout=settings.provider_timeout_seconds,
             trust_env=False,

@@ -9,13 +9,15 @@ It accepts English, Arabic and everyday Jordanian Arabic questions.
 From PowerShell in this repository:
 
 ```powershell
-.\run-local.ps1
+.\run-mvp.ps1
 ```
 
 Open [local chat](http://127.0.0.1:8000/) or
 [API documentation](http://127.0.0.1:8000/docs). Docker Desktop must be running;
-the launcher starts the two existing Qdrant containers if stopped. The API runs
-on this computer at `127.0.0.1:8000`. Ctrl+C stops it.
+the launcher starts the existing Qdrant containers if stopped, builds the API
+image and starts it at `127.0.0.1:8000` in the background. Stop the API with
+`.\run-mvp.ps1 -Action Stop`. See [the Docker runbook](docs/LOCAL_MVP_DOCKER.md).
+The previous host-Python launcher `.\run-local.ps1` remains available.
 
 The existing reviewed 107-page / 955-chunk snapshot supplies evidence. Answers
 are written naturally from the retrieved evidence, with citations and retrieval timestamps.
@@ -40,7 +42,7 @@ limitations are recorded in [PROJECT_STATUS.md](PROJECT_STATUS.md) and
 Dense retrieval remains provisional. The local flow now writes conversational answers in the requested language. Source
 quotations remain unchanged, including when an English source supports an Arabic reply.
 Broader answer quality and semantic robustness remain unproven. The saved snapshot is not a live website refresh. Broad independent
-accuracy acceptance, portable API Docker packaging, public deployment and website
+accuracy acceptance, public deployment and website
 integration remain future work. The original default `api.main:create_app` still
 returns unavailable; use the explicit local launcher above.
 

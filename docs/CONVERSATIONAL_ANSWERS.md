@@ -7,6 +7,12 @@ prose stays compact. Six Arabic/English/Jordanian API cases verify the layout an
 unchanged owner-bound citations. The actual container doctor-directory request
 also returns readable bullets; related role/qualification parts can still repeat
 names. Original chunks, schema, quotation checks and call allowances are unchanged.
+The v11 follow-up describes professional roles positively and forbids unsupported
+claims that another qualification is absent. The local profile also reuses already
+retrieved/read page candidates across search parts that already selected that same
+page. Exact owner/language/type/page scope and source-policy checks still apply;
+global assembly limits and separate per-part citation bindings remain enforced.
+This repairs an observed qualification-context gap without another provider call.
 
 The local profile also supports [separately verified website social links](PUBLIC_WEBSITE_LINKS.md).
 Link-only prose uses exact question-owned link references and separate provenance,

@@ -44,13 +44,27 @@ OUTPUT_TOKENS = 4096
 def local_settings(root: Path) -> Settings:
     """Keep dotenv credentials and explicitly select bounded development settings."""
     source = load_settings(root / ".env")
+    return _profile_settings(source, "http://127.0.0.1:6333", root / ".tools/qdrant-m3/read.key")
+
+
+def container_settings(secrets: Path = Path("/run/secrets")) -> Settings:
+    """Explicit local container composition, with file secrets and no dotenv."""
+    source = Settings(
+        _env_file=None,
+        openrouter_api_key=read_secret(secrets / "openrouter_key"),
+        qdrant_api_key=read_secret(secrets / "qdrant_read_key"),
+    )
+    return _profile_settings(source, "http://telescope-m3-qdrant:6333", secrets / "qdrant_read_key")
+
+
+def _profile_settings(source: Settings, qdrant_url: str, read_key: Path) -> Settings:
     if source.app_env == "production":
         raise ConfigurationError("Local MVP cannot run with APP_ENV=production.")
     values = source.model_dump()
     values.update(
         host="127.0.0.1",
-        qdrant_url="http://127.0.0.1:6333",
-        qdrant_api_key=read_secret(root / ".tools/qdrant-m3/read.key"),
+        qdrant_url=qdrant_url,
+        qdrant_api_key=read_secret(read_key),
         chat_input_accounting="reported_usage",
         provider_max_retries=0,
         max_llm_calls=2,
@@ -170,6 +184,7 @@ def create_local_app(
     *,
     provider_transport: httpx.AsyncBaseTransport | None = None,
     qdrant_transport: httpx.AsyncBaseTransport | None = None,
+    runtime: Literal["host", "container"] = "host",
 ) -> FastAPI:
     """Uvicorn factory. Explicit opt-in; the original default app stays fail-closed.
 
@@ -177,7 +192,9 @@ def create_local_app(
     Run from the repository root so data and credentials resolve predictably.
     """
     root = (root or Path.cwd()).resolve()
-    settings = local_settings(root)
+    if runtime not in {"host", "container"}:
+        raise ConfigurationError("Unknown local runtime.")
+    settings = local_settings(root) if runtime == "host" else container_settings()
     if not settings.has_model_credentials:
         raise ConfigurationError(
             "Configure the project's OpenRouter key before starting Local MVP."
@@ -194,6 +211,7 @@ def create_local_app(
         collection=COLLECTION,
         chunks={c.point_id: c for c in resources.catalog.chunks.values()},
         transport=qdrant_transport,
+        target="loopback" if runtime == "host" else "local_container",
     )
     retriever = RequestDenseRetriever(
         settings=settings,
@@ -223,6 +241,7 @@ def create_local_app(
         local_mvp_search=True,
         conversational_answers=True,
         website_links=resources.website_links,
+        reuse_page_candidates=True,
     )
     probe = LocalKnowledgeProbe(reader, resources)
     app = create_app(

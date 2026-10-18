@@ -1,5 +1,10 @@
 # Local MVP
 
+The API now also runs in Docker with `run-mvp.ps1`; see
+[the local Docker runbook](LOCAL_MVP_DOCKER.md) for Start/Stop/Restart commands,
+mounted prerequisites and verification. The host-Python path below stays available.
+Use one API on a given port at a time.
+
 Official social-page links now use a separately proven homepage-link supplement;
 see [source scope, metadata and verification](PUBLIC_WEBSITE_LINKS.md). The existing
 vector bundle remains unchanged. Refresh the browser to load clickable links and
@@ -63,6 +68,7 @@ Required local files already present in this workspace:
 - `data/processed/m3-execution-approved-v6-v2/`: approved 107-document / 955-chunk bundle.
 - `data/processed/m3-llm-semantic-token-validated-v6/metadata/`: admission and directory metadata.
 - `artifacts/m5-public-hours-v1/reviewed-hours-plan.json`: reviewed hours records.
+- `artifacts/public-website-links-v1/reviewed-links-plan.json`: reviewed outgoing links.
 - `.tools/qwen-tokenizer/1d8ad4ca9b3dd8059ad90a75d4983776a23d44af/tokenizer.json`:
   exact hash-verified tokenizer; no download at startup.
 
@@ -92,7 +98,7 @@ public test payloads under ignored `artifacts/`; this is not default chat loggin
 
 This MVP depends on local files excluded from Git and Docker. Copying the Git
 repository alone is not a portable installation. The separate production app,
-containerized API packaging, public deployment, widget, source refresh and broad
+public deployment, widget, source refresh and broad
 independent accuracy acceptance are outside this local delivery.
 
 

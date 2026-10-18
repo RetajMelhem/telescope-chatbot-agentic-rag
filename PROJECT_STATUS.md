@@ -2,15 +2,41 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
-Latest formatting checkpoint — long generated lists now use separate bullet items
+**Local MVP delivered for bounded development use.** Start with `run-mvp.ps1` and
+open `http://127.0.0.1:8000/`; Stop/Status/Restart are documented in
+`docs/LOCAL_MVP_DOCKER.md`. FastAPI/LangGraph/Luna/Qwen now run in a verified local
+API image using the existing Qdrant volume/network. Runtime data/tokenizer and
+file secrets stay outside the image, mounted read-only; no admin key is supplied.
+Actual non-root/read-only/loopback settings, missing-secret refusal, server-enforced
+read-key denial and API recreation/readiness pass. No corpus/index/alias change.
+
+**2,255 full offline tests pass**, plus lint/format and locked dependencies. Seven
+actual container HTTP requests / 13 parts received individual primary language
+review; two doctor defects are preserved and repaired: an unsupported negative
+specialty inference, and qualifications lost between related parts. The local-only
+page reuse step offers already requested/retrieved source-page candidates under
+the receiving part's exact owner/language/type/page/source policy and the same
+global assembly caps, without another model/read round. Final doctor output has
+readable, source-owned qualification items. Compound parts can still repeat names.
+48 citation occurrences / 20 chunks / 11 original pages / 151 DOM spans verify.
+Only the doctor case was repeated after the final changes, not the whole cohort.
+
+Observed balance: **$0.175885100 remaining**, $0.037776615 key-window increase;
+aggregate metadata is not per-request billing reconciliation. Broad doctor replies
+still took about 52 seconds; optimization is deferred. Evidence:
+`artifacts/local-mvp-delivery-v1/`; current acceptance: `docs/LOCAL_MVP_ACCEPTANCE.md`.
+Visual browser, full-corpus re-audit, broad independent accuracy and production
+readiness are unproven. Full M6/M7 remain incomplete. **Next:** ordinary local use
+and focused bug reports; public hosting, widget, refresh and backup/restore are
+separate work. There is no further prerequisite milestone before using this MVP.
+
+Earlier formatting checkpoint — long generated lists now use separate bullet items
 and blank lines, preserving each doctor's source-owned role/qualifications.
-Short prose remains compact. Six focused multilingual API checks pass, plus an
-actual container doctor-list request. Compound role/qualification parts can still
-repeat names; no semantic merge is performed. The current local MVP completion
-task has also built a healthy container on test port 8001 and run five actual
-requests / nine parts, with 19 citation occurrences / 17 chunks / 127 original DOM
-spans verified. Packaging documentation, final checks and the default-port handoff
-are still in progress. No production readiness or full-corpus re-audit is claimed.
+Short prose remains compact. Six focused multilingual API checks pass. This step
+was committed as `a583cc3`; subsequent container acceptance and the default-port
+handoff are summarized above. Compound role/qualification parts can still repeat
+names; no semantic merge is performed. No production readiness or full-corpus
+re-audit is claimed.
 
 Latest repair — **official social-page links restored locally**:
 The English/Arabic homepages contain eight literal href occurrences for Facebook,

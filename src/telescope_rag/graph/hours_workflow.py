@@ -55,6 +55,7 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         reviewed_profile_limitations: bool = False,
         source_page_clarifications: bool = False,
         local_mvp_search: bool = False,
+        reuse_page_candidates: bool = False,
     ) -> None:
         if type(reviewed_profile_limitations) is not bool or (
             reviewed_profile_limitations and hours_profile != "contracts_v14"
@@ -65,6 +66,8 @@ class HoursRagWorkflow(OfflineRagWorkflow):
         ):
             raise ValueError("source_choices_require_contracts_v14")
         self._source_page_clarifications = source_page_clarifications
+        if reuse_page_candidates and not local_mvp_search:
+            raise ValueError("page_reuse_requires_local_mvp")
         if type(local_mvp_search) is not bool or (
             local_mvp_search and not source_page_clarifications
         ):
@@ -86,6 +89,7 @@ class HoursRagWorkflow(OfflineRagWorkflow):
             token_basis=token_basis,
             planner_output_tokens=planner_output_tokens,
             draft_output_tokens=draft_output_tokens,
+            reuse_page_candidates=reuse_page_candidates,
         )
         self._planner_source_manifest_json = (
             self._bindings.with_reviewed_profile_limitations()

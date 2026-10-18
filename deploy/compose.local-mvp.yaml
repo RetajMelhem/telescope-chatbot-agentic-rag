@@ -1,0 +1,91 @@
+# Local API only. Existing database, storage and network remain external.
+services:
+  api:
+    image: telescope-rag-local:0.1.0
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: telescope-local-mvp-api
+    read_only: true
+    user: "10001:10001"
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 128
+    mem_limit: 1g
+    cpus: 2
+    restart: unless-stopped
+    stop_grace_period: 20s
+    ports:
+      - "127.0.0.1:${TELESCOPE_MVP_PORT:-8000}:8000"
+    environment:
+      APP_ENV: development
+      LANGSMITH_TRACING: "false"
+    secrets:
+      - openrouter_key
+      - qdrant_read_key
+    volumes:
+      - type: bind
+        source: ../data/processed/m3-execution-approved-v6-v2
+        target: /runtime/data/processed/m3-execution-approved-v6-v2
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ../data/processed/m3-llm-semantic-token-validated-v6/metadata/source-admission-plan.json
+        target: /runtime/data/processed/m3-llm-semantic-token-validated-v6/metadata/source-admission-plan.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ../data/processed/m3-llm-semantic-token-validated-v6/metadata/primary-directory.json
+        target: /runtime/data/processed/m3-llm-semantic-token-validated-v6/metadata/primary-directory.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ../artifacts/m5-public-hours-v1/reviewed-hours-plan.json
+        target: /runtime/artifacts/m5-public-hours-v1/reviewed-hours-plan.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ../artifacts/public-website-links-v1/reviewed-links-plan.json
+        target: /runtime/artifacts/public-website-links-v1/reviewed-links-plan.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ../.tools/qwen-tokenizer/1d8ad4ca9b3dd8059ad90a75d4983776a23d44af/tokenizer.json
+        target: /runtime/.tools/qwen-tokenizer/1d8ad4ca9b3dd8059ad90a75d4983776a23d44af/tokenizer.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ../data/processed/m4-query-cache-v1
+        target: /runtime/data/processed/m4-query-cache-v1
+        read_only: true
+        bind: {create_host_path: false}
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    networks:
+      - api_egress
+      - existing_knowledge
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.build_opener(urllib.request.ProxyHandler({})).open('http://127.0.0.1:8000/health/ready', timeout=3).close()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    labels:
+      telescope.project: clinic_agentic_rag
+      telescope.scope: local-mvp-api
+
+secrets:
+  openrouter_key:
+    file: ../runtime-data/local-mvp/openrouter.key
+  qdrant_read_key:
+    file: ../.tools/qdrant-m3/read.key
+
+networks:
+  api_egress:
+    name: telescope-local-mvp-egress
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+  existing_knowledge:
+    name: telescope-m3-local
+    external: true

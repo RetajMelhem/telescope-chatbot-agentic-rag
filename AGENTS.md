@@ -24,6 +24,11 @@ Before substantive work, read [PROJECT_STATUS.md](PROJECT_STATUS.md) to learn th
 
 ## Where work belongs
 
+The explicit local Docker factory is `telescope_rag.api.container:create_container_app`.
+Use `run-mvp.ps1` and `docs/LOCAL_MVP_DOCKER.md` for local Start/Stop/Restart. It
+mounts reviewed data and file secrets, uses only the fixed existing Qdrant DNS
+target on the private network, and does not enable the default/production app.
+
 The local MVP's reviewed website-link supplement is separate from the immutable
 vector bundle. Preserve its pinned digest and exact HTML href/label/source proofs;
 outgoing social URLs are navigation destinations, never chat fetch permissions.

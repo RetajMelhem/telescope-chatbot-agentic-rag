@@ -1,96 +1,113 @@
 # Local MVP acceptance, 2026-10-18
 
-The explicit local application is usable at `http://127.0.0.1:8000/`. Start it with
-`run-local.ps1`; see the [runbook](LOCAL_MVP.md). This is acceptance of a bounded
-local development delivery, not a production release or a global accuracy claim.
+The public-information chatbot is delivered for bounded local development use.
+Start with `run-mvp.ps1` and open `http://127.0.0.1:8000/`. See the
+[Docker runbook](LOCAL_MVP_DOCKER.md) and [host alternative](LOCAL_MVP.md).
+This is not production acceptance or a guarantee about arbitrary future questions.
 
-## What was delivered
+## Delivered scope
 
-- An explicit local factory composes the reviewed 107-document / 955-chunk bundle,
-  pinned hours/tokenizer/source policy, existing read-only Qdrant reader, Qwen query
-  embeddings and the two-stage Luna/LangGraph flow. The original default app stays
-  unavailable; the local selection is deliberate and requires local resources.
-- A browser question interface and a typed local API response preserve excerpts,
-  question-owned citations, timestamps, owners, exclusions and unresolved parts.
-  Static output uses text nodes, with official HTTPS citation links only.
-- Startup and readiness validate the pinned local collection without inference.
-  Failed startup and shutdown close clients. The launcher binds to loopback and
-  can start the existing Qdrant containers; no index, alias or corpus is rewritten.
+FastAPI serves the browser, typed chat endpoint, API documentation and health
+checks. LangGraph uses the bounded planner/retrieval/writer flow with GPT-6 Luna
+and Qwen3 Embedding 8B through OpenRouter. English, Arabic and Jordanian Arabic
+are supported. The local candidate pool combines five dense hits with up to three
+literal matches and two source-bound context records; this is not a claim that
+the strategy is globally best.
 
-## Live evidence and repairs
+The reviewed snapshot remains 107 documents / 955 chunks / 834 unique corpus
+embeddings. Published hours are independently computed and phrased conversationally.
+The separately proven website-link supplement retains original occurrences.
+Answers keep technical citation IDs out of prose; excerpts, owners, timestamps and
+source URLs remain in metadata/details. Lists now use separated bullets. Arabic
+numeric runs retain digits/signs inside LTR isolates. The browser uses independent
+questions and does not store history.
 
-Primary Codex individually read **23 completed live requests / 44 actual parts**
-against their cited saved official website evidence. Scripts tracked coverage and
-exact source correspondence; they did not make semantic judgments. One interrupted
-diagnostic request has no complete result/usage receipt and is not counted as a pass.
-No subagent or external model judge was used.
+The API image runs non-root with read-only root/data and file secrets. Only its
+loopback host port is published. It reuses the private Qdrant network/volume without
+the admin key, ingestion, corpus embedding or alias writes. Default/production chat
+remains unavailable.
 
-| Observed failure | Local repair | Actual verification |
+## Current verification
+
+**2,255 full guarded offline tests pass**, zero failures/errors/skips, plus Ruff
+lint/format and locked dependencies. Thirty-five new cases cover the fixed Docker
+target, secret precedence/missing files, safe runtime preparation and multilingual
+list layout with separate citation owners, plus request-local page reuse without
+crossing owner/language/type/page/source-policy boundaries. Authored tests verify contracts, not
+the semantic truth of an LLM answer.
+
+Real Docker build/startup passed using digest-pinned Python 3.11.17/bookworm and
+uv 0.13.1 images. Inspection confirms packaged application HTML and absent runtime
+source data/tokenizer/secrets. Actual UID 10001, read-only mounts/root, dropped
+capabilities, network selection and loopback binding were checked. Missing-secret
+startup exits before inference. The read key's update of a confirmed absent
+collection receives HTTP 403 and cannot create data. API recreation/readiness
+passed while the 955-point inventory and alias result stayed unchanged. Database
+backup restoration and new-machine installation were not tested.
+
+Five initial requests and two targeted doctor follow-ups went through the container
+HTTP API. Primary Codex individually read all **13 returned parts in seven requests**
+against their original cited sources. The two earlier doctor defects remain recorded;
+the final applicable result for each scenario is:
+
+| Case | Observed behavior | Request time |
 | --- | --- | --- |
-| English visitor questions were restricted to guessed pages, excluding the FAQ | Ordinary general searches stay unfiltered unless the user requests a source restriction | English preparation/duration answers recovered; explicit cataract-page restrictions retained |
-| Arabic visit duration was assigned a procedure-specific evidence policy despite the right FAQ ranking first | Select the policy by the relationship requested, preserving administrative/visitor questions as general reporting | Targeted Arabic case now includes both preparation and qualified duration; fresh English paraphrase also succeeds |
-| One Arabic single-profile request silently chose the informative page from several possibilities | Ask for a page choice when the intended single profile remains ambiguous | English, Arabic and Jordanian profile cases now offer distinct admitted URLs without merging owners |
+| Arabic eye team and qualifications | Seven owner-bound entries with source-backed qualifications; no invented negative specialty | 51.61 s |
+| English contact and Facebook | Correct phone/WhatsApp/email and exact website-published Facebook target | 18.34 s |
+| Jordanian Friday hours plus booking | Direct 14:00–midnight answer; booking separately excluded | 11.11 s |
+| Arabic cheek “surgery” premise | Documented filler service and explicit nonsurgical correction | 12.61 s |
+| English exact price plus patient record | Exact price unconfirmed; private record excluded without access | 10.20 s |
 
-The 12-request development cohort has 27 actual parts. Its two remaining failures
-were fixed and rerun individually. The **final prompt has nine actual requests /
-12 individually reviewed parts**, all adequate within their tested source scope:
-five audited targeted runs plus four actual localhost HTTP requests. This is not
-a whole-cohort rerun under the final prompt, an independent holdout, or proof of
-general model reliability. Exact actual proposals, drafts and final replies remain
-in the ignored evidence directories below, including failures.
+The earlier doctor output inferred an absent specialty from a positive anesthesia
+role. The v11 prompt removes that inference. Its follow-up then exposed a second
+gap: useful main-card qualifications retrieved for the role part were not offered
+to the qualifications part. The local graph now reuses already requested/retrieved
+page candidates only when the receiving search part already selected that same
+page, its exact scope permits the chunk, and source policy admits the intended use.
+Normal global assembly caps still apply. Original candidate rank order, separate owner
+records and default profiles are preserved; no new source/network/model round is
+added. The last actual doctor reply includes previously missed qualification facts.
+The full original cohort was not rerun after this targeted change, so no uniform
+final-profile cohort or causal A/B claim is made.
 
-The real HTTP checks cover English and Jordanian opening hours, a fresh visitor
-duration paraphrase, and private-record/booking/key-disclosure injection. Public
-facts receive source support; excluded requests perform no private action or secret
-disclosure. Earlier mixed English/Arabic/Jordanian checks preserve Friday/date/time,
-payments and excluded booking separately. Cataract answers preserve usual duration
-and lens-dependent glasses qualifiers; an absent total price remains unknown.
+The doctor reply can summarize qualifications instead of enumerating every
+credential; related role/qualification parts can repeat names. It is not a complete
+credential dossier. Source chunks are unchanged and available in supporting
+excerpts. Candidate status may contain a supported partial answer with explicit
+uncertainty in prose; it does not certify an exact price or coverage.
 
-All **33 citation occurrences** match their admitted chunk, URL and owner. **68
-original DOM spans across 13 cited chunks / five saved official pages** verify
-exactly. One additional Rihab page witness from a failed source-selection case was
-checked directly against its original HTML. This verifies the cited evidence; it
-does not constitute a new full-corpus or removed-content semantic audit.
+All **48 citation occurrences** match **20 chunks across 11 saved official
+pages**; **151 DOM spans** verify exactly. The outgoing link matches its separately
+sealed source record. Scripts checked coverage/literal correspondence rather than
+making semantic judgments. No new full-corpus or removed-content audit is claimed.
+Earlier development evidence/failures remain in ignored artifacts and Git history.
 
-## Offline and packaging checks
+The first postflight compared complete alias envelopes, including Qdrant's changing
+timing field. A separate diagnostic correction compares the actual alias result
+and confirms it unchanged. No paid request was repeated for this check error.
 
-The full guarded suite passes: **2,115 tests**, including seven new local runtime
-cases. They cover bilingual hours transport/provenance, invalid request overrides,
-no inference during startup/health, failed index startup and cleanup, read-only
-credential selection, and production rejection. Existing tests retain evidence,
-hours, provider, ambiguity and private-boundary coverage. Ruff lint/format, locked
-dependencies and wheel construction pass. The wheel includes the HTML page and
-excludes credentials, environment files and collected data.
+## Budget and remaining limits
 
-Browser automation reports that local browser use is disabled in Work settings.
-The page is served and its API works; visual rendering/click testing was not
-performed and is not claimed.
+Observed key balance changed from $0.213661715 to $0.175885100 during the seven-query
+window, a $0.037776615 increase. This is aggregate metadata, not independent
+per-request billing reconciliation; concurrent user traffic or delayed accounting
+can affect it. No corpus embedding or index write occurred. Normal allowances stay
+at most two Luna calls, one Qwen query batch, one retrieval round and no automatic
+retries/fallbacks. No typical-latency guarantee is made: the broad doctor request
+was substantially slower than the other four.
 
-## Cost and evidence locations
+Browser automation is disabled; no visual acceptance is claimed. The actual
+JavaScript renderer has offline DOM/text checks. Longer compound answers can repeat
+names, and retrieval/interpretation can miss evidence. Published hours never
+establish live attendance/availability. Personal advice, private records and booking
+actions remain excluded.
 
-The project key reported $0.642832270 before this work and $0.538826785 afterward:
-a **$0.104005485 usage increase over the work window**. Forty-six fully audited
-provider responses (33 chat, 13 embedding) report $0.086427705. Four real HTTP smoke
-requests lacked payload auditing, and one interrupted diagnostic lacks complete
-usage. Aggregate key change is not independent per-request billing reconciliation.
-There were no automatic retries, fallbacks, corpus embeddings or index writes.
+Ignored `artifacts/local-mvp-delivery-v1/` retains build/start/restart logs,
+pre/postflight, actual replies, source proof, individual review, accounting,
+image/runtime checks and final tests. Real keys and collected data are excluded
+from Git and the image. Cloning Git alone is not a new installation.
 
-Evidence is retained locally, excluded from Git:
-
-- `artifacts/local-mvp-v1/`: preflight, original diagnostic traces, source checks,
-  individual semantic review, accounting, tests and verification scripts.
-- `artifacts/local-mvp-v2/`: 12 actual development requests, including preserved failures.
-- `artifacts/local-mvp-v3/`: five final-prompt targeted runs.
-- `artifacts/local-mvp-http-v1/`: four real HTTP checks and readiness response.
-
-## Remaining limits and next action
-
-Answers are literal excerpts; a source may differ in language from the question.
-Polished narrative generation, perfect recall, broad independent acceptance and
-universal question interpretation remain unproven. The browser uses independent
-questions, and this installation depends on excluded local source/tokenizer/secret
-files. Production serving, portable API Docker packaging, live source refresh and
-website integration are separate work.
-
-Next, use the running local MVP and record concrete failing questions for focused
-repairs. This local delivery does not require another preparatory audit milestone.
+Next: ordinary hands-on local use and focused bug reports. No additional audit is
+required before using this MVP. Public hosting, HTTPS, website integration, source
+refresh, backup/restore and broad independent quality acceptance are future work;
+full M6/M7 are not marked complete.

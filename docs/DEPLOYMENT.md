@@ -1,11 +1,18 @@
 # Docker deployment design
 
+The local API image/Compose/launcher are now implemented and verified; use
+[LOCAL_MVP_DOCKER.md](LOCAL_MVP_DOCKER.md). They reuse the existing reviewed database
+and mount required data/tokenizer/secrets read-only. The broader production design
+below is not a record of production deployment or acceptance.
+
 Current local MVP: [runbook](LOCAL_MVP.md) and [acceptance evidence](LOCAL_MVP_ACCEPTANCE.md).
 The explicit loopback entry point now serves live development queries. The default
 application and production acceptance remain separate; earlier checkpoints below
 describe their original scope.
 
-Status: application deployment specification. M1 can run the API shell locally; its Dockerfile/application Compose runtime and deployed chatbot do not exist yet. A separate local M3 Qdrant gateway is implemented and tested below; it does not complete M6 or publish an index.
+Status: bounded local API packaging is delivered. Full M6 production deployment,
+ingestion-service packaging, backup/restore and public hosting remain separate.
+The local M3 Qdrant gateway remains unchanged; no index is published by this delivery.
 
 ## Current local M3 Qdrant access
 
@@ -34,7 +41,9 @@ Both containers now use `unless-stopped`. The authenticated checker and its expl
 
 Hosted embeddings avoid packaging the 8B model or GPU runtime in the API image. The ingestion job is not started automatically with the API and does not run per chat.
 
-Implement `deploy/Dockerfile` and `deploy/compose.yaml` in M6 using the existing app factory and lockfile, after the provider/knowledge/graph stages are available. Build from the repository root so `.dockerignore` applies.
+The implemented local files are `deploy/Dockerfile` and
+`deploy/compose.local-mvp.yaml`, with repository-root build context. A standalone
+production `deploy/compose.yaml` and ingestion profile remain planned.
 
 ## Image requirements
 
@@ -45,7 +54,9 @@ Implement `deploy/Dockerfile` and `deploy/compose.yaml` in M6 using the existing
 - Use container limits and graceful shutdown. Production images do not use `--reload`.
 - Run the ingestion CLI through a separate command once implemented; never perform a crawl or paid warmup during image build or API startup.
 
-The API factory and offline ingestion CLI exist; application Docker packaging remains future work. [FastAPI's Docker documentation](https://fastapi.tiangolo.com/deployment/docker/) describes the underlying container pattern.
+The local API factory and image exist; standalone production and ingestion
+packaging remain future work. [FastAPI's Docker documentation](https://fastapi.tiangolo.com/deployment/docker/)
+describes the underlying container pattern.
 
 ## Networks, secrets, and storage
 
