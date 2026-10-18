@@ -24,6 +24,11 @@ Before substantive work, read [PROJECT_STATUS.md](PROJECT_STATUS.md) to learn th
 
 ## Where work belongs
 
+The local MVP's reviewed website-link supplement is separate from the immutable
+vector bundle. Preserve its pinned digest and exact HTML href/label/source proofs;
+outgoing social URLs are navigation destinations, never chat fetch permissions.
+See [PUBLIC_WEBSITE_LINKS.md](docs/PUBLIC_WEBSITE_LINKS.md) before changing it.
+
 Use `src/telescope_rag/api/` for transport and validation, `graph/` for orchestration, `providers/` for OpenRouter adapters, `retrieval/` for bounded Qdrant access, `ingestion/` for offline website collection, `knowledge/` for evidence models and time calculations, and `prompts/` for versioned model instructions. Keep model SDK objects and secrets out of API schemas and graph state.
 
 Use the documents needed for the task: [project specification](docs/PROJECT_SPECIFICATION.md) for scope; [architecture](docs/ARCHITECTURE.md) for boundaries; [pipeline](docs/PIPELINE.md) for graph changes; [ingestion](docs/INGESTION.md) for data/index work; [deployment](docs/DEPLOYMENT.md) for containers.

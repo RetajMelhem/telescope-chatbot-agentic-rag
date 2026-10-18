@@ -103,7 +103,7 @@ def test_local_settings_use_dotenv_and_readonly_key_and_reject_production(tmp_pa
         local.local_settings(tmp_path)
 
 
-def compose(monkeypatch, root, *, fixture_args=None, clock=None):
+def compose(monkeypatch, root, *, fixture_args=None, clock=None, website_links=None):
     catalog, authority, hours, _ = fixtures(**(fixture_args or {}))
     config = Settings(_env_file=None, app_env="test", openrouter_api_key="synthetic-only")
     config = Settings(
@@ -111,7 +111,13 @@ def compose(monkeypatch, root, *, fixture_args=None, clock=None):
         **{**config.model_dump(), "provider_max_retries": 0, "max_total_output_tokens": 8192},
     )
     resources = local.LocalResources(
-        catalog, authority, hours, SyntheticCounter(), SimpleNamespace(), root / "synthetic.json"
+        catalog,
+        authority,
+        hours,
+        SyntheticCounter(),
+        SimpleNamespace(),
+        root / "synthetic.json",
+        website_links,
     )
 
     class Providers:

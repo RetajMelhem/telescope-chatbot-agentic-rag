@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import Field
 
-from telescope_rag.api.hours_responses import HoursResponseQuestion
+from telescope_rag.api.hours_responses import HoursResponseQuestion, ResponseWebsiteLink
 from telescope_rag.api.hours_service import HoursChatService
 from telescope_rag.api.main import create_app
 from telescope_rag.api.responses import ResponseCitation, ResponseKnowledge, ResponseRecord
@@ -21,6 +21,7 @@ from telescope_rag.ingestion.admission import AdmissionPlan
 from telescope_rag.ingestion.indexing import EmbeddingCache, EmbeddingConfiguration
 from telescope_rag.ingestion.runner import load_reviewed_bundle, read_secret
 from telescope_rag.knowledge.hours import PublicHoursPlan
+from telescope_rag.knowledge.public_links import PublicLinksCatalog, WebsiteLinksPlan
 from telescope_rag.knowledge.source_authority import (
     DirectoryAuthority,
     reviewed_directory_authority,
@@ -35,6 +36,7 @@ from telescope_rag.retrieval.request_dense import RequestDenseRetriever
 COLLECTION = "telescope_public_018817ac10ec05ecad92adb9"
 PREPARED_DIGEST = "a46be2d3fd18f11d46c79ff9bc992de22aab496836894a708bc57c1e8b48af88"
 HOURS_DIGEST = "609a93a48f86b802c3ab2356a128fbc3b8736079dfd241b5ffa1572f1a5e59f7"
+LINKS_DIGEST = "42b6ff716b519affa9c917422904a80426fac9bd59e83d03299bcfa2683cd331"
 TOKENIZER_REVISION = "1d8ad4ca9b3dd8059ad90a75d4983776a23d44af"
 OUTPUT_TOKENS = 4096
 
@@ -70,6 +72,7 @@ class LocalResources:
     counter: QwenPreparationCounter
     configuration: EmbeddingConfiguration
     tokenizer: Path
+    website_links: PublicLinksCatalog | None = None
 
 
 def load_resources(root: Path) -> LocalResources:
@@ -93,13 +96,25 @@ def load_resources(root: Path) -> LocalResources:
         (root / "artifacts/m5-public-hours-v1/reviewed-hours-plan.json").read_bytes()
     )
     tokenizer = root / f".tools/qwen-tokenizer/{TOKENIZER_REVISION}/tokenizer.json"
+    links = PublicLinksCatalog(
+        WebsiteLinksPlan.model_validate_json(
+            (root / "artifacts/public-website-links-v1/reviewed-links-plan.json").read_bytes()
+        ),
+        expected_digest=LINKS_DIGEST,
+        base_prepared_digest=PREPARED_DIGEST,
+        pages=tuple(document.document.page for document in bundle.documents),
+    )
+    counter = QwenPreparationCounter(tokenizer)
+    if counter.count(json.dumps(links.rendering(tuple(links.links)), ensure_ascii=False)) > 1600:
+        raise ConfigurationError("Reviewed website link evidence exceeds its local ceiling.")
     return LocalResources(
         catalog,
         authority,
         hours,
-        QwenPreparationCounter(tokenizer),
+        counter,
         bundle.configuration,
         tokenizer,
+        links,
     )
 
 
@@ -118,6 +133,8 @@ class LocalChatResponse(ResponseRecord):
     citations: tuple[ResponseCitation, ...] = Field(max_length=64, repr=False)
     unresolved_questions: tuple[str, ...] = Field(max_length=4)
     knowledge: ResponseKnowledge | None
+    website_links: tuple[ResponseWebsiteLink, ...] = Field(default=(), max_length=32)
+    website_links_digest: str | None = None
 
 
 class LocalKnowledgeProbe:
@@ -205,6 +222,7 @@ def create_local_app(
         source_page_clarifications=True,
         local_mvp_search=True,
         conversational_answers=True,
+        website_links=resources.website_links,
     )
     probe = LocalKnowledgeProbe(reader, resources)
     app = create_app(

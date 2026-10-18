@@ -23,11 +23,32 @@ li{margin-bottom:14px}a{color:#125d70}#status{font-size:14px}small{color:#526873
 </form>
 <p id="status" role="status"></p>
 <div id="answer" dir="auto" hidden></div>
+<div id="website-links" dir="auto"></div>
 <ol id="sources"></ol>
 <small>Local MVP · Answers are written from Telescope's website evidence. Sources appear below for reference. Missing facts and ambiguous requests remain explicit. Published hours do not confirm appointment availability. Each submission uses the configured paid OpenRouter models. Questions are independent; this interface does not store conversation history.</small>
 </main>
 <script>
 const form=document.querySelector('#chat'),button=document.querySelector('#send'),statusEl=document.querySelector('#status'),answer=document.querySelector('#answer'),sources=document.querySelector('#sources');
+const websiteLinks=document.querySelector('#website-links');
+function renderWebsiteLinks(element,links){
+ const items=new Map(),fragment=document.createDocumentFragment();
+ const hosts={Facebook:'www.facebook.com',Instagram:'www.instagram.com',LinkedIn:'www.linkedin.com',YouTube:'www.youtube.com'};
+ for(const link of links){
+  let url,source;try{url=new URL(link.target_url);source=new URL(link.source_url);}catch{continue;}
+  if(url.protocol!=='https:'||url.host!==hosts[link.platform]||url.username||url.password||url.search||url.hash||url.pathname==='/'||source.protocol!=='https:'||source.host!=='telescopecenter.com'||source.username||source.password||source.search||source.hash)continue;
+  let details=items.get(url.href);
+  if(!details){
+   const item=document.createElement('p'),anchor=document.createElement('a');
+   anchor.href=url.href;anchor.target='_blank';anchor.rel='noopener noreferrer';anchor.dir='ltr';anchor.textContent=link.platform;
+   details=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Website source / مصدر الرابط';details.append(summary);
+   item.append(anchor,details);fragment.append(item);items.set(url.href,details);
+  }
+  const proof=document.createElement('p'),sourceLink=document.createElement('a');
+  sourceLink.href=source.href;sourceLink.target='_blank';sourceLink.rel='noopener noreferrer';sourceLink.dir='ltr';sourceLink.textContent=link.source_url;
+  proof.append(sourceLink,document.createElement('br'),document.createTextNode(`Retrieved: ${link.fetched_at} · ${link.literal_label}`));details.append(proof);
+ }
+ element.replaceChildren(fragment);
+}
 function renderMixedText(element,text){
  const fragment=document.createDocumentFragment();
  const numbers=/(?:[+\-\u2212]\p{Zs}*)?\p{Nd}(?:[\p{Nd}\p{Zs}:.,٫٬/()\-–—]*\p{Nd})?/gu;
@@ -41,13 +62,14 @@ function renderMixedText(element,text){
  element.replaceChildren(fragment);
 }
 form.addEventListener('submit',async event=>{
- event.preventDefault();button.disabled=true;answer.hidden=true;sources.replaceChildren();statusEl.textContent='Retrieving website evidence… / جارٍ البحث…';
+ event.preventDefault();button.disabled=true;answer.hidden=true;sources.replaceChildren();websiteLinks.replaceChildren();statusEl.textContent='Retrieving website evidence… / جارٍ البحث…';
  const language=document.querySelector('#language').value;
  try{
   const response=await fetch('/api/v1/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:document.querySelector('#query').value,language,history:[]})});
   const data=await response.json();
   if(!response.ok)throw new Error(data.error?.message||'The request could not be completed.');
   renderMixedText(answer,data.answer);answer.hidden=false;
+  renderWebsiteLinks(websiteLinks,data.website_links||[]);
   for(const citation of data.citations){
    const item=document.createElement('li'),link=document.createElement('a');
    const url=new URL(citation.url);

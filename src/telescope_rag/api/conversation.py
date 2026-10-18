@@ -52,6 +52,10 @@ def project_conversation(response: HoursChatResponse, run: WorkflowRun) -> Hours
             for sentence in entry.sentences:
                 if (
                     any(i not in citations for i in sentence.chunk_ids)
+                    or any(
+                        i not in question.website_link_ids
+                        for i in getattr(sentence, "website_link_ids", ())
+                    )
                     or not sentence.text.strip()
                     or "[" in sentence.text
                     or "]" in sentence.text

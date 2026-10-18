@@ -1,5 +1,10 @@
 # Local MVP
 
+Official social-page links now use a separately proven homepage-link supplement;
+see [source scope, metadata and verification](PUBLIC_WEBSITE_LINKS.md). The existing
+vector bundle remains unchanged. Refresh the browser to load clickable links and
+the Arabic numeric-direction display repair.
+
 This entry point runs FastAPI and the existing bounded LangGraph flow with Luna
 through OpenRouter, Qwen3 Embedding 8B through the pinned DeepInfra route, and
 read-only dense retrieval against the existing local Qdrant collection. It uses

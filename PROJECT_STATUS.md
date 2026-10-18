@@ -2,6 +2,29 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Latest repair — **official social-page links restored locally**:
+The English/Arabic homepages contain eight literal href occurrences for Facebook,
+Instagram, LinkedIn and YouTube, previously absent from all 955 vector chunks.
+A separately sealed, source-verified supplement now feeds the existing writer;
+the corpus/index/admission/alias/cache and default app are unchanged. Runtime
+checks raw hashes, document/time/DOM bindings, exact labels/hrefs and part scopes.
+Responses keep link provenance separate from chunk citations and display safe
+clickable destinations with expandable website-source details. No external social
+profile is fetched or independently verified. See `docs/PUBLIC_WEBSITE_LINKS.md`.
+
+**38 new / 2,220 full offline tests pass**, zero failures/errors/skips, plus
+lint/format. Two actual hosted development requests / three returned parts received
+individual primary Codex review: Arabic Facebook now answers directly; English
+Instagram/YouTube, unconfirmed TikTok and Friday opening are represented correctly.
+Reported screen cost $0.009679885; observed remaining $0.257830345. Metadata-window
+change differs from returned costs; settled billing reconciliation is unproven.
+The supplement adds 957 verified Qwen retrieval tokens under its separate 1,600
+ceiling; no exact Luna input count is claimed. Existing two-call/one-query-batch
+allowances stay. Evidence: `artifacts/public-website-links-v1/`. Source acceptance
+is bounded to two homepages, not every outgoing link/site page. Visual browser and
+broad production acceptance remain unverified. **Next:** refresh the local UI and
+continue hands-on public-answer acceptance, then portable API Docker packaging.
+
 Latest checkpoint — **service recall, corrective replies, clinic voice and RTL display**:
 The local profile now preserves five dense hits and adds up to three scoped literal
 matches plus two complete source/owner/language-bound ancestor-context records.
@@ -25,11 +48,11 @@ so universal superiority/generalization is not claimed. See
 Audited response cost $0.076313045; observed remaining $0.277946935. Concurrent user
 queries and five unaudited HTTP requests prevent exact task billing reconciliation.
 
-**Active next repair:** official homepage Facebook/Instagram/LinkedIn/YouTube hrefs
+**Subsequent repair (completed above):** homepage Facebook/Instagram/LinkedIn/YouTube hrefs
 exist in the saved website HTML but none are retained in the current chunk catalog.
 Restore these website-owned link facts with separate verified provenance, preserving
 the immutable indexed bundle and the prohibition on crawling external social pages.
-This repair is not implemented in this checkpoint. Production readiness is unproven.
+That service-recall checkpoint did not yet implement it. Production readiness is unproven.
 
 Latest delivery — **natural hours replies and clean chat prose**:
 The explicit local MVP now sends validated published-hours records/results through

@@ -7,6 +7,11 @@ from pydantic import Field
 
 from telescope_rag.api.responses import OfflineChatResponse, ResponseQuestion, ResponseRecord
 from telescope_rag.knowledge.hours import HoursReason, HoursSubject, PublishedHours
+from telescope_rag.knowledge.public_links import WebsiteLink
+
+
+class ResponseWebsiteLink(WebsiteLink):
+    question_id: str
 
 
 class ResponseHours(ResponseRecord):
@@ -34,8 +39,11 @@ class ResponseHours(ResponseRecord):
 
 class HoursResponseQuestion(ResponseQuestion):
     hours: ResponseHours | None
+    website_link_ids: tuple[str, ...] = ()
 
 
 class HoursChatResponse(OfflineChatResponse):
     schema_version: Literal["offline-hours-response-v1"] = "offline-hours-response-v1"
     questions: tuple[HoursResponseQuestion, ...] = Field(min_length=1, max_length=4, repr=False)
+    website_links: tuple[ResponseWebsiteLink, ...] = Field(default=(), max_length=32)
+    website_links_digest: str | None = None

@@ -108,6 +108,25 @@ class ConversationalDraft(ClosedRecord):
     parts: tuple[ConversationalPart, ...] = Field(min_length=1, max_length=4)
 
 
+class WebsiteAnswerSentence(AnswerSentence):
+    chunk_ids: tuple[str, ...] = Field(max_length=16)
+    website_link_ids: tuple[str, ...] = Field(max_length=8)
+
+    @model_validator(mode="after")
+    def require_support(self):
+        if not self.chunk_ids and not self.website_link_ids:
+            raise ValueError("sentence_requires_support")
+        return self
+
+
+class WebsiteConversationalPart(ConversationalPart):
+    sentences: tuple[WebsiteAnswerSentence, ...] = Field(max_length=12, repr=False)
+
+
+class WebsiteConversationalDraft(ConversationalDraft):
+    parts: tuple[WebsiteConversationalPart, ...] = Field(min_length=1, max_length=4)
+
+
 class RetrievalQuery(ClosedRecord):
     part_id: str
     text: str = Field(min_length=1, max_length=4000, repr=False)

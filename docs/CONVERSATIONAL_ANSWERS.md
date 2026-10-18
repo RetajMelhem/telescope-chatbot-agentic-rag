@@ -1,5 +1,9 @@
 # Local conversational answering
 
+The local profile also supports [separately verified website social links](PUBLIC_WEBSITE_LINKS.md).
+Link-only prose uses exact question-owned link references and separate provenance,
+without creating a vector-chunk citation or crawling the external destination.
+
 The local MVP now writes answers from the original question and relevant admitted
 website evidence. It replaces the earlier extractive second stage within the same
 bounded LangGraph flow. There is at most one planning call and one answer call to

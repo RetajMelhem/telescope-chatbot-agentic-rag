@@ -2,7 +2,7 @@
 
 from telescope_rag.prompts.planner_source_choice_v1 import PLANNER_SYSTEM as BASE_SYSTEM
 
-PROMPT_VERSION = "local-rag-planner-v10"
+PROMPT_VERSION = "local-rag-planner-v11"
 PLANNER_SYSTEM = (
     BASE_SYSTEM
     + """
@@ -22,6 +22,10 @@ procedure_specific only for a claim about a particular treatment or procedure.
 Administrative and visitor information remains general_excerpt even when medical
 care is mentioned as context; an isolated clinical word does not establish a
 procedure-specific relationship. Preserve separate applicability/eligibility uses.
+The center's social-page addresses are public administrative information with
+intended_use=general_excerpt. A general question about our social pages does not
+restrict the answer to a contact/FAQ page or an individual doctor. It does not
+authorize opening an external profile, reading posts or sending messages.
 
 When a user asks for one individual's profile without identifying the page, and
 multiple admitted individual profiles could satisfy that description, request a

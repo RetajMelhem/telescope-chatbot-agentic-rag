@@ -16,6 +16,7 @@ from telescope_rag.graph.contracts import EvidenceRetriever, WorkflowResult
 from telescope_rag.graph.hours_contract import HoursProfile
 from telescope_rag.graph.hours_workflow import HoursRagWorkflow
 from telescope_rag.knowledge.hours import PublicHoursPlan
+from telescope_rag.knowledge.public_links import PublicLinksCatalog
 from telescope_rag.knowledge.source_authority import DirectoryAuthority
 from telescope_rag.providers.contracts import ChatProvider
 from telescope_rag.retrieval.assembly import AssemblyCounter, EvidenceCatalog
@@ -42,11 +43,14 @@ class HoursChatService(OfflineChatService):
         source_page_clarifications: bool = False,
         local_mvp_search: bool = False,
         conversational_answers: bool = False,
+        website_links: PublicLinksCatalog | None = None,
     ) -> None:
         if type(conversational_answers) is not bool or (
             conversational_answers and not local_mvp_search
         ):
             raise ValueError("conversational_answers_require_local_mvp")
+        if website_links is not None and not conversational_answers:
+            raise ValueError("website_links_require_local_conversation")
         workflow_type = HoursRagWorkflow
         if conversational_answers:
             from telescope_rag.graph.conversation_workflow import ConversationalRagWorkflow
@@ -55,6 +59,7 @@ class HoursChatService(OfflineChatService):
         self._settings, self._catalog = settings, catalog
         self._conversational_answers = conversational_answers
         self._source_page_clarifications = source_page_clarifications
+        self._website_links = website_links
         self._workflow = workflow_type(
             settings=settings,
             chat=chat,
@@ -72,6 +77,7 @@ class HoursChatService(OfflineChatService):
             reviewed_profile_limitations=reviewed_profile_limitations,
             source_page_clarifications=source_page_clarifications,
             local_mvp_search=local_mvp_search,
+            **({"website_links": website_links} if conversational_answers else {}),
         )
 
     async def draft(self, payload: ChatRequest, *, request_id: UUID) -> WorkflowResult:
@@ -92,6 +98,11 @@ class HoursChatService(OfflineChatService):
                 )
             if self._conversational_answers:
                 from telescope_rag.api.conversation import project_conversation
+
+                if self._website_links is not None:
+                    from telescope_rag.api.website_links import project_website_links
+
+                    response = project_website_links(response, run, self._website_links)
 
                 response = project_conversation(response, run)
             return response
