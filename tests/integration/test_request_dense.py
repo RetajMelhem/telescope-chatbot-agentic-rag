@@ -51,7 +51,9 @@ def fixture_tokenizer(tmp_path, monkeypatch):
 
 
 @asynccontextmanager
-async def environment(path, *, mode="normal", cache=None, settings=None, chat_handler=None):
+async def environment(
+    path, *, mode="normal", cache=None, settings=None, chat_handler=None, lexical_rescue_limit=0
+):
     settings = settings or Settings(
         _env_file=None,
         app_env="test",
@@ -163,6 +165,7 @@ async def environment(path, *, mode="normal", cache=None, settings=None, chat_ha
                 embeddings=providers.embeddings,
                 reader=reader,
                 cache=cache,
+                lexical_rescue_limit=lexical_rescue_limit,
             )
             yield SimpleNamespace(
                 settings=settings,
@@ -227,6 +230,71 @@ def test_literal_queries_use_exact_hosted_prefix_one_batch_and_scoped_points(
             assert budget.operations["embedding"] == 1 and budget.attempts["embedding"] == 1
             assert budget.receipts[0].requested_model == "qwen/qwen3-embedding-8b"
             assert budget.receipts[0].reported_model == "Qwen/Qwen3-Embedding-8B"
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("language", ["en", "ar"])
+def test_literal_rescue_keeps_dense_prefix_and_one_embedding_batch(fixture_tokenizer, language):
+    async def run():
+        async with environment(fixture_tokenizer, lexical_rescue_limit=1) as env:
+            # An authored dense miss: the mock reader returns its first allowed
+            # point. The full target text must be recoverable from literal search.
+            target = env.values[-1]
+            text = target.retrieval_text + (" موعد" if language == "ar" else " visit")
+            budget = ExecutionBudget(env.settings)
+            result = await retrieve(env, [query(text=text)], budget=budget)
+            assert env.reads[0]["limit"] == 1
+            ids = result.parts[0].chunk_ids
+            assert ids[0] == env.values[0].chunk_id and target.chunk_id in ids
+            assert len(ids) == len(set(ids)) <= 2
+            assert len(env.reads) == len(env.embeddings) == 1
+            assert budget.operations["embedding"] == 1
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("owner", ["a", "b"])
+@pytest.mark.parametrize("owner_kind", ["literal", "canonical"])
+def test_rescue_cannot_borrow_another_owner_even_when_its_words_match(
+    fixture_tokenizer, owner, owner_kind
+):
+    async def run():
+        async with environment(fixture_tokenizer, lexical_rescue_limit=1) as env:
+            result = await retrieve(
+                env,
+                [
+                    query(
+                        text=env.values[-1].retrieval_text,
+                        document_ids=("main",),
+                        owner_id=owner if owner_kind == "literal" else "canonical-" + owner,
+                        owner_kind=owner_kind,
+                    )
+                ],
+            )
+            assert result.parts[0].chunk_ids
+            assert all(env.catalog.chunks[i].doctor_id == owner for i in result.parts[0].chunk_ids)
+            assert env.values[-1].chunk_id not in result.parts[0].chunk_ids
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("mode", ["bad_payload", "foreign_point"])
+def test_rescue_does_not_hide_failed_dense_source_validation(fixture_tokenizer, mode):
+    async def run():
+        async with environment(fixture_tokenizer, lexical_rescue_limit=1, mode=mode) as env:
+            with pytest.raises(ValueError, match="request_dense_read_failed"):
+                await retrieve(env, [query(text=env.values[0].retrieval_text, owner_id="a")])
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("limit", [True, -1, 2, 3, "1"])
+def test_invalid_rescue_configuration_fails_before_network(fixture_tokenizer, limit):
+    async def run():
+        with pytest.raises(ValueError, match="request_dense_configuration_invalid"):
+            async with environment(fixture_tokenizer, lexical_rescue_limit=limit):
+                pytest.fail("invalid local retrieval capacity must not serve")
 
     asyncio.run(run())
 

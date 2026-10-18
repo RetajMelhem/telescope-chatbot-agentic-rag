@@ -53,6 +53,7 @@ def local_settings(root: Path) -> Settings:
         provider_max_retries=0,
         max_llm_calls=2,
         max_total_output_tokens=2 * OUTPUT_TOKENS,
+        retrieval_top_k_per_question=10,
         provider_timeout_seconds=60,
         request_timeout_seconds=150,
         log_level="WARNING",
@@ -185,6 +186,8 @@ def create_local_app(
         embeddings=providers.embeddings,
         reader=reader,
         cache=EmbeddingCache(root / "data/processed/m4-query-cache-v1"),
+        lexical_rescue_limit=3,
+        ancestor_context_limit=2,
     )
     service = HoursChatService(
         settings=settings,

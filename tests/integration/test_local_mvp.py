@@ -37,7 +37,7 @@ def test_local_lifespan_health_chat_sources_and_cleanup(
             ) as client:
                 assert (await client.get("/health/ready")).status_code == 200
                 ui = await client.get("/")
-                assert ui.status_code == 200 and "textContent=data.answer" in ui.text
+                assert ui.status_code == 200 and "renderMixedText(answer,data.answer)" in ui.text
                 assert "innerHTML" not in ui.text and "language,history" in ui.text
                 assert provider.calls == 0
                 provider.subject = subject
@@ -95,6 +95,7 @@ def test_local_settings_use_dotenv_and_readonly_key_and_reject_production(tmp_pa
     assert settings.qdrant_api_key.get_secret_value() == "synthetic-reader"
     assert settings.host == "127.0.0.1" and settings.provider_max_retries == 0
     assert settings.max_llm_calls == 2 and settings.max_total_output_tokens == 8192
+    assert settings.retrieval_top_k_per_question == 10
     (tmp_path / ".env").write_text(
         "APP_ENV=production\nQDRANT_API_KEY=synthetic\n", encoding="utf-8"
     )

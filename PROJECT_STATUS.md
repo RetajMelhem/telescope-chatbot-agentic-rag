@@ -2,6 +2,35 @@
 
 Last updated: 2026-10-18 (Asia/Amman).
 
+Latest checkpoint — **service recall, corrective replies, clinic voice and RTL display**:
+The local profile now preserves five dense hits and adds up to three scoped literal
+matches plus two complete source/owner/language-bound ancestor-context records.
+Global assembly and the two-call/one-batch limits stay unchanged. Default retrievers
+are unchanged. Source chunks, index, alias, persistent cache and keys are untouched.
+The approved cheek paragraph was present; an actual alternate paraphrase missed it.
+The captured miss now recovers both service and governing context without paid
+re-embedding. Corrective replies retain unsupported/private details explicitly and
+use center voice/حسب معلوماتي. Numeric runs render in isolated LTR nodes without
+changing their strings. Original source excerpts and provenance remain available.
+
+**38 new / 2,182 full offline tests pass**, plus lint/format and locked dependencies.
+Primary Codex individually reviewed 22 actual requests / 27 returned parts; one
+protocol rejection and earlier semantic misses remain recorded. Final backend has
+three real HTTP examples. Six cited chunks / four saved official pages / 73 DOM
+spans verify. Nine actual Node renderer checks pass; visual browser acceptance is
+unverified because browser automation is disabled. The 90-query historical replay
+gains two known witnesses over dense-five; equal-capacity dense-ten scores higher,
+so universal superiority/generalization is not claimed. See
+`docs/SERVICE_RETRIEVAL_REPAIR.md` and `artifacts/service-retrieval-gap-v7/`.
+Audited response cost $0.076313045; observed remaining $0.277946935. Concurrent user
+queries and five unaudited HTTP requests prevent exact task billing reconciliation.
+
+**Active next repair:** official homepage Facebook/Instagram/LinkedIn/YouTube hrefs
+exist in the saved website HTML but none are retained in the current chunk catalog.
+Restore these website-owned link facts with separate verified provenance, preserving
+the immutable indexed bundle and the prohibition on crawling external social pages.
+This repair is not implemented in this checkpoint. Production readiness is unproven.
+
 Latest delivery — **natural hours replies and clean chat prose**:
 The explicit local MVP now sends validated published-hours records/results through
 the existing conversational second Luna stage. It answers the requested day/time

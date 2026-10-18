@@ -107,8 +107,15 @@ class BM25Index:
         self._document_count = len(self._lengths)
         self._average_length = sum(self._lengths.values()) / self._document_count
 
-    def search(self, query: str, *, limit: int = 20) -> tuple[LexicalHit, ...]:
+    def search(
+        self, query: str, *, limit: int = 20, allowed_chunk_ids: frozenset[str] | None = None
+    ) -> tuple[LexicalHit, ...]:
         limit = _limit(limit)
+        if allowed_chunk_ids is not None and (
+            type(allowed_chunk_ids) is not frozenset
+            or not allowed_chunk_ids <= self._lengths.keys()
+        ):
+            raise ValueError("lexical_scope_invalid")
         if not isinstance(query, str):
             raise ValueError("query must be a string")
         if len(query) > MAX_QUERY_CHARACTERS:
@@ -124,6 +131,8 @@ class BM25Index:
                 1 + (self._document_count - len(matches) + 0.5) / (len(matches) + 0.5)
             )
             for chunk_id, frequency in matches.items():
+                if allowed_chunk_ids is not None and chunk_id not in allowed_chunk_ids:
+                    continue
                 normalization = _K1 * (1 - _B + _B * self._lengths[chunk_id] / self._average_length)
                 scores[chunk_id] += (
                     query_frequency

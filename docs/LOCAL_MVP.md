@@ -67,6 +67,11 @@ approved bundle, prepared digest, hours digest, tokenizer bytes and collection
 health/count/vector configuration. Returned Qdrant payloads must match the pinned
 inventory exactly. The query cache is read-only; new query vectors are request-local.
 The local factory uses the read key, never the admin key.
+The local candidate pool now retains five dense hits, up to three literal matches
+and two bounded section-context records; the global evidence limit stays unchanged.
+See [the scoped repair and trade-offs](SERVICE_RETRIEVAL_REPAIR.md). Numeric values
+are isolated left-to-right in Arabic replies and source excerpts without changing
+their text.
 
 There are at most two Luna calls and one Qwen embedding batch per question,
 one retrieval round, no retries/fallbacks, and no extra judge. Each chat stage has

@@ -18,6 +18,8 @@ from telescope_rag.providers.contracts import EmbeddingProvider, EmbeddingResult
 from telescope_rag.providers.qwen_tokenizer import QwenPreparationCounter, hosted_qwen_format
 from telescope_rag.retrieval.assembly import EvidenceCatalog
 from telescope_rag.retrieval.candidate import CandidateDenseReader
+from telescope_rag.retrieval.lexical import BM25Index
+from telescope_rag.retrieval.section_context import section_context
 
 
 class ReadOnlyQueryCache(Protocol):
@@ -72,6 +74,8 @@ class RequestDenseRetriever:
         embeddings: EmbeddingProvider,
         reader: CandidateDenseReader,
         cache: ReadOnlyQueryCache | None = None,
+        lexical_rescue_limit: int = 0,
+        ancestor_context_limit: int = 0,
     ) -> None:
         profile = hosted_qwen_format()
         configuration = EmbeddingConfiguration.model_validate_json(configuration.model_dump_json())
@@ -79,6 +83,13 @@ class RequestDenseRetriever:
             settings.app_env == "production"
             or settings.provider_max_retries != 0
             or not 1 <= settings.retrieval_top_k_per_question <= 20
+            or type(lexical_rescue_limit) is not int
+            or not 0 <= lexical_rescue_limit < settings.retrieval_top_k_per_question
+            or type(ancestor_context_limit) is not int
+            or not 0 <= ancestor_context_limit <= 2
+            or ancestor_context_limit + lexical_rescue_limit
+            >= settings.retrieval_top_k_per_question
+            or (ancestor_context_limit > 0 and lexical_rescue_limit == 0)
             or type(counter) is not QwenPreparationCounter
             or type(reader) is not CandidateDenseReader
             or counter.verified is not True
@@ -95,6 +106,13 @@ class RequestDenseRetriever:
         self._embeddings, self._reader, self._cache = embeddings, reader, cache
         self._configuration_hash = configuration_hash(configuration)
         self._snapshot = next(iter(catalog.chunks.values())).snapshot_id
+        self._lexical_limit = lexical_rescue_limit
+        self._context_limit = ancestor_context_limit
+        self._lexical = (
+            BM25Index({i: c.retrieval_text for i, c in catalog.chunks.items()})
+            if lexical_rescue_limit
+            else None
+        )
 
     async def retrieve(
         self,
@@ -189,11 +207,33 @@ class RequestDenseRetriever:
             async with semaphore, asyncio.timeout(budget.remaining_seconds()):
                 hits = await self._reader.search(
                     vectors[keys[index]],
-                    limit=self._settings.retrieval_top_k_per_question,
+                    limit=self._settings.retrieval_top_k_per_question
+                    - self._lexical_limit
+                    - self._context_limit,
                     point_ids=points[index],
                 )
+                selected = [h.chunk.chunk_id for h in hits]
+                if self._lexical is not None:
+                    # Additional literal candidates, never a dense rerank or a
+                    # semantic support decision. Filter before top-K so foreign
+                    # owners/pages cannot consume or cross a scoped capability.
+                    lexical_hits = self._lexical.search(
+                        copied[index].text,
+                        limit=self._lexical_limit,
+                        allowed_chunk_ids=frozenset(
+                            self._catalog.scope_members(copied[index].scope)
+                        ),
+                    )
+                    selected.extend(h.chunk_id for h in lexical_hits if h.chunk_id not in selected)
+                    context_ids = section_context(
+                        self._catalog,
+                        tuple(h.chunk_id for h in lexical_hits),
+                        allowed=frozenset(self._catalog.scope_members(copied[index].scope)),
+                        limit=self._context_limit,
+                    )
+                    selected.extend(i for i in context_ids if i not in selected)
                 rows[index] = RetrievedPart(
-                    part_id=copied[index].part_id, chunk_ids=tuple(h.chunk.chunk_id for h in hits)
+                    part_id=copied[index].part_id, chunk_ids=tuple(selected)
                 )
 
         try:

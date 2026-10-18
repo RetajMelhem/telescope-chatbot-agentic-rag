@@ -66,6 +66,23 @@ def test_tokenless_docs_queries_and_nonmatching_queries_do_not_invent_hits():
     assert BM25Index({"blank": ""}).search("doctor") == ()
 
 
+def test_scope_is_applied_before_cutoff_and_keeps_distinct_owners():
+    index = BM25Index({"foreign": "laser", "owner-a": "laser clinic", "owner-b": "laser clinic"})
+    assert index.search("laser", limit=1)[0].chunk_id == "foreign"
+    assert (
+        index.search("laser", limit=1, allowed_chunk_ids=frozenset({"owner-b"}))[0].chunk_id
+        == "owner-b"
+    )
+    assert index.search("laser", allowed_chunk_ids=frozenset()) == ()
+    assert len(index.search("laser", allowed_chunk_ids=frozenset({"owner-a", "owner-b"}))) == 2
+
+
+@pytest.mark.parametrize("scope", [[], {"owner"}, frozenset({"unissued"})])
+def test_invalid_lexical_scope_is_rejected(scope):
+    with pytest.raises(ValueError, match="lexical_scope_invalid"):
+        BM25Index({"owner": "laser"}).search("laser", allowed_chunk_ids=scope)
+
+
 def test_mapping_mutation_cannot_change_the_built_index():
     documents = {"a": "hours"}
     index = BM25Index(documents)

@@ -56,6 +56,11 @@ the application does not claim such a mechanical guarantee.
 
 ## Verification on 2026-10-18
 
+The later [service/voice/display repair](SERVICE_RETRIEVAL_REPAIR.md) adds bounded
+literal/source-context candidates, source-backed premise corrections, center voice
+and isolated numeric display. Its 2,182-test result supersedes earlier totals below;
+all prior evidence remains historical and retained.
+
 Latest follow-up:
 
 - **19 new / 2,144 full offline tests pass**, including hours prose, mixed questions,

@@ -10,6 +10,7 @@ main{max-width:850px;margin:40px auto;padding:24px}h1{margin-bottom:0}
 textarea{box-sizing:border-box;width:100%;min-height:130px;background:white}button{background:#125d70;color:white;cursor:pointer}
 button:disabled{opacity:.5;cursor:wait}.row{display:flex;gap:12px;align-items:center;margin:12px 0}
 #answer{white-space:pre-wrap;overflow-wrap:anywhere;background:white;border-radius:12px;padding:22px;margin-top:24px}
+.source-quote{white-space:pre-wrap;overflow-wrap:anywhere}bdi[dir=ltr]{unicode-bidi:isolate;direction:ltr}
 li{margin-bottom:14px}a{color:#125d70}#status{font-size:14px}small{color:#526873}
 </style>
 <main>
@@ -27,6 +28,18 @@ li{margin-bottom:14px}a{color:#125d70}#status{font-size:14px}small{color:#526873
 </main>
 <script>
 const form=document.querySelector('#chat'),button=document.querySelector('#send'),statusEl=document.querySelector('#status'),answer=document.querySelector('#answer'),sources=document.querySelector('#sources');
+function renderMixedText(element,text){
+ const fragment=document.createDocumentFragment();
+ const numbers=/(?:[+\-\u2212]\p{Zs}*)?\p{Nd}(?:[\p{Nd}\p{Zs}:.,٫٬/()\-–—]*\p{Nd})?/gu;
+ let position=0;
+ for(const match of text.matchAll(numbers)){
+  fragment.append(document.createTextNode(text.slice(position,match.index)));
+  const number=document.createElement('bdi');number.dir='ltr';number.textContent=match[0];
+  fragment.append(number);position=match.index+match[0].length;
+ }
+ fragment.append(document.createTextNode(text.slice(position)));
+ element.replaceChildren(fragment);
+}
 form.addEventListener('submit',async event=>{
  event.preventDefault();button.disabled=true;answer.hidden=true;sources.replaceChildren();statusEl.textContent='Retrieving website evidence… / جارٍ البحث…';
  const language=document.querySelector('#language').value;
@@ -34,14 +47,14 @@ form.addEventListener('submit',async event=>{
   const response=await fetch('/api/v1/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:document.querySelector('#query').value,language,history:[]})});
   const data=await response.json();
   if(!response.ok)throw new Error(data.error?.message||'The request could not be completed.');
-  answer.textContent=data.answer;answer.hidden=false;
+  renderMixedText(answer,data.answer);answer.hidden=false;
   for(const citation of data.citations){
    const item=document.createElement('li'),link=document.createElement('a');
    const url=new URL(citation.url);
    if(url.protocol!=='https:'||!['telescopecenter.com','www.telescopecenter.com'].includes(url.hostname))continue;
    link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent=`[${citation.id}] ${citation.title}`;
    const details=document.createElement('details'),summary=document.createElement('summary'),quote=document.createElement('p');
-   summary.textContent='View supporting excerpt / عرض نص المصدر';quote.textContent=citation.quote;quote.dir='auto';details.append(summary,quote);
+   summary.textContent='View supporting excerpt / عرض نص المصدر';quote.dir='auto';quote.className='source-quote';renderMixedText(quote,citation.quote);details.append(summary,quote);
    item.append(link,document.createElement('br'),document.createTextNode(`Retrieved: ${citation.fetched_at}`),details);sources.append(item);
   }
   statusEl.textContent=data.language==='en'?'Reply ready':'الإجابة جاهزة';

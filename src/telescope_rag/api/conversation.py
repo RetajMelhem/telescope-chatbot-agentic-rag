@@ -6,24 +6,24 @@ from telescope_rag.graph.contracts import WorkflowRun
 
 _TEXT = {
     "en": {
-        "unknown": "I couldn't find that information in the website material available to me.",
+        "unknown": "I don't have enough information to confirm that.",
         "excluded": (
-            "I can explain the public website information, but I can't carry out private "
-            "actions or provide personalized medical advice."
+            "I can help with information about our services, but I can't carry out private "
+            "actions or provide personal medical advice in this chat."
         ),
     },
     "ar": {
-        "unknown": "لم أجد هذه المعلومة ضمن معلومات الموقع المتاحة لي.",
+        "unknown": "لا تتوفر لدي معلومات كافية لتأكيد ذلك.",
         "excluded": (
-            "أستطيع شرح معلومات الموقع العامة، لكن لا يمكنني تنفيذ إجراءات خاصة "
-            "أو تقديم نصائح طبية شخصية."
+            "يمكنني مساعدتك بمعلومات عن خدمات مركزنا، لكن لا يمكنني تنفيذ طلبات خاصة "
+            "أو تقديم نصائح طبية شخصية في هذه المحادثة."
         ),
     },
     "ar-JO": {
-        "unknown": "ما لقيت هالمعلومة ضمن معلومات الموقع المتوفرة عندي.",
+        "unknown": "ما عندي معلومات كافية أأكدلك هالشي.",
         "excluded": (
-            "بقدر أشرحلك معلومات الموقع العامة، بس ما بقدر أنفّذ طلبات خاصة "
-            "أو أعطيك نصيحة طبية شخصية."
+            "بقدر أساعدك بمعلومات عن خدمات مركزنا، بس ما بقدر أنفّذ طلبات خاصة "
+            "أو أعطيك نصيحة طبية شخصية بهالمحادثة."
         ),
     },
 }

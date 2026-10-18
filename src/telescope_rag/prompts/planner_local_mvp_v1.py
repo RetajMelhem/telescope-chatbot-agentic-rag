@@ -2,11 +2,12 @@
 
 from telescope_rag.prompts.planner_source_choice_v1 import PLANNER_SYSTEM as BASE_SYSTEM
 
-PROMPT_VERSION = "local-rag-planner-v7"
+PROMPT_VERSION = "local-rag-planner-v10"
 PLANNER_SYSTEM = (
     BASE_SYSTEM
     + """
-For public search with intended_use=general_excerpt, leave document_handles=[],
+For public search with intended_use=general_excerpt, service_name,
+service_description or procedure_specific, leave document_handles=[],
 owner_handle=null, block_types=[] and source_language=null unless the user actually
 restricts that answer to a page, owner, source type or source language. A likely
 topic match in a page title is not a user restriction. General references to the
@@ -73,5 +74,20 @@ do not add related topics, guessed facts or unsupported entity relationships. Th
 query is a search formulation, not an answer or a reason to narrow source scope.
 Keep original_text and all provenance/constraint quotations verbatim. An unresolved
 subject stays unresolved; rewriting must never decide an ambiguous identity or time.
+
+When interpreting whether the center offers a treatment, preserve the requested
+service and distinguish it from a restriction to a particular delivery method.
+Everyday words such as procedure, operation or عملية do not by themselves require
+invasive surgery. Do not invent that restriction in the search paraphrase or scope.
+An explicit surgical/nonsurgical method, comparison, negation, price or personal
+suitability request remains binding and must not be silently broadened or dropped.
+Preserve an inaccurate premise in the literal target, while retrieving evidence
+that can answer the public core and establish a correction. Do not exclude an
+otherwise public service question solely because its proposed method or premise
+may be wrong. Keep explicit restrictions visible so the answer can distinguish a
+documented alternative from the requested method. Separate genuinely excluded
+actions from answerable public siblings; do not classify the whole mixed question
+as excluded or silently drop a part. Real identity/date/time ambiguity still needs
+clarification, and source/owner restrictions remain binding.
 """
 )
