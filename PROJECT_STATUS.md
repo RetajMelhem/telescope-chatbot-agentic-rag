@@ -15,6 +15,10 @@ All **2,445 guarded offline tests** and full Ruff lint/format pass, including
 legacy state migration, custom/default dashboard ports, saved-port validation
 and existing volume protection. The lockfile changes only this package's version;
 runtime dependency pins are unchanged.
+The real Windows test found that an internal-only Docker network suppresses
+published ports. Qdrant now also joins the existing publishable bridge; an owned
+test verified the actual `127.0.0.1` binding and dashboard HTTP 200. The cold test
+checks both declared and actual bindings to prevent that configuration regression.
 
 Latest offline remeasurement (2026-10-19): **zero new bot/provider/judge requests**.
 Recomputed the original full-50 baseline from saved raw replies and case-bound

@@ -87,7 +87,10 @@ There are **two running containers**: API and Qdrant. During initial restore the
 is one temporary Qdrant restore container; it is removed before normal serving.
 The API reaches Qdrant directly on a private network. Nginx is unnecessary in this
 distribution. Since v0.2.0, the authenticated database REST/dashboard port is also
-published on localhost only; its internal Docker network remains private. The existing
+published on localhost only; its internal Docker network remains private. The
+Qdrant container also joins the publishable bridge used by the API, because Docker
+does not publish ports for a container attached only to an internal network.
+It remains a two-container installation. The existing
 `telescope-m3-qdrant-gateway` supports the older host-Python launcher/dashboard;
 it remains unchanged on the development machine.
 

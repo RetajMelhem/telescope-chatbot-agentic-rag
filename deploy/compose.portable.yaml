@@ -16,6 +16,7 @@ services:
     networks:
       knowledge:
         aliases: [telescope-m3-qdrant]
+      egress: {}
     labels:
       telescope.installation_id: ${PORTABLE_INSTALLATION_ID}
   qdrant_restore:

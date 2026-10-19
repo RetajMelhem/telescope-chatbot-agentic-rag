@@ -173,6 +173,9 @@ try {
         $bindings[0].HostPort -cne '6333' -or $databaseInspection.HostConfig.PortBindings.'6334/tcp') {
         throw 'The dashboard must publish only the REST port on localhost.'
     }
+    $published = @($databaseInspection.NetworkSettings.Ports.'6333/tcp')
+    if ($published.Count -ne 1 -or $published[0].HostIp -cne '127.0.0.1' -or
+        $published[0].HostPort -cne '6333') { throw 'The dashboard port was not actually published.' }
     $report.qdrant_dashboard_loopback_binding = $true
     $httpCheck = @'
 import json, urllib.request
