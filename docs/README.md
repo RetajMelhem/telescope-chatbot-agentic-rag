@@ -1,6 +1,6 @@
 # Documentation map
 
-Current local MVP review: 2026-10-18. Start with the guides below. Earlier
+Current local MVP review: 2026-10-19 (published v0.2.0). Start with the guides below. Earlier
 experiments remain documented for traceability; their dated counts, balances and
 "next" instructions are historical, not the current project status.
 

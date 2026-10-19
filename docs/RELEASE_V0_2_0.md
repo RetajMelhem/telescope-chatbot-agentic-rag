@@ -36,3 +36,11 @@ and vectors are verified and reused rather than crawled or re-embedded. Keys,
 private installation state, audit outputs and model weights are excluded from the
 source and release assets. Publication and final installation verification are
 recorded in [project status](../PROJECT_STATUS.md).
+
+The [release is published](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.2.0)
+with six verified assets. A fresh public main clone restored all 955 points in an
+initially empty isolated engine and passed source, API/UI, dashboard binding and
+authenticated collection checks. Actual Windows launcher upgrade, rollback and
+restart tests retained the selected dashboard port and the same data volume.
+No model requests ran. Source tag: `e161c06`; API image:
+`sha256:36d81610c934d6c4c2efe3b37649ae0f45be615788fe358873d3b7ec1d396853`.

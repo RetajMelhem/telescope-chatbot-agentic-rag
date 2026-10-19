@@ -1,6 +1,6 @@
 # GitHub contents and local MVP handoff
 
-Reviewed against the current checkout and Docker installation on 2026-10-18.
+Reviewed against the current checkout and Docker installation on 2026-10-19.
 The local MVP is usable on this prepared computer. Git holds the software; the
 running installation also depends on excluded resources and credentials.
 
@@ -48,10 +48,15 @@ See [portable installation](PORTABLE_MVP.md) for the minimal asset inventory.
 The supplied GitHub destination is
 [RetajMelhem/telescope-chatbot-agentic-rag](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag).
 The local `origin` remote is configured to its HTTPS Git URL. Main and the immutable
-`v0.1.0` tag are pushed. The [v0.1.0 Release](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.1.0)
-contains the knowledge ZIP, native database snapshot, two images, manifest and
-checksums. Public downloads and an installation from a fresh tag clone were tested.
-Code/history and assets passed known-key/selected-pattern scanning; that is bounded
+`v0.1.0` and `v0.2.0` tags are pushed. The current
+[v0.2.0 release](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.2.0)
+contains the fixed API image, unchanged knowledge ZIP/native database snapshot/
+Qdrant image, manifest and checksums. The v0.1.0 release is preserved.
+A fresh public main clone installed v0.2.0 into an empty isolated Docker engine;
+all data/source checks, API endpoints, dashboard binding and authenticated
+collection reads passed without model calls. The real Windows launcher also
+passed code-only upgrade, rollback and restart checks with a custom dashboard port.
+Release source and archives passed known-key/selected-pattern scanning; that is bounded
 checking, not proof against every secret format. Keep inspecting staged changes
 and future history: an ignore rule cannot remove already committed content.
 

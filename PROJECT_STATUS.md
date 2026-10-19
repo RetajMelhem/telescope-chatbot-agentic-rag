@@ -2,6 +2,47 @@
 
 Last updated: 2026-10-19 (Asia/Amman).
 
+**v0.2.0 is published and verified** (2026-10-19):
+[GitHub release](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.2.0).
+Main, the fix branch and the immutable annotated v0.2.0 tag are pushed. The six
+public assets include the new API image, unchanged Qdrant/knowledge/snapshot,
+manifest and checksums; GitHub asset hashes and the public manifest match the
+local verified package. Future clones can run `install-mvp.cmd -Version v0.2.0`;
+double-clicking the launcher also selects v0.2.0.
+
+Release source: `e161c06d1d1eb0a6a45d10edd0ad2e5f37507a1e`. API image:
+`sha256:36d81610c934d6c4c2efe3b37649ae0f45be615788fe358873d3b7ec1d396853`.
+All 99 installed Python source files match that source; dependencies match R1
+apart from the package version 0.2.0. Knowledge identity remains
+`a16414530c40e991c3b0b506d9b30d2bac3d57587d36aa39759cafaaa56faccb`.
+Known-key/pattern archive scans, 116 runtime files and all 955 stored
+IDs/vectors/payloads/configuration verified. Model calls during packaging/tests: 0.
+
+Actual Windows `install-mvp.cmd` tests passed fresh restore, code-only upgrade,
+rollback, repeat upgrade, Stop/Start and Status on an owned installation. The
+same knowledge directory/volume was reused. Windows localhost dashboard access,
+authenticated collection reads and read-key write rejection (403) passed; the
+custom dashboard port remained 6335 through those operations.
+
+An independent fresh public `main` clone then downloaded all four archives into
+an initially empty, owned Docker engine. Both images loaded, all 955 points
+restored and verified, source/tokenizer resources loaded, five API/UI endpoints
+returned 200, and the default localhost dashboard binding plus authenticated
+collection access passed. The temporary engine and owned test installation's
+containers/networks/volume were removed. Original v0.1.0/R1 containers, source
+assets, database and installation records remain unchanged. This shares the
+same Windows/Docker Desktop host; it is not a second-machine or new answer-quality
+evaluation. The three historical 502 causes remain unconfirmed.
+
+Evidence: `artifacts/release-v0.2.0-evidence/` and
+`artifacts/portable-cold-v0.2.0-public/report.json`; public package files under
+`artifacts/portable-v0.2.0/`. Full offline suite: 2,445 passing; after the final
+Docker bridge correction, all 62 focused installer tests and the real install/
+cold-engine checks passed. The original v0.1.0 release/tag/assets are preserved.
+**Next:** install/update using v0.2.0 when desired; open
+`http://127.0.0.1:6333/dashboard/` and enter the installation's read-only key.
+Current existing user installation was deliberately not upgraded by these tests.
+
 v0.2.0 release preparation (2026-10-19): the user explicitly authorized pushing
 and publishing the tested fixes as **v0.2.0**, and requested a Windows Qdrant
 dashboard port for future installations. Package/API metadata and the launcher
