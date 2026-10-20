@@ -303,6 +303,69 @@ def test_copyright_notice_is_not_published_as_clinic_content():
     assert any(item.code == "copyright_notice" for item in result.removed)
 
 
+def test_arabic_malformed_alternative_beside_its_clean_label_is_not_published_twice():
+    result = prepared(
+        "<main><div class='e-con'><h2>شركة التأمين الإسلامية</h2>"
+        "<img alt='شركة التأمينالإسلامية'></div></main>"
+    )
+    texts = " ".join(c.retrieval_text for c in result.chunks)
+    assert "شركة التأمين الإسلامية" in texts
+    assert not any(
+        s.attribute == "alt" and s.original_text == "شركة التأمينالإسلامية"
+        for c in result.chunks
+        for s in (*c.source_spans, *c.context_spans)
+    )
+
+
+def test_arabic_alternative_without_a_published_copy_keeps_its_own_label():
+    result = prepared(
+        "<main><div class='e-con'><h2>شركات التأمين المعتمدة</h2><img alt='NatHealth'></div></main>"
+    )
+    assert any(
+        s.attribute == "alt" and s.original_text == "NatHealth"
+        for c in result.chunks
+        for s in (*c.source_spans, *c.context_spans)
+    )
+
+
+def test_table_rows_survive_the_removal_of_a_malformed_alternative():
+    result = prepared(
+        "<main><table><tbody>"
+        "<tr><th>Technique</th><th>Recovery Speed</th></tr>"
+        "<tr><td>Femto Smile Pro</td><td>Very fast</td></tr>"
+        "</tbody></table>"
+        "<div class='e-con'><img alt='RecoverySpeed'></div></main>"
+    )
+    texts = " ".join(c.retrieval_text for c in result.chunks)
+    assert "Femto Smile Pro" in texts
+    assert "Very fast" in texts
+    assert not any(
+        s.attribute == "alt" and s.original_text == "RecoverySpeed"
+        for c in result.chunks
+        for s in (*c.source_spans, *c.context_spans)
+    )
+
+
+def test_list_items_survive_the_removal_of_a_malformed_alternative():
+    result = prepared(
+        "<main><ul><li>Ramps are available.</li><li>Free parking.</li></ul>"
+        "<div class='e-con'><img alt='Prayer room (1)'></div></main>"
+    )
+    texts = " ".join(c.retrieval_text for c in result.chunks)
+    assert "Ramps are available." in texts
+    assert "Free parking." in texts
+
+
+def test_copyright_notice_inside_a_list_is_not_published():
+    result = prepared(
+        "<main><ul><li>Published opening hours.</li>"
+        "<li>&copy; Copyright 2026. All rights reserved</li></ul></main>"
+    )
+    texts = " ".join(c.retrieval_text for c in result.chunks)
+    assert "Published opening hours." in texts
+    assert "All rights reserved" not in texts
+
+
 def test_repeated_ordered_step_is_not_removed_as_duplicate():
     result = prepared(
         "<main><ol><li>Repeat measurement.</li><li>Repeat measurement.</li></ol></main>"
