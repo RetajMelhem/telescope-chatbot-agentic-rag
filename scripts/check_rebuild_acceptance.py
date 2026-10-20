@@ -62,7 +62,8 @@ def main() -> None:
     parser.add_argument("--rebuilt", type=pathlib.Path, required=True)
     parser.add_argument("--baseline-verify", type=pathlib.Path, required=True)
     parser.add_argument("--rebuilt-verify", type=pathlib.Path, required=True)
-    parser.add_argument("--execution", type=pathlib.Path, required=True)
+    parser.add_argument("--execution", type=pathlib.Path, nargs="+", required=True)
+    parser.add_argument("--cache", type=pathlib.Path, required=True)
     parser.add_argument("--admitted", type=pathlib.Path, required=True)
     parser.add_argument("--published", type=pathlib.Path, required=True)
     args = parser.parse_args()
@@ -77,18 +78,25 @@ def main() -> None:
     reb_ship = policy_row(rebuilt, SHIPPED)
     reb_phase2 = policy_row(rebuilt, PHASE2)
 
-    result = json.loads((args.execution / "result.json").read_text(encoding="utf-8"))
-    verification = json.loads((args.execution / "verification.json").read_text(encoding="utf-8"))
-    batches = [
-        json.loads(p.read_text(encoding="utf-8"))
-        for p in sorted(args.execution.glob("batch-*.json"))
-    ]
-    attempts = [a for b in batches for a in b.get("attempts", [])]
+    final_dir = next((d for d in args.execution if (d / "result.json").exists()), None)
+    if final_dir is None:
+        raise SystemExit("no attempt directory contains a result.json")
+    result = json.loads((final_dir / "result.json").read_text(encoding="utf-8"))
+    verification = json.loads((final_dir / "verification.json").read_text(encoding="utf-8"))
+    attempts: list[dict] = []
+    for directory in args.execution:
+        for path in sorted(directory.glob("batch-*.json")):
+            batch = json.loads(path.read_text(encoding="utf-8"))
+            attempts.extend(batch.get("attempts", []))
+    successful = [a for a in attempts if a.get("status_code") == 200]
+    limited = [a for a in attempts if a.get("status_code") == 429]
     count_mismatches = [
         a
-        for a in attempts
+        for a in successful
         if a.get("usage", {}).get("input_tokens") not in (None, a["input_reserved"])
     ]
+    billed_tokens = sum(a["input_reserved"] for a in successful)
+    cached_vectors = len(list(args.cache.glob("*.json")))
 
     admitted = load_bundle(args.admitted)
     published = load_bundle(args.published)
@@ -195,12 +203,16 @@ def main() -> None:
             and result.get("active_alias_changed") is False
             and verification.get("aliases_unchanged") is True
             and not count_mismatches
-            and all(a.get("status_code") == 200 for a in attempts)
-            and attempts,
+            and successful
+            and all(a.get("outcome") == "success" for a in successful)
+            and all(a.get("outcome") == "provider_rate_limited" for a in limited)
+            and cached_vectors == 1212
+            and billed_tokens <= 81053,
             f"status={result.get('status')} points={result.get('points')} "
-            f"unique={result.get('unique_inputs')} attempts={len(attempts)} "
-            f"non_200={sum(1 for a in attempts if a.get('status_code') != 200)} "
-            f"count_mismatch={len(count_mismatches)} "
+            f"unique={result.get('unique_inputs')} "
+            f"successful_requests={len(successful)} rate_limited={len(limited)} "
+            f"count_mismatch={len(count_mismatches)} billed_tokens={billed_tokens}/81053 "
+            f"cached_vectors={cached_vectors}/1212 "
             f"aliases_unchanged={verification.get('aliases_unchanged')}",
         ),
         (
