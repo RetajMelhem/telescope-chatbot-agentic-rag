@@ -24,7 +24,11 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from telescope_rag.core.settings import Settings, load_settings
 from telescope_rag.graph.contracts import RetrievalQuery
 from telescope_rag.ingestion.deduplication import embedding_input_key
-from telescope_rag.ingestion.indexing import EmbeddingConfiguration
+from telescope_rag.ingestion.indexing import (
+    EmbeddingCache,
+    EmbeddingConfiguration,
+    configuration_hash,
+)
 from telescope_rag.ingestion.models import PreparedChunk, PreparedDocument
 from telescope_rag.ingestion.runner import read_secret
 from telescope_rag.providers.budget import ExecutionBudget
@@ -38,7 +42,7 @@ from telescope_rag.retrieval.assembly import EvidenceCatalog, SourceScope
 from telescope_rag.retrieval.candidate import CandidateDenseReader
 from telescope_rag.retrieval.duplicates import DuplicateIndex
 from telescope_rag.retrieval.lexical import BM25Index
-from telescope_rag.retrieval.request_dense import RequestDenseRetriever
+from telescope_rag.retrieval.request_dense import RequestDenseRetriever, query_cache_key
 from telescope_rag.retrieval.section_context import section_context
 
 DEFAULT_COLLECTION = "telescope_public_018817ac10ec05ecad92adb9"
@@ -177,6 +181,9 @@ async def capture(
     prepared_digest: str = DEFAULT_PREPARED_DIGEST,
     qdrant_url: str = "http://127.0.0.1:6333",
     read_key: Path = Path(".tools/qdrant-m3/read.key"),
+    reader_target: str = "loopback",
+    query_cache: Path | None = None,
+    batch_delay_seconds: float = 0.0,
 ) -> None:
     documents, chunks = load_bundle(root, bundle)
     catalog = EvidenceCatalog(documents, expected_digest=prepared_digest)
@@ -185,12 +192,17 @@ async def capture(
     tokenizer = root / f".tools/qwen-tokenizer/{TOKENIZER_REVISION}/tokenizer.json"
     counter = QwenEmbeddingCounter(tokenizer)
     profile = hosted_qwen_format()
+    configuration = EmbeddingConfiguration.model_validate_json(
+        (root / f"data/processed/{bundle}/metadata/embedding-configuration.json").read_bytes()
+    )
+    config_hash = configuration_hash(configuration)
+    cache = EmbeddingCache(query_cache) if query_cache else None
     reader = CandidateDenseReader(
         settings,
         settings.qdrant_api_key,
         collection=collection,
         chunks={chunk.point_id: chunk for chunk in catalog.chunks.values()},
-        target="loopback",
+        target=reader_target,
     )
     lexical = BM25Index(
         {identity: chunk.retrieval_text for identity, chunk in catalog.chunks.items()}
@@ -198,18 +210,37 @@ async def capture(
     allowed = frozenset(catalog.chunks)
     providers = OpenRouterProviders(settings, token_counter=counter)
     rankings: list[QuestionRanking] = []
+    dispatched = False
     try:
         batch_size = settings.max_embedding_batch_size
         for start in range(0, len(questions), batch_size):
             batch = questions[start : start + batch_size]
-            budget = ExecutionBudget(settings)
-            result = await providers.embeddings.embed(
-                [row["query"] for row in batch],
-                role="query",
-                format=profile,
-                budget=budget,
-            )
-            for row, vector in zip(batch, result.vectors, strict=True):
+            keys = [query_cache_key(row["query"], config_hash) for row in batch]
+            vectors: dict[str, tuple[float, ...]] = {}
+            missing: list[int] = []
+            for index, key in enumerate(keys):
+                cached = cache.get(key, config_hash, configuration.dimensions) if cache else None
+                if cached is None:
+                    missing.append(index)
+                else:
+                    vectors[key] = cached
+            if missing:
+                if dispatched and batch_delay_seconds:
+                    await asyncio.sleep(batch_delay_seconds)
+                dispatched = True
+                budget = ExecutionBudget(settings)
+                result = await providers.embeddings.embed(
+                    [batch[index]["query"] for index in missing],
+                    role="query",
+                    format=profile,
+                    budget=budget,
+                )
+                for index, vector in zip(missing, result.vectors, strict=True):
+                    vectors[keys[index]] = vector
+                    if cache:
+                        cache.put(keys[index], config_hash, vector)
+            for row, key in zip(batch, keys, strict=True):
+                vector = vectors[key]
                 hits = await reader.search(vector, limit=DENSE_CAPTURE_LIMIT)
                 lexical_hits = lexical.search(row["query"], limit=LEXICAL_CAPTURE_LIMIT)
                 contexts = section_context(
@@ -447,6 +478,9 @@ def verify(
     prepared_digest: str = DEFAULT_PREPARED_DIGEST,
     qdrant_url: str = "http://127.0.0.1:6333",
     read_key: Path = Path(".tools/qdrant-m3/read.key"),
+    reader_target: str = "loopback",
+    query_cache: Path | None = None,
+    batch_delay_seconds: float = 0.0,
 ) -> None:
     """Run the real request-scoped retriever over the approved questions.
 
@@ -468,7 +502,7 @@ def verify(
         settings.qdrant_api_key,
         collection=collection,
         chunks={chunk.point_id: chunk for chunk in catalog.chunks.values()},
-        target="loopback",
+        target=reader_target,
     )
     providers = OpenRouterProviders(settings, token_counter=provider_counter)
     duplicates = DuplicateIndex(catalog.chunks)
@@ -481,7 +515,7 @@ def verify(
         counter=preparation_counter,
         embeddings=providers.embeddings,
         reader=reader,
-        cache=None,
+        cache=EmbeddingCache(query_cache) if query_cache else None,
         lexical_rescue_limit=2,
         ancestor_context_limit=1,
         duplicate_index=duplicates,
@@ -596,6 +630,9 @@ def main() -> None:
     capture_parser.add_argument("--prepared-digest", default=DEFAULT_PREPARED_DIGEST)
     capture_parser.add_argument("--qdrant-url", default="http://127.0.0.1:6333")
     capture_parser.add_argument("--read-key", type=Path, default=Path(".tools/qdrant-m3/read.key"))
+    capture_parser.add_argument("--reader-target", default="loopback")
+    capture_parser.add_argument("--query-cache", type=Path)
+    capture_parser.add_argument("--batch-delay-seconds", type=float, default=0.0)
     score_parser = commands.add_parser("score")
     score_parser.add_argument("--root", type=Path, default=Path.cwd())
     score_parser.add_argument("--capture", type=Path, required=True)
@@ -615,6 +652,8 @@ def main() -> None:
     verify_parser.add_argument("--prepared-digest", default=DEFAULT_PREPARED_DIGEST)
     verify_parser.add_argument("--qdrant-url", default="http://127.0.0.1:6333")
     verify_parser.add_argument("--read-key", type=Path, default=Path(".tools/qdrant-m3/read.key"))
+    verify_parser.add_argument("--reader-target", default="loopback")
+    verify_parser.add_argument("--query-cache", type=Path)
     args = parser.parse_args()
     if args.command == "capture":
         asyncio.run(
@@ -626,6 +665,9 @@ def main() -> None:
                 prepared_digest=args.prepared_digest,
                 qdrant_url=args.qdrant_url,
                 read_key=args.read_key,
+                reader_target=args.reader_target,
+                query_cache=args.query_cache,
+                batch_delay_seconds=args.batch_delay_seconds,
             )
         )
     elif args.command == "verify":
@@ -637,6 +679,8 @@ def main() -> None:
             prepared_digest=args.prepared_digest,
             qdrant_url=args.qdrant_url,
             read_key=args.read_key,
+            reader_target=args.reader_target,
+            query_cache=args.query_cache,
         )
     else:
         policies = [Policy.model_validate(item) for item in json.loads(args.policies.read_bytes())]

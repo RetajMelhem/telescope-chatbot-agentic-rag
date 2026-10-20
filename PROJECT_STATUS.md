@@ -1,6 +1,79 @@
 # Project status
 
-Last updated: 2026-10-19 (Asia/Amman).
+Last updated: 2026-10-20 (Asia/Amman).
+
+**M7 retrieval precision: the corpus rebuild was measured and rejected; the
+retrieval change was accepted.** (2026-10-20)
+
+A fresh bounded public snapshot of the same site was collected (127 pages,
+complete coverage, no crawl gaps) and rebuilt into a cleaned, admitted and
+token-validated corpus: 91 documents, 1,332 chunks, 1,212 unique embedding
+inputs. The published corpus remains 107 documents, 955 chunks, 834 groups.
+
+**Retrieval, accepted.** Three retrieval-side changes were implemented and
+measured on the published corpus with the real `RequestDenseRetriever` over the
+50 approved everyday questions and a new fact-level gold: identical published
+evidence now collapses to one retrieval slot with a deterministic
+representative occurrence; an unrestricted public search reads the corpus in
+the answer's published language; and the local candidate budget was retuned to
+top-k 11, BM25 2, ancestor context 1. Macro fact recall rose from 0.8646 to
+**0.9583**, macro evidence precision from 0.2244 to **0.2567**, questions with
+full recall from 41 to 46 of 48, questions with zero recall from 6 to 2, and
+mean duplicate slots per question from 0.28 to **0.00**. The price abstain case
+stayed at 0 over-claims of 2. No corpus, vector, payload or format changed.
+`scripts/measure_retrieval_precision.py` captures, scores and verifies this
+against any corpus or collection; `scripts/compare_corpus_versions.py`
+compares two prepared corpora; `scripts/check_rebuild_acceptance.py` evaluates
+the accepted thresholds. Full offline suite **2,460 passed**; Ruff lint and
+format clean.
+
+**Corpus rebuild, rejected.** The rebuilt corpus was embedded into an isolated
+staging database and measured against the published corpus. The embedding run
+was clean: 76 successful requests, 81,053 of 81,053 planned input tokens
+billed, 1,212 of 1,212 distinct vectors, 1,332 points, green collection, exact
+payloads and vectors, read-only key rejected a write with 403, aliases
+unchanged and the live installation untouched throughout. The route rate-limits
+bursts, so the corpus was embedded as a bounded campaign of independent
+invocations against one immutable content-addressed cache; the cache writes
+with exclusive creation, so each unique input was embedded at most once and the
+plan's token and request caps held. The corpus was nevertheless **rejected by
+6 of 10 accepted thresholds**: macro fact recall 0.9167 against 0.9583, 44 of 48
+questions at full recall against 46, and U18-en and U19-ar-JO regressed from
+full recall to zero. The cause is measured, not guessed: the fact-carrying
+chunk for U18-en is byte-identical in both corpora with the same score of
+0.5725, but its dense rank moved from 10 to 16 because the fresh extraction
+emits far more heading-only fragments (chunks with a body of 40 characters or
+less rose from 4.0% to 24.8%), and fragments that literally contain the
+query's own words outrank the answer carrier and consume the BM25 rescue
+slots. A sweep of 45 retrieval policies confirms this is structural: the
+published corpus reaches 0.9583 and the rebuilt corpus never exceeds 0.9375.
+The published corpus's advantage comes largely from its reviewed exclusions,
+which removed 914 of 1,869 units. The rebuilt corpus still carries 377 more
+distinct evidence groups, the published doctor role lines, the published
+department category names and zero template pages, but it is not yet better
+than the curated corpus it would replace. The staging candidate collection was
+deleted, the staging container and volume were removed, no release was cut, no
+image was published, and `src/telescope_rag/api/local.py` still points at the
+live collection and digest. The embedding cache, the query cache and every
+execution artifact are retained locally under gitignored paths.
+
+**A separate 502 cause is now localised.** Comparing the new retrieval code
+with the running v0.2.0 image reproduced the historical `502` on both, at
+roughly one request in three, with `failure_code:
+invalid_conversational_citation`, `failure_stage: generate_draft` and
+`provider_outcome: success`. The provider call succeeds; the writer emits a
+sentence citing a chunk id outside that part's eligible quote ids, and the
+validator rejects the whole request. The ids are 64-character hex strings the
+model must reproduce exactly. The repository has an explicit test asserting
+that such a citation fails closed, so the behaviour was not changed. The cause
+was previously recorded as unconfirmed; it is now reproducible and localised.
+Changing the writer's citation contract, for example to short aliases, needs
+its own prompt version and comparison run and is not done.
+
+**Next:** land the accepted retrieval change by rebuilding the API image
+against the unchanged v0.2.0 knowledge, which needs no corpus or knowledge
+release; and decide separately whether to invest in a corrected corpus that
+keeps the recovered coverage without the heading-only fragmentation.
 
 **v0.2.0 is published and verified** (2026-10-19):
 [GitHub release](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.2.0).

@@ -23,7 +23,13 @@ from telescope_rag.ingestion.models import PreparedChunk
 from telescope_rag.providers.validation import load_json
 
 _LOCAL_TARGET = "http://127.0.0.1:6333/"
+_STAGING_TARGET = "http://127.0.0.1:6334/"
 _CONTAINER_TARGET = "http://telescope-m3-qdrant:6333/"
+_TARGETS = {
+    "loopback": _LOCAL_TARGET,
+    "staging_loopback": _STAGING_TARGET,
+    "local_container": _CONTAINER_TARGET,
+}
 _CANDIDATE_NAME = re.compile(r"telescope_public_[0-9a-f]{24}")
 _DIMENSIONS = 4096
 MAX_DENSE_HITS = 20
@@ -54,11 +60,14 @@ class CandidateDenseReader:
         collection: str,
         chunks: Mapping[str, PreparedChunk],
         transport: httpx.AsyncBaseTransport | None = None,
-        target: Literal["loopback", "local_container"] = "loopback",
+        target: Literal["loopback", "staging_loopback", "local_container"] = "loopback",
     ):
-        if target not in {"loopback", "local_container"}:
+        # Each target maps to exactly one address. The reader never follows a
+        # configured host: it reads a local candidate or a separate local
+        # staging database, never a remote one.
+        if target not in _TARGETS:
             raise ValueError("candidate_reader_local_target_required")
-        address = _LOCAL_TARGET if target == "loopback" else _CONTAINER_TARGET
+        address = _TARGETS[target]
         if str(settings.qdrant_url) != address:
             raise ValueError("candidate_reader_local_target_required")
         if not isinstance(collection, str) or _CANDIDATE_NAME.fullmatch(collection) is None:

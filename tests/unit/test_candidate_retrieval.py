@@ -156,6 +156,44 @@ def test_rejects_nonpinned_urls_before_transport(url):
         reader(lambda request: pytest.fail("must not dispatch"), qdrant_url=url)
 
 
+def test_staging_target_reads_only_the_isolated_staging_database():
+    def handler(request):
+        assert str(request.url).startswith("http://127.0.0.1:6334/")
+        return response([])
+
+    client = CandidateDenseReader(
+        Settings(_env_file=None, app_env="test", qdrant_url="http://127.0.0.1:6334/"),
+        SecretStr("synthetic-reader-key"),
+        collection=COLLECTION,
+        chunks={item.point_id: item for item in (chunk(), chunk(2))},
+        transport=httpx.MockTransport(handler),
+        target="staging_loopback",
+    )
+    asyncio.run(client.search(VECTOR))
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://127.0.0.1:6333/",
+        "http://example.com:6334/",
+        "http://localhost:6334/",
+        "https://127.0.0.1:6334/",
+        "http://127.0.0.1:6334/collections/",
+    ],
+)
+def test_staging_target_rejects_every_other_address(url):
+    with pytest.raises(ValueError):
+        CandidateDenseReader(
+            Settings(_env_file=None, app_env="test", qdrant_url=url),
+            SecretStr("synthetic-reader-key"),
+            collection=COLLECTION,
+            chunks={item.point_id: item for item in (chunk(), chunk(2))},
+            transport=httpx.MockTransport(lambda request: pytest.fail("must not dispatch")),
+            target="staging_loopback",
+        )
+
+
 @pytest.mark.parametrize(
     "name",
     [
