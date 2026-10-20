@@ -31,6 +31,7 @@ from telescope_rag.providers.qwen_tokenizer import QwenEmbeddingCounter, QwenPre
 from telescope_rag.retrieval.assembly import EvidenceCatalog
 from telescope_rag.retrieval.candidate import CandidateDenseReader
 from telescope_rag.retrieval.contracts import KnowledgeReadiness
+from telescope_rag.retrieval.duplicates import DuplicateIndex
 from telescope_rag.retrieval.request_dense import RequestDenseRetriever
 
 COLLECTION = "telescope_public_018817ac10ec05ecad92adb9"
@@ -69,7 +70,7 @@ def _profile_settings(source: Settings, qdrant_url: str, read_key: Path) -> Sett
         provider_max_retries=0,
         max_llm_calls=2,
         max_total_output_tokens=2 * OUTPUT_TOKENS,
-        retrieval_top_k_per_question=10,
+        retrieval_top_k_per_question=11,
         provider_timeout_seconds=60,
         request_timeout_seconds=150,
         log_level="WARNING",
@@ -221,8 +222,10 @@ def create_local_app(
         embeddings=providers.embeddings,
         reader=reader,
         cache=EmbeddingCache(root / "data/processed/m4-query-cache-v1"),
-        lexical_rescue_limit=3,
-        ancestor_context_limit=2,
+        lexical_rescue_limit=2,
+        ancestor_context_limit=1,
+        duplicate_index=DuplicateIndex(resources.catalog.chunks),
+        duplicate_margin=12,
     )
     service = HoursChatService(
         settings=settings,

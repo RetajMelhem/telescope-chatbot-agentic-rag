@@ -26,7 +26,8 @@ _LOCAL_TARGET = "http://127.0.0.1:6333/"
 _CONTAINER_TARGET = "http://telescope-m3-qdrant:6333/"
 _CANDIDATE_NAME = re.compile(r"telescope_public_[0-9a-f]{24}")
 _DIMENSIONS = 4096
-_MAX_HITS = 20
+MAX_DENSE_HITS = 20
+_MAX_HITS = MAX_DENSE_HITS
 _MAX_EXPECTED_POINTS = 10000
 
 

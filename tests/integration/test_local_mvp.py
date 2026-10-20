@@ -95,7 +95,7 @@ def test_local_settings_use_dotenv_and_readonly_key_and_reject_production(tmp_pa
     assert settings.qdrant_api_key.get_secret_value() == "synthetic-reader"
     assert settings.host == "127.0.0.1" and settings.provider_max_retries == 0
     assert settings.max_llm_calls == 2 and settings.max_total_output_tokens == 8192
-    assert settings.retrieval_top_k_per_question == 10
+    assert settings.retrieval_top_k_per_question == 11
     (tmp_path / ".env").write_text(
         "APP_ENV=production\nQDRANT_API_KEY=synthetic\n", encoding="utf-8"
     )

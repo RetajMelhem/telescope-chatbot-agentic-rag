@@ -22,7 +22,7 @@ def test_container_file_keys_win_without_dotenv_or_process_substitution(monkeypa
     assert result.qdrant_api_key.get_secret_value() == "synthetic-file-read"
     assert str(result.qdrant_url) == "http://telescope-m3-qdrant:6333/"
     assert result.provider_max_retries == 0 and result.max_llm_calls == 2
-    assert result.max_total_output_tokens == 8192 and result.retrieval_top_k_per_question == 10
+    assert result.max_total_output_tokens == 8192 and result.retrieval_top_k_per_question == 11
     assert result.chat_input_accounting == "reported_usage"
 
 

@@ -17,7 +17,8 @@ from telescope_rag.providers.budget import ExecutionBudget
 from telescope_rag.providers.contracts import EmbeddingProvider, EmbeddingResult
 from telescope_rag.providers.qwen_tokenizer import QwenPreparationCounter, hosted_qwen_format
 from telescope_rag.retrieval.assembly import EvidenceCatalog
-from telescope_rag.retrieval.candidate import CandidateDenseReader
+from telescope_rag.retrieval.candidate import MAX_DENSE_HITS, CandidateDenseReader, DenseHit
+from telescope_rag.retrieval.duplicates import DuplicateIndex
 from telescope_rag.retrieval.lexical import BM25Index
 from telescope_rag.retrieval.section_context import section_context
 
@@ -76,6 +77,8 @@ class RequestDenseRetriever:
         cache: ReadOnlyQueryCache | None = None,
         lexical_rescue_limit: int = 0,
         ancestor_context_limit: int = 0,
+        duplicate_index: DuplicateIndex | None = None,
+        duplicate_margin: int = 0,
     ) -> None:
         profile = hosted_qwen_format()
         configuration = EmbeddingConfiguration.model_validate_json(configuration.model_dump_json())
@@ -90,6 +93,9 @@ class RequestDenseRetriever:
             or ancestor_context_limit + lexical_rescue_limit
             >= settings.retrieval_top_k_per_question
             or (ancestor_context_limit > 0 and lexical_rescue_limit == 0)
+            or type(duplicate_margin) is not int
+            or not 0 <= duplicate_margin <= MAX_DENSE_HITS
+            or (duplicate_index is None and duplicate_margin)
             or type(counter) is not QwenPreparationCounter
             or type(reader) is not CandidateDenseReader
             or counter.verified is not True
@@ -108,11 +114,44 @@ class RequestDenseRetriever:
         self._snapshot = next(iter(catalog.chunks.values())).snapshot_id
         self._lexical_limit = lexical_rescue_limit
         self._context_limit = ancestor_context_limit
+        self._duplicates = duplicate_index
+        self._duplicate_margin = duplicate_margin
         self._lexical = (
             BM25Index({i: c.retrieval_text for i, c in catalog.chunks.items()})
             if lexical_rescue_limit
             else None
         )
+
+    def _select_dense(
+        self,
+        hits: Sequence[DenseHit],
+        dense_slots: int,
+        scope_members: frozenset[str],
+    ) -> list[str]:
+        """Collapse byte-identical occurrences and refill the freed slots.
+
+        Occurrences of the same published block share one embedding input, so
+        they share one vector and one score. Keeping them all would spend every
+        dense slot on a single fact. The representative occurrence carries the
+        same content and the same score, so replacing an occurrence with it
+        changes neither the evidence nor its ranking position.
+        """
+        if self._duplicates is None:
+            return [hit.chunk.chunk_id for hit in hits[:dense_slots]]
+        selected: list[str] = []
+        seen: set[str] = set()
+        for hit in hits:
+            if len(selected) >= dense_slots:
+                break
+            representative = self._duplicates.representative(
+                hit.chunk.chunk_id, allowed=scope_members
+            )
+            key = self._duplicates.content_key(representative)
+            if key in seen:
+                continue
+            seen.add(key)
+            selected.append(representative)
+        return selected
 
     async def retrieve(
         self,
@@ -205,14 +244,27 @@ class RequestDenseRetriever:
             if not points[index]:
                 return
             async with semaphore, asyncio.timeout(budget.remaining_seconds()):
+                scope_members = frozenset(self._catalog.scope_members(copied[index].scope))
+                dense_slots = (
+                    self._settings.retrieval_top_k_per_question
+                    - self._lexical_limit
+                    - self._context_limit
+                )
+                # Identical published blocks share one vector and one score, so a
+                # repeated footer or call-to-action would otherwise consume every
+                # dense slot. Read a bounded number of extra candidates so the
+                # collapsed slots can be refilled with genuinely different evidence.
+                dense_limit = (
+                    min(MAX_DENSE_HITS, dense_slots + self._duplicate_margin)
+                    if self._duplicates is not None
+                    else dense_slots
+                )
                 hits = await self._reader.search(
                     vectors[keys[index]],
-                    limit=self._settings.retrieval_top_k_per_question
-                    - self._lexical_limit
-                    - self._context_limit,
+                    limit=dense_limit,
                     point_ids=points[index],
                 )
-                selected = [h.chunk.chunk_id for h in hits]
+                selected = self._select_dense(hits, dense_slots, scope_members)
                 if self._lexical is not None:
                     # Additional literal candidates, never a dense rerank or a
                     # semantic support decision. Filter before top-K so foreign
@@ -220,15 +272,13 @@ class RequestDenseRetriever:
                     lexical_hits = self._lexical.search(
                         copied[index].text,
                         limit=self._lexical_limit,
-                        allowed_chunk_ids=frozenset(
-                            self._catalog.scope_members(copied[index].scope)
-                        ),
+                        allowed_chunk_ids=scope_members,
                     )
                     selected.extend(h.chunk_id for h in lexical_hits if h.chunk_id not in selected)
                     context_ids = section_context(
                         self._catalog,
                         tuple(h.chunk_id for h in lexical_hits),
-                        allowed=frozenset(self._catalog.scope_members(copied[index].scope)),
+                        allowed=scope_members,
                         limit=self._context_limit,
                     )
                     selected.extend(i for i in context_ids if i not in selected)

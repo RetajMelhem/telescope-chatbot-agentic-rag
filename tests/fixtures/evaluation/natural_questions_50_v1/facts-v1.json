@@ -1,0 +1,399 @@
+{
+  "schema_version": "natural-facts-gold-v1",
+  "prepared_digest": "a46be2d3fd18f11d46c79ff9bc992de22aab496836894a708bc57c1e8b48af88",
+  "description": "Fact-level retrieval gold for the 25 approved everyday intents. Each fact names the literal source strings that must be present in the retrieved evidence for the answer to be supportable. Literal variants are per answer language. minimum_variants lists are used for roster questions where one page carries many separate names.",
+  "source_note": "Derived from the reviewed v6 website bundle and the published telescope pages. A fact is witnessed only when a retrieved chunk literally contains one of its variants.",
+  "intents": [
+    {
+      "intent_id": "U01",
+      "topic": "clinic phone number",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U01-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["+962 6 552 3333"], "ar": ["+962 6 552 3333"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U02",
+      "topic": "clinic location",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U02-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["228 Zahran St."], "ar": ["228 شارع زهران", "شارع زهران"]}
+        },
+        {
+          "fact_id": "U02-f2",
+          "minimum_variants": 1,
+          "variants": {"en": ["Amman"], "ar": ["عمّان"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U03",
+      "topic": "PRK versus LASIK difference",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U03-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["Surface Ablation (PRK / TransPRK)"], "ar": ["Surface Ablation (PRK / TransPRK)"]}
+        },
+        {
+          "fact_id": "U03-f2",
+          "minimum_variants": 1,
+          "variants": {"en": ["Laser Vision Correction"], "ar": ["تصحيح النظر بالليزر"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U04",
+      "topic": "vision correction offered",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U04-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["Laser Vision Correction"], "ar": ["تصحيح النظر بالليزر"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U05",
+      "topic": "lip enhancement offered",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U05-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["cheeks, lips, chin, and jawline"], "ar": ["الخدود، الشفاه، الذقن، وخط الفك"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U06",
+      "topic": "full medical team roster",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U06-f1",
+          "minimum_variants": 5,
+          "variants": {
+            "en": [
+              "Dr. Motasim Masalmeh",
+              "Dr. Rihab Ghanma",
+              "Prof. Dr. Mutaz Gharaibeh",
+              "Dr. Osama Odaibat",
+              "Dr. Hamzah Al-Rawabdeh",
+              "Dr. Bayan Al-Jaabari",
+              "Dr. Lina Hamadneh",
+              "Dr. Sarah Issa",
+              "Dr. Osama Farash",
+              "Dr. Osama Tashman",
+              "Dr. Saleem Abu Sbeit"
+            ],
+            "ar": [
+              "د. معتصم مسالمة",
+              "د. رحاب غنما",
+              "الأستاذ الدكتور معتز غرايبة",
+              "د. أسامة عضيبات",
+              "د. حمزة الروابدة",
+              "د. بيان الجعبري",
+              "د. لينا حمادنة",
+              "سارة عيسى",
+              "د. أسامة فراش",
+              "د. أسامة طاشمان",
+              "د سليم أبو سبيت"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "intent_id": "U07",
+      "topic": "WhatsApp contact",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U07-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["+962 77 7523333", "+962 7 7752 3333"], "ar": ["+962 77 7523333", "+962 7 7752 3333"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U08",
+      "topic": "opening hours",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U08-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["9:00 AM until 12:00 midnight"], "ar": ["9:00 صباحًا"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U09",
+      "topic": "Friday opening",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U09-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["except on Fridays from 2:00 PM"], "ar": ["يوم الجمعة من الساعة 2:00 ظهرًا"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U10",
+      "topic": "parking availability",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U10-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["parking is available"], "ar": ["تتوفر مواقف سيارات مريحة"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U11",
+      "topic": "insurance acceptance",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U11-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["approved insurance providers"], "ar": ["شركات التأمين المعتمدة"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U12",
+      "topic": "payment methods",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U12-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["payments via CliQ"], "ar": ["كليك"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U13",
+      "topic": "what to bring to a visit",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U13-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["medical reports, test results, or prescriptions"], "ar": ["تقارير طبية"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U14",
+      "topic": "appointment duration",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U14-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["most appointments take between 20 to 40 minutes"], "ar": ["بين 20 إلى 40 دقيقة"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U15",
+      "topic": "eye doctors roster",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U15-f1",
+          "minimum_variants": 3,
+          "variants": {
+            "en": [
+              "Dr. Motasim Masalmeh",
+              "Dr. Rihab Ghanma",
+              "Prof. Dr. Mutaz Gharaibeh",
+              "Dr. Osama Odaibat",
+              "Dr. Hamzah Al-Rawabdeh",
+              "Dr. Bayan Al-Jaabari",
+              "Dr. Lina Hamadneh",
+              "Dr. Sarah Issa",
+              "Dr. Osama Farash"
+            ],
+            "ar": [
+              "د. معتصم مسالمة",
+              "د. رحاب غنما",
+              "الأستاذ الدكتور معتز غرايبة",
+              "د. أسامة عضيبات",
+              "د. حمزة الروابدة",
+              "د. بيان الجعبري",
+              "د. لينا حمادنة",
+              "سارة عيسى",
+              "د. أسامة فراش"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "intent_id": "U16",
+      "topic": "dermatologist roster",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U16-f1",
+          "minimum_variants": 2,
+          "variants": {
+            "en": ["Dr. Osama Tashman", "Dr. Saleem Abu Sbeit"],
+            "ar": ["د. أسامة طاشمان", "د سليم أبو سبيت"]
+          }
+        }
+      ]
+    },
+    {
+      "intent_id": "U17",
+      "topic": "what is PRK",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U17-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["Surface Ablation (PRK / TransPRK)"], "ar": ["Surface Ablation (PRK / TransPRK)"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U18",
+      "topic": "what is LASIK",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U18-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["Vision correction includes a range of procedures"], "ar": ["الليزك"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U19",
+      "topic": "cataract surgery offered",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U19-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["Cataract Surgery"], "ar": ["الماء الأبيض (الساد)"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U20",
+      "topic": "Botox offered",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U20-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["Botox"], "ar": ["بوتوكس"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U21",
+      "topic": "cheek fillers offered",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U21-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["restore lost volume"], "ar": ["تعويض الحجم المفقود"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U22",
+      "topic": "acne treatment offered",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U22-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["acne"], "ar": ["حب الشباب"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U23",
+      "topic": "acne scar treatment offered",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U23-f1",
+          "minimum_variants": 1,
+          "variants": {"en": ["acne scars"], "ar": ["آثار حب الشباب"]}
+        }
+      ]
+    },
+    {
+      "intent_id": "U24",
+      "topic": "list of clinics and departments",
+      "outcome": "supported",
+      "facts": [
+        {
+          "fact_id": "U24-f1",
+          "minimum_variants": 5,
+          "variants": {
+            "en": [
+              "Lasik & Vision Correction",
+              "Cataract",
+              "Cornea",
+              "Retina",
+              "Pediatric Ophthalmology",
+              "Glaucoma",
+              "General Eye Exams",
+              "Oculoplastic & Aesthetic Surgery",
+              "Medical Dermatology",
+              "Laser Treatments",
+              "Body Contouring",
+              "Hair Transplant"
+            ],
+            "ar": [
+              "تصحيح النظر بالليزر",
+              "القرنية",
+              "الشبكية",
+              "طب عيون الأطفال",
+              "الجلوكوما",
+              "الفحوصات العامة للعين",
+              "جراحة تجميل العيون",
+              "الأمراض الجلدية العلاجية",
+              "العلاج بالليزر",
+              "نحت الجسم",
+              "زراعة الشعر"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "intent_id": "U25",
+      "topic": "vision correction price",
+      "outcome": "abstain",
+      "facts": [],
+      "abstain_patterns": [
+        "\\b\\d[\\d,\\.]*\\s*(?:JD|JOD|د\\.أ|دينار)\\b",
+        "\\b(?:JD|JOD)\\s*\\d",
+        "\\d+\\s*دينار",
+        "\\d+\\s*د\\.أ"
+      ]
+    }
+  ]
+}

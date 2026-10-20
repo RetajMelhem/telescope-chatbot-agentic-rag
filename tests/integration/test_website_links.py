@@ -28,12 +28,16 @@ from telescope_rag.providers.validation import output_schema
 from telescope_rag.retrieval.assembly import RequestPart, SourceScope
 
 
-def fixture_plan():
+def fixture_plan(language="en"):
     html = '<footer><a href="https://www.facebook.com/synthetic-only">Facebook</a></footer>'
     page = RawPage(
         snapshot_id="synthetic",
         document_id="contact",
-        canonical_url="https://telescopecenter.com/contact/",
+        canonical_url=(
+            "https://telescopecenter.com/contact/"
+            if language == "en"
+            else "https://telescopecenter.com/ar/contact/"
+        ),
         fetched_at=NOW,
         content_hash=hashlib.sha256(html.encode()).hexdigest(),
         html=html,
@@ -55,15 +59,15 @@ def fixture_plan():
         snapshot_id=page.snapshot_id,
         fetched_at=page.fetched_at,
         source_content_hash=page.content_hash,
-        source_language="en",
+        source_language=language,
         locator="footer > a",
     )
     plan = WebsiteLinksPlan(base_prepared_digest=fixtures()[0].prepared_digest, links=(link,))
     return page, plan
 
 
-def link_catalog():
-    page, plan = fixture_plan()
+def link_catalog(language="en"):
+    page, plan = fixture_plan(language)
     return PublicLinksCatalog(
         plan,
         expected_digest=links_digest(plan),
@@ -157,7 +161,7 @@ def test_link_capabilities_preserve_part_source_owner_and_operation(changes, ope
 
 
 async def exercise(monkeypatch, root, *, language="en", failure=None, unknown=False):
-    links = link_catalog()
+    links = link_catalog("en" if language == "en" else "ar")
     app, provider, _ = compose(monkeypatch, root, website_links=links)
     segments = {
         "en": ["Do you have Facebook?", " Book a private appointment.", " Do you have TikTok?"],

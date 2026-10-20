@@ -5,6 +5,7 @@ from collections import defaultdict
 from types import MappingProxyType
 
 from telescope_rag.graph.contracts import (
+    PlannerPart,
     PlannerReply,
     RetrievalQuery,
     ValidatedPlan,
@@ -179,6 +180,42 @@ class SourceBindings:
             raise ValueError("planner_source_manifest_exceeds_bound")
         return serialized
 
+    def _available_languages(self) -> frozenset[str]:
+        """The published languages actually present in the admitted corpus."""
+        return frozenset(
+            language
+            for chunk in self._catalog.chunks.values()
+            for language in (getattr(chunk, "language", None),)
+            if language
+        )
+
+    def _default_scope_language(
+        self,
+        proposal: PlannerPart,
+        reply_language: str,
+        scope: SourceScope,
+    ) -> str | None:
+        """The evidence language of an unrestricted public search, or None.
+
+        This is a scope default, not a semantic decision. It never overrides a
+        page, owner, block type or language restriction, and it never applies to
+        a complete source read or to a non-public part.
+        """
+        if (
+            scope.document_ids
+            or scope.owner_id is not None
+            or scope.block_types
+            or scope.complete
+            or proposal.state != "public"
+            or proposal.operation != "search"
+        ):
+            return None
+        if reply_language == "en":
+            return "en"
+        if reply_language in {"ar", "ar-JO"}:
+            return "ar"
+        return None
+
     def validate(
         self,
         reply: PlannerReply,
@@ -248,6 +285,20 @@ class SourceBindings:
                 language=proposal.source_language,
                 complete=proposal.state == "public" and proposal.operation == "read_source",
             )
+            if scope.language is None:
+                default_language = self._default_scope_language(proposal, reply.language, scope)
+                if default_language is not None:
+                    # An unrestricted public search otherwise reads the whole
+                    # bilingual corpus, so a question in one language can be
+                    # answered from the other language's page. The admitted corpus
+                    # holds the same published content in both languages; the
+                    # answer language is the published language of the evidence
+                    # that should support it. This narrows nothing the visitor or
+                    # the planner asked for: it applies only when no page, owner,
+                    # block type or language was restricted.
+                    narrowed = scope.model_copy(update={"language": default_language})
+                    if default_language in self._available_languages():
+                        scope = narrowed
             if (
                 self.purpose_contract
                 and proposal.state == "public"
