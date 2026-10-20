@@ -175,7 +175,7 @@ def loosely_stated(variant: str, answer: str) -> bool:
     A paraphrase keeps the numbers and the distinctive words but not the exact
     wording, so a literal comparison understates what the answer delivered.
     """
-    wanted = [t for t in _tokens(variant) if len(t) >= 4 and t not in FUNCTION_WORDS]
+    wanted = [t for t in _tokens(variant) if len(t) >= 4 and t not in _FUNCTION_WORDS]
     numbers = [t for t in _tokens(variant) if any(c.isdigit() for c in t)]
     if numbers and not all(any(n in a for a in _tokens(answer)) for n in numbers):
         return False
