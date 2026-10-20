@@ -75,7 +75,17 @@ class Settings(BaseSettings):
 
     openrouter_api_key: SecretStr = Field(default=SecretStr(""), repr=False)
     openrouter_base_url: AnyHttpUrl = AnyHttpUrl("https://openrouter.ai/api/v1")
-    openrouter_chat_model: Literal["openai/gpt-6-luna"] = "openai/gpt-6-luna"
+    openrouter_chat_model: Literal[
+        "openai/gpt-6-luna",
+        "minimax/minimax-m3.1-flash:free",
+        "minimax/minimax-m3",
+    ] = "openai/gpt-6-luna"
+    # The pinned route requires an endpoint that advertises every request
+    # parameter, so a strict response schema is guaranteed to be honoured. An
+    # open route may reach an endpoint that ignores the schema; the response is
+    # still decoded and validated against the output model, so a non-conforming
+    # reply fails closed instead of answering.
+    chat_provider_routing: Literal["pinned", "open"] = "pinned"
     openrouter_embedding_model: Literal["qwen/qwen3-embedding-8b"] = "qwen/qwen3-embedding-8b"
     # Normal Luna calls use actual provider usage after dispatch. Strict local
     # counting remains available explicitly; embeddings always require counting.

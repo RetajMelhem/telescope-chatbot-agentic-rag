@@ -346,8 +346,11 @@ class OpenRouterChatProvider:
             "response_format": {"type": "json_schema", "json_schema": output_schema(output_model)},
             "max_completion_tokens": max_output_tokens,
             "stream": False,
-            "provider": {"require_parameters": True, "allow_fallbacks": False},
         }
+        if self._client.settings.chat_provider_routing == "open":
+            payload["provider"] = {"require_parameters": False, "allow_fallbacks": False}
+        else:
+            payload["provider"] = {"require_parameters": True, "allow_fallbacks": False}
         if self._client.settings.chat_reasoning_effort is not None:
             payload["reasoning"] = {"effort": self._client.settings.chat_reasoning_effort}
         data, receipts = await self._client.execute(
