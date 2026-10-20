@@ -286,12 +286,17 @@ def score_question(
     texts = [chunks[identity].retrieval_text for identity in selected]
     details = []
     witnessed = 0
+    supporting: set[str] = set()
     for fact in intent["facts"]:
         variants = fact["variants"].get(ranking.language, [])
         present = [v for v in variants if any(v in text for text in texts)]
         minimum = fact.get("minimum_variants", 1)
         ok = len(present) >= minimum
         witnessed += int(ok)
+        if ok:
+            for identity, text in zip(selected, texts, strict=True):
+                if any(v in text for v in present):
+                    supporting.add(identity)
         details.append(
             {
                 "fact_id": fact["fact_id"],
@@ -316,6 +321,8 @@ def score_question(
         "distinct_evidence": len(set(content_keys)),
         "duplicate_slots": duplicate_slots,
         "fact_recall": (witnessed / total) if total else None,
+        "evidence_precision": (len(supporting) / len(selected)) if selected else None,
+        "supporting_chunks": len(supporting),
         "facts": details,
         "over_claim": over_claim,
         "selected_urls": sorted(
@@ -346,18 +353,30 @@ def score(root: Path, capture_path: Path, output: Path, policies: Sequence[Polic
             rows.append(score_question(policy, ranking, chunks, intent))
         scored = [row for row in rows if row["fact_recall"] is not None]
         recalls = [row["fact_recall"] for row in scored]
+        precisions = [
+            row["evidence_precision"] for row in scored if row["evidence_precision"] is not None
+        ]
         abstains = [row for row in rows if row["outcome"] == "abstain"]
         by_language = {}
         for language in ("en", "ar"):
             subset = [row["fact_recall"] for row in scored if row["language"] == language]
+            subset_p = [
+                row["evidence_precision"]
+                for row in scored
+                if row["language"] == language and row["evidence_precision"] is not None
+            ]
             by_language[language] = {
                 "questions": len(subset),
                 "macro_fact_recall": (sum(subset) / len(subset)) if subset else None,
+                "macro_evidence_precision": ((sum(subset_p) / len(subset_p)) if subset_p else None),
             }
         report["policies"].append(
             {
                 "policy": policy.model_dump(mode="json"),
                 "macro_fact_recall": (sum(recalls) / len(recalls)) if recalls else None,
+                "macro_evidence_precision": (
+                    (sum(precisions) / len(precisions)) if precisions else None
+                ),
                 "questions_with_full_recall": sum(1 for r in recalls if r == 1.0),
                 "questions_with_zero_recall": sum(1 for r in recalls if r == 0.0),
                 "mean_distinct_evidence": (
@@ -375,11 +394,13 @@ def score(root: Path, capture_path: Path, output: Path, policies: Sequence[Polic
     for entry in report["policies"]:
         policy = entry["policy"]
         scored_count = len(scored)
+        precision = entry["macro_evidence_precision"]
         print(
             f"dense_fetch={policy['dense_fetch']} dense_keep={policy['dense_keep']} "
             f"lex={policy['lexical_keep']} ctx={policy['context_keep']} "
             f"dedup={policy['collapse_duplicates']} lang_scope={policy['scope_language']} "
             f"-> macro_fact_recall={entry['macro_fact_recall']:.4f} "
+            f"macro_evidence_precision={'n/a' if precision is None else f'{precision:.4f}'} "
             f"full={entry['questions_with_full_recall']}/{scored_count} "
             f"zero={entry['questions_with_zero_recall']} "
             f"distinct={entry['mean_distinct_evidence']:.2f} "
