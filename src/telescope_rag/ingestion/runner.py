@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import math
 import time
 from collections import Counter
 from collections.abc import Callable, Sequence
@@ -242,10 +243,13 @@ async def run_candidate(
     max_input_tokens: int = 100000,
     deadline_seconds: float = 600,
     server_version: str = "1.19.2",
+    batch_delay_seconds: float = 0.0,
     progress: Callable[[dict], None] = lambda _: None,
 ) -> dict:
     if not 0 < deadline_seconds <= 3600:
         raise ValueError("index_deadline_invalid")
+    if not math.isfinite(batch_delay_seconds) or not 0.0 <= batch_delay_seconds <= 60.0:
+        raise ValueError("index_batch_delay_invalid")
     if (
         settings.qdrant_url.host not in {"127.0.0.1", "localhost", "::1"}
         or settings.qdrant_url.path not in {None, "", "/"}
@@ -308,6 +312,7 @@ async def run_candidate(
                     format=format,
                     configuration=bundle.configuration,
                     cache=cache,
+                    batch_delay_seconds=batch_delay_seconds,
                 )
             candidate = await write_candidate(
                 bundle.documents,

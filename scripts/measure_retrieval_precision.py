@@ -41,10 +41,10 @@ from telescope_rag.retrieval.lexical import BM25Index
 from telescope_rag.retrieval.request_dense import RequestDenseRetriever
 from telescope_rag.retrieval.section_context import section_context
 
-COLLECTION = "telescope_public_018817ac10ec05ecad92adb9"
-PREPARED_DIGEST = "a46be2d3fd18f11d46c79ff9bc992de22aab496836894a708bc57c1e8b48af88"
+DEFAULT_COLLECTION = "telescope_public_018817ac10ec05ecad92adb9"
+DEFAULT_PREPARED_DIGEST = "a46be2d3fd18f11d46c79ff9bc992de22aab496836894a708bc57c1e8b48af88"
+DEFAULT_BUNDLE = "m3-execution-approved-v6-v2"
 TOKENIZER_REVISION = "1d8ad4ca9b3dd8059ad90a75d4983776a23d44af"
-BUNDLE = "m3-execution-approved-v6-v2"
 REQUESTS = Path("tests/fixtures/evaluation/natural_questions_50_v1/requests.jsonl")
 FACTS = Path("tests/fixtures/evaluation/natural_questions_50_v1/facts-v1.json")
 DENSE_CAPTURE_LIMIT = 20
@@ -109,8 +109,10 @@ class Policy(Record):
         return self
 
 
-def load_bundle(root: Path) -> tuple[tuple[PreparedDocument, ...], dict[str, PreparedChunk]]:
-    directory = root / "data/processed" / BUNDLE
+def load_bundle(
+    root: Path, bundle: str = DEFAULT_BUNDLE
+) -> tuple[tuple[PreparedDocument, ...], dict[str, PreparedChunk]]:
+    directory = root / "data/processed" / bundle
     documents = tuple(
         PreparedDocument.model_validate_json(path.read_bytes())
         for path in sorted(directory.glob("*.json"))
@@ -133,20 +135,30 @@ def load_questions(root: Path) -> list[dict]:
     return rows
 
 
-def load_facts(root: Path) -> dict[str, dict]:
+def load_facts(root: Path) -> tuple[dict[str, dict], str]:
+    """The fact ground truth and the corpus digest it was authored against.
+
+    The gold states clinic facts, not corpus bytes, so it applies to every
+    corpus that publishes those facts. The recorded digest is returned so the
+    report can state which corpus it was written against.
+    """
     gold = json.loads((root / FACTS).read_text(encoding="utf-8"))
-    if gold.get("prepared_digest") != PREPARED_DIGEST:
-        raise ValueError("gold_digest_mismatch")
-    return {intent["intent_id"]: intent for intent in gold["intents"]}
+    return {intent["intent_id"]: intent for intent in gold["intents"]}, gold.get(
+        "prepared_digest", ""
+    )
 
 
-def settings_for(root: Path) -> Settings:
+def settings_for(
+    root: Path,
+    qdrant_url: str = "http://127.0.0.1:6333",
+    read_key: Path = Path(".tools/qdrant-m3/read.key"),
+) -> Settings:
     """The shipped local profile's retrieval settings, over the project dotenv."""
     source = load_settings(root / ".env")
     values = source.model_dump()
     values.update(
-        qdrant_url="http://127.0.0.1:6333",
-        qdrant_api_key=read_secret(root / ".tools/qdrant-m3/read.key"),
+        qdrant_url=qdrant_url,
+        qdrant_api_key=read_secret(root / read_key),
         provider_max_retries=0,
         request_timeout_seconds=150,
         provider_timeout_seconds=60,
@@ -156,18 +168,27 @@ def settings_for(root: Path) -> Settings:
     return Settings(_env_file=None, **values)
 
 
-async def capture(root: Path, output: Path) -> None:
-    documents, chunks = load_bundle(root)
-    catalog = EvidenceCatalog(documents, expected_digest=PREPARED_DIGEST)
+async def capture(
+    root: Path,
+    output: Path,
+    *,
+    bundle: str = DEFAULT_BUNDLE,
+    collection: str = DEFAULT_COLLECTION,
+    prepared_digest: str = DEFAULT_PREPARED_DIGEST,
+    qdrant_url: str = "http://127.0.0.1:6333",
+    read_key: Path = Path(".tools/qdrant-m3/read.key"),
+) -> None:
+    documents, chunks = load_bundle(root, bundle)
+    catalog = EvidenceCatalog(documents, expected_digest=prepared_digest)
     questions = load_questions(root)
-    settings = settings_for(root)
+    settings = settings_for(root, qdrant_url, read_key)
     tokenizer = root / f".tools/qwen-tokenizer/{TOKENIZER_REVISION}/tokenizer.json"
     counter = QwenEmbeddingCounter(tokenizer)
     profile = hosted_qwen_format()
     reader = CandidateDenseReader(
         settings,
         settings.qdrant_api_key,
-        collection=COLLECTION,
+        collection=collection,
         chunks={chunk.point_id: chunk for chunk in catalog.chunks.values()},
         target="loopback",
     )
@@ -217,8 +238,8 @@ async def capture(root: Path, output: Path) -> None:
         await reader.aclose()
         await providers.aclose()
     capture_record = Capture(
-        prepared_digest=PREPARED_DIGEST,
-        collection=COLLECTION,
+        prepared_digest=prepared_digest,
+        collection=collection,
         questions=tuple(rankings),
     )
     serialized = capture_record.model_dump_json(indent=2)
@@ -334,15 +355,23 @@ def score_question(
     }
 
 
-def score(root: Path, capture_path: Path, output: Path, policies: Sequence[Policy]) -> None:
-    documents, chunks = load_bundle(root)
+def score(
+    root: Path,
+    capture_path: Path,
+    output: Path,
+    policies: Sequence[Policy],
+    *,
+    bundle: str = DEFAULT_BUNDLE,
+) -> None:
+    documents, chunks = load_bundle(root, bundle)
     _ = documents
     capture_record = Capture.model_validate_json(capture_path.read_bytes())
-    facts = load_facts(root)
+    facts, gold_digest = load_facts(root)
     report: dict[str, Any] = {
         "schema_version": "retrieval-precision-report-v1",
-        "prepared_digest": PREPARED_DIGEST,
-        "collection": COLLECTION,
+        "prepared_digest": capture_record.prepared_digest,
+        "collection": capture_record.collection,
+        "gold_authored_against_digest": gold_digest,
         "question_count": len(capture_record.questions),
         "policies": [],
     }
@@ -409,7 +438,16 @@ def score(root: Path, capture_path: Path, output: Path, policies: Sequence[Polic
     print(f"wrote {output}")
 
 
-def verify(root: Path, output: Path) -> None:
+def verify(
+    root: Path,
+    output: Path,
+    *,
+    bundle: str = DEFAULT_BUNDLE,
+    collection: str = DEFAULT_COLLECTION,
+    prepared_digest: str = DEFAULT_PREPARED_DIGEST,
+    qdrant_url: str = "http://127.0.0.1:6333",
+    read_key: Path = Path(".tools/qdrant-m3/read.key"),
+) -> None:
     """Run the real request-scoped retriever over the approved questions.
 
     This exercises the shipped duplicate collapse, the answer-language scope and
@@ -417,18 +455,18 @@ def verify(root: Path, output: Path) -> None:
     """
     import asyncio
 
-    documents, chunks = load_bundle(root)
-    catalog = EvidenceCatalog(documents, expected_digest=PREPARED_DIGEST)
+    documents, chunks = load_bundle(root, bundle)
+    catalog = EvidenceCatalog(documents, expected_digest=prepared_digest)
     questions = load_questions(root)
-    facts = load_facts(root)
-    settings = settings_for(root)
+    facts, gold_digest = load_facts(root)
+    settings = settings_for(root, qdrant_url, read_key)
     tokenizer = root / f".tools/qwen-tokenizer/{TOKENIZER_REVISION}/tokenizer.json"
     preparation_counter = QwenPreparationCounter(tokenizer)
     provider_counter = QwenEmbeddingCounter(tokenizer)
     reader = CandidateDenseReader(
         settings,
         settings.qdrant_api_key,
-        collection=COLLECTION,
+        collection=collection,
         chunks={chunk.point_id: chunk for chunk in catalog.chunks.values()},
         target="loopback",
     )
@@ -438,7 +476,7 @@ def verify(root: Path, output: Path) -> None:
         settings=settings,
         catalog=catalog,
         configuration=EmbeddingConfiguration.model_validate_json(
-            (root / f"data/processed/{BUNDLE}/metadata/embedding-configuration.json").read_bytes()
+            (root / f"data/processed/{bundle}/metadata/embedding-configuration.json").read_bytes()
         ),
         counter=preparation_counter,
         embeddings=providers.embeddings,
@@ -519,8 +557,9 @@ def verify(root: Path, output: Path) -> None:
     abstains = [r for r in rows if r["outcome"] == "abstain"]
     report = {
         "schema_version": "retrieval-precision-verify-v1",
-        "prepared_digest": PREPARED_DIGEST,
-        "collection": COLLECTION,
+        "prepared_digest": prepared_digest,
+        "collection": collection,
+        "gold_authored_against_digest": gold_digest,
         "duplicate_groups": duplicates.group_count,
         "collapsed_occurrences": duplicates.collapsed_occurrence_count,
         "macro_fact_recall": sum(r["fact_recall"] for r in scored) / len(scored),
@@ -552,10 +591,16 @@ def main() -> None:
     capture_parser = commands.add_parser("capture")
     capture_parser.add_argument("--root", type=Path, default=Path.cwd())
     capture_parser.add_argument("--output", type=Path, required=True)
+    capture_parser.add_argument("--bundle", default=DEFAULT_BUNDLE)
+    capture_parser.add_argument("--collection", default=DEFAULT_COLLECTION)
+    capture_parser.add_argument("--prepared-digest", default=DEFAULT_PREPARED_DIGEST)
+    capture_parser.add_argument("--qdrant-url", default="http://127.0.0.1:6333")
+    capture_parser.add_argument("--read-key", type=Path, default=Path(".tools/qdrant-m3/read.key"))
     score_parser = commands.add_parser("score")
     score_parser.add_argument("--root", type=Path, default=Path.cwd())
     score_parser.add_argument("--capture", type=Path, required=True)
     score_parser.add_argument("--output", type=Path, required=True)
+    score_parser.add_argument("--bundle", default=DEFAULT_BUNDLE)
     score_parser.add_argument(
         "--policies",
         type=Path,
@@ -565,14 +610,37 @@ def main() -> None:
     verify_parser = commands.add_parser("verify")
     verify_parser.add_argument("--root", type=Path, default=Path.cwd())
     verify_parser.add_argument("--output", type=Path, required=True)
+    verify_parser.add_argument("--bundle", default=DEFAULT_BUNDLE)
+    verify_parser.add_argument("--collection", default=DEFAULT_COLLECTION)
+    verify_parser.add_argument("--prepared-digest", default=DEFAULT_PREPARED_DIGEST)
+    verify_parser.add_argument("--qdrant-url", default="http://127.0.0.1:6333")
+    verify_parser.add_argument("--read-key", type=Path, default=Path(".tools/qdrant-m3/read.key"))
     args = parser.parse_args()
     if args.command == "capture":
-        asyncio.run(capture(args.root, args.output))
+        asyncio.run(
+            capture(
+                args.root,
+                args.output,
+                bundle=args.bundle,
+                collection=args.collection,
+                prepared_digest=args.prepared_digest,
+                qdrant_url=args.qdrant_url,
+                read_key=args.read_key,
+            )
+        )
     elif args.command == "verify":
-        verify(args.root, args.output)
+        verify(
+            args.root,
+            args.output,
+            bundle=args.bundle,
+            collection=args.collection,
+            prepared_digest=args.prepared_digest,
+            qdrant_url=args.qdrant_url,
+            read_key=args.read_key,
+        )
     else:
         policies = [Policy.model_validate(item) for item in json.loads(args.policies.read_bytes())]
-        score(args.root, args.capture, args.output, policies)
+        score(args.root, args.capture, args.output, policies, bundle=args.bundle)
 
 
 if __name__ == "__main__":

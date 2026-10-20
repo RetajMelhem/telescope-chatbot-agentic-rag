@@ -172,8 +172,11 @@ async def embed_reviewed(
     format: EmbeddingFormat,
     configuration: EmbeddingConfiguration,
     cache: "EmbeddingCache | None" = None,
+    batch_delay_seconds: float = 0.0,
 ) -> tuple[EmbeddedChunk, ...]:
     validate_approval(documents, audit, approval)
+    if not math.isfinite(batch_delay_seconds) or not 0.0 <= batch_delay_seconds <= 60.0:
+        raise ValueError("embedding_batch_delay_invalid")
     chunks = all_chunks(documents)
     validate_chunks(chunks, settings, configuration)
     if (
@@ -190,6 +193,7 @@ async def embed_reviewed(
         groups.setdefault(key, []).append(chunk)
     keys = list(groups)
     vectors: dict[str, tuple[float, ...]] = {}
+    dispatched = False
     for start in range(0, len(keys), settings.max_embedding_batch_size):
         batch = keys[start : start + settings.max_embedding_batch_size]
         # Bound per-input counts before the provider's independent whole-batch reservation.
@@ -214,6 +218,11 @@ async def embed_reviewed(
                     vectors[key] = cached
             if not missing:
                 continue
+            if dispatched and batch_delay_seconds:
+                # Space provider requests. This is pacing, not a retry: it changes
+                # no attempt count, no budget, no model and no token reservation.
+                await asyncio.sleep(batch_delay_seconds)
+            dispatched = True
             result = await provider.embed(
                 [groups[key][0].retrieval_text for key in missing],
                 role="document",

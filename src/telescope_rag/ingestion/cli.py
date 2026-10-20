@@ -215,6 +215,12 @@ def main() -> None:
     indexing.add_argument("--max-input-tokens", type=int, default=100000)
     indexing.add_argument("--deadline-seconds", type=float, default=600)
     indexing.add_argument(
+        "--batch-delay-seconds",
+        type=float,
+        default=0.0,
+        help="Space provider requests. Pacing only: no extra attempt, budget or token.",
+    )
+    indexing.add_argument(
         "--execute", action="store_true", help="Required explicit dispatch selection"
     )
     args = parser.parse_args()
@@ -265,6 +271,7 @@ def main() -> None:
                     max_requests=args.max_requests,
                     max_input_tokens=args.max_input_tokens,
                     deadline_seconds=args.deadline_seconds,
+                    batch_delay_seconds=args.batch_delay_seconds,
                     progress=lambda receipt: print(json.dumps(receipt), flush=True),
                 )
             )
