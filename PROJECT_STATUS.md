@@ -2,6 +2,103 @@
 
 Last updated: 2026-10-20 (Asia/Amman).
 
+**Answer-level precision is measured, the citation failure is fixed, and the
+improved build is running locally.** (2026-10-20)
+
+For the first time in this project the chatbot's **answers** were measured, not
+only its retrieval. A new funnel scorer, `scripts/measure_answer_precision.py`,
+records the HTTP outcome, the answer text and every citation for each approved
+question, and reports three stages: whether the corpus publishes the required
+fact, whether the answer's own citations carry it, and whether the answer text
+states it. A failed request is scored as zero at every stage.
+
+That measurement found the real defect. The writer was given the
+64-character hexadecimal chunk identifier of every eligible source and told to
+copy it exactly; one wrong character invalidated the whole reply, and the
+provider call had already succeeded and been paid for. The failures were
+reproducible on the shipped build and on the new retrieval build, so the cause
+that the project had recorded as unconfirmed is now localised. The writer now
+receives a short reference for each eligible source, which is resolved back to
+the real chunk identifier before validation. A real identifier is still
+accepted, and either form must resolve inside that part's eligible evidence, so
+a citation outside it still fails closed and an unknown reference fails closed
+as an unknown identifier would.
+
+Measured over the 20 approved questions against the live corpus, comparing the
+bot that was running before this work with the deployed build:
+
+| Metric | before | after |
+| --- | --- | --- |
+| failures, no answer delivered | 1 | **0** |
+| corpus publishes the fact | 1.0000 | 1.0000 |
+| cited evidence carries the fact | 0.7778 | **0.8333** |
+| answer states the fact, paraphrase-aware | 0.8333 | **0.8889** |
+| invalid citations | 0 | 0 |
+| price-abstain violations | 0 | 0 |
+
+The literal-wording column stays lower because the answers often paraphrase the
+published sentence, for example "open daily from 9:00 a.m. to midnight" against
+"9:00 AM until 12:00 midnight". The paraphrase-aware column keeps the numbers
+and the distinctive words, which is the honest measure. Two questions remain
+where the cited evidence does not carry the literal wording; in both the answer
+is substantively correct and cites the relevant page.
+
+**The chat model stays `openai/gpt-6-luna`.** The free
+`minimax/minimax-m3.1-flash:free` endpoint was screened before any adoption
+with `scripts/screen_free_chat_model.py`, against a known-good control. It
+refuses the route the application pins, with 404 "no endpoints found that can
+handle the requested parameters", because the application sends a strict
+json_schema response format and the free tier does not advertise support for
+it. It also requires reasoning, so reasoning cannot be disabled, and with the
+real planner schema it spent 2,047 of 2,048 output tokens on reasoning and
+returned no content in 21 seconds for a 246-token prompt. End to end against
+the unchanged application, every question failed at the planner stage, three
+with structured_output_invalid and one with truncated_completion, each between
+12.8 and 40.6 seconds. The same screen rejects every other free model on
+OpenRouter for the same parameter reason. The paid `minimax/minimax-m3` works
+with the application unchanged, with zero reasoning tokens and a valid planner
+reply, but costs 0.30 per million input and 1.20 per million output tokens
+against Luna's 0.10 and 0.50, so it is three times the cost of the model
+already in use. The model names are now an explicit approved set and the
+provider routing is selectable; both are opt-in and the shipped defaults are
+unchanged. Evidence: `artifacts/m7-model-screen/DECISION.md`.
+
+**The rebuilt corpus stays rejected and unpublished.** It was embedded into an
+isolated staging database and measured against the published corpus. The
+embedding run was clean, with 76 successful requests, 81,053 of 81,053 planned
+input tokens billed, 1,212 of 1,212 distinct vectors, 1,332 points, a green
+collection, exact payloads and vectors, a read-only key that rejected a write
+with 403, unchanged aliases and an untouched live installation. It was
+nevertheless rejected by 6 of 10 accepted thresholds: macro fact recall 0.9167
+against 0.9583, 44 of 48 questions at full recall against 46, and U18-en and
+U19-ar-JO regressed from full recall to zero. The cause is measured: the
+fact-carrying chunk for U18-en is byte-identical in both corpora with the same
+score of 0.5725, but its dense rank moved from 10 to 16 because the fresh
+extraction emits far more heading-only fragments, and fragments containing the
+query's own words outrank the answer carrier and consume the BM25 rescue
+slots. A sweep of 45 retrieval policies confirms it is structural. The staging
+candidate collection was deleted and the staging container and volume removed.
+The embedding cache, the query cache and every execution artifact are retained
+under gitignored paths.
+
+**Landed locally, with no push.** The API image was rebuilt from the current
+source under the existing tag and the installer recreated the container, so
+`install-mvp.ps1 -Action Start` keeps the improved build. The previous release
+image is preserved locally as `telescope-rag-mvp:v0.2.0-release`, so the
+change is reversible with one command and nothing was pushed, tagged or
+published. `install-mvp.ps1 -Action Install` would re-download the release
+image and revert the code; the corpus and the knowledge asset are untouched
+either way.
+
+Full offline suite **2,462 passed**; Ruff lint and format clean. The key shows
+$0.6166 of the $1.00 limit remaining.
+
+**Next:** decide whether to invest in a corrected corpus that keeps the
+recovered coverage without the heading-only fragmentation, re-measured against
+the same ten gates. The corpus is not the binding constraint for the questions
+measured here, because the corpus publishes every required fact and the loss
+was in selection and in the writer.
+
 **M7 retrieval precision: the corpus rebuild was measured and rejected; the
 retrieval change was accepted.** (2026-10-20)
 
