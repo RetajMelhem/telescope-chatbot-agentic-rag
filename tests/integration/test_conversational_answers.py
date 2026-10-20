@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 
 import httpx2 as httpx
 import pytest
@@ -82,9 +83,15 @@ async def exercise(monkeypatch, root, language="en", failure=None):
         proposed = []
         for i, item in enumerate(body["parts"]):
             selected = item["eligible_quote_chunk_ids"]
+            references = item["eligible_quote_refs"]
+            assert len(references) == len(selected)
             if i < 2:
                 ids = (selected[0],)
-                if failure == "borrow_sibling" and i == 0:
+                if failure == "cite_reference" and i == 0:
+                    ids = (references[0],)
+                elif failure == "unknown_reference" and i == 0:
+                    ids = ("E9999",)
+                elif failure == "borrow_sibling" and i == 0:
                     ids = (body["parts"][1]["eligible_quote_chunk_ids"][0],)
                 elif failure == "unknown_id" and i == 0:
                     ids = ("unissued-source",)
@@ -164,9 +171,22 @@ def test_natural_prose_keeps_distinct_owners_unknown_and_excluded(monkeypatch, t
         "override_excluded",
         "omit_part",
         "duplicate_part",
+        "unknown_reference",
     ],
 )
 def test_bad_generated_references_or_coverage_fail_without_repair(monkeypatch, tmp_path, failure):
     response, _ = asyncio.run(exercise(monkeypatch, tmp_path, failure=failure))
     assert response.status_code == 502
     assert "answer" not in response.json()
+
+
+def test_a_citation_by_its_short_reference_resolves_to_the_real_evidence(monkeypatch, tmp_path):
+    response, answers = asyncio.run(exercise(monkeypatch, tmp_path, failure="cite_reference"))
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert all(text in data["answer"] for text in answers)
+    assert {c["literal_owner_id"] for c in data["citations"]} == {"a", "b"}
+    for citation in data["citations"]:
+        # The short reference must be resolved back to a real chunk identifier.
+        assert not re.fullmatch(r"E\d+", citation["chunk_id"])
+        assert citation["quote"] and citation["url"] and citation["snapshot_id"]

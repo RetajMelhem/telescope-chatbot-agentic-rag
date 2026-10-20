@@ -123,6 +123,33 @@ class ConversationalRagWorkflow(HoursRagWorkflow):
                 and not part.get("eligible_website_link_ids")
                 else None
             )
+        # The writer cites evidence by a short reference rather than by the
+        # 64-character hexadecimal chunk identifier. A long identifier is copied
+        # by transcription, so a single wrong character invalidates the whole
+        # reply. The references are resolved back to the real chunk id below,
+        # and the same fail-closed validation applies to the resolved id.
+        alias_maps: list[dict[str, str]] = []
+        for part in body["parts"]:
+            identities = list(part["eligible_quote_chunk_ids"])
+            mapping = {f"E{index + 1}": identity for index, identity in enumerate(identities)}
+            part["eligible_quote_refs"] = list(mapping)
+            alias_maps.append(mapping)
+        # Website links carry the same long identifier, so they are referenced the
+        # same way. The rendered directory keeps its own identifier and gains the
+        # reference the writer should copy.
+        link_refs: dict[str, str] = {}
+        for part in body["parts"]:
+            for link_id in part.get("eligible_website_link_ids", ()):
+                if link_id not in link_refs:
+                    link_refs[link_id] = f"L{len(link_refs) + 1}"
+        link_aliases = {reference: link_id for link_id, reference in link_refs.items()}
+        for part in body["parts"]:
+            part["eligible_website_link_refs"] = [
+                link_refs[identity] for identity in part.get("eligible_website_link_ids", ())
+            ]
+        for entry in body.get("untrusted_website_links", []):
+            if isinstance(entry, dict) and entry.get("link_id") in link_refs:
+                entry["ref"] = link_refs[entry["link_id"]]
         result = await self._chat.complete(
             (
                 ChatMessage(role="system", content=ANSWER_SYSTEM),
@@ -150,13 +177,14 @@ class ConversationalRagWorkflow(HoursRagWorkflow):
             safe = self._safe_part(state["plan"], state["evidence"], index)
             link_ids = set(self._link_ids(state, index))
             decision = decisions.get(identity)
+            aliases = alias_maps[index]
             if decision is not None:
                 if (
                     entry.status != decision.draft_status
                     or entry.reason_code != decision.reason_code
                 ):
                     raise WorkflowError("invalid_conversational_hours_outcome")
-                allowed = set(body["parts"][index]["eligible_quote_chunk_ids"])
+                allowed = set(aliases.values())
             if not allowed and not link_ids:
                 if (
                     entry.sentences
@@ -187,17 +215,38 @@ class ConversationalRagWorkflow(HoursRagWorkflow):
             selected = []
             for sentence in entry.sentences:
                 links = getattr(sentence, "website_link_ids", ())
+                # Resolve the short reference back to the real chunk id. A real
+                # identifier is also accepted, so an otherwise valid reply is not
+                # rejected over the reference form. Either way the resolved
+                # identifier must be in this part's eligible evidence, so a
+                # citation outside it still fails closed.
+                resolved = []
+                for label in sentence.chunk_ids:
+                    chunk_identity = aliases.get(label)
+                    if chunk_identity is None:
+                        chunk_identity = label if label in allowed else None
+                    if chunk_identity is None:
+                        raise WorkflowError("invalid_conversational_citation")
+                    resolved.append(chunk_identity)
+                resolved_links = []
+                for label in links:
+                    link_id = link_aliases.get(label)
+                    if link_id is None:
+                        link_id = label if label in link_ids else None
+                    if link_id is None:
+                        raise WorkflowError("invalid_conversational_citation")
+                    resolved_links.append(link_id)
                 if (
                     not sentence.text.strip()
-                    or len(set(sentence.chunk_ids)) != len(sentence.chunk_ids)
-                    or any(identity not in allowed for identity in sentence.chunk_ids)
-                    or len(set(links)) != len(links)
-                    or any(identity not in link_ids for identity in links)
+                    or len(set(resolved)) != len(resolved)
+                    or any(identity not in allowed for identity in resolved)
+                    or len(set(resolved_links)) != len(resolved_links)
+                    or any(identity not in link_ids for identity in resolved_links)
                     or "[" in sentence.text
                     or "]" in sentence.text
                 ):
                     raise WorkflowError("invalid_conversational_citation")
-                selected.extend(i for i in sentence.chunk_ids if i not in selected)
+                selected.extend(i for i in resolved if i not in selected)
             # Complete-source reads retain their full provenance coverage separately
             # from the sentence-specific support references; do not force irrelevant prose.
             if state["plan"].assembly_request.parts[index].scope.complete:
@@ -225,6 +274,31 @@ class ConversationalRagWorkflow(HoursRagWorkflow):
                     ),
                 )
             )
+        # The writer cited short references; the conversation record that the
+        # presentation reads must carry the real identifiers.
+        aliases_by_part = {
+            part["part_id"]: mapping
+            for part, mapping in zip(body["parts"], alias_maps, strict=True)
+        }
+        translated = []
+        for part in reply.parts:
+            mapping = aliases_by_part.get(part.part_id, {})
+            sentences = []
+            for sentence in part.sentences:
+                update = {}
+                links = getattr(sentence, "website_link_ids", ())
+                chunks = getattr(sentence, "chunk_ids", ())
+                resolved_links = tuple(link_aliases.get(i, i) for i in links)
+                resolved_chunks = tuple(mapping.get(i, i) for i in chunks)
+                if resolved_links != links:
+                    update["website_link_ids"] = resolved_links
+                if resolved_chunks != chunks:
+                    update["chunk_ids"] = resolved_chunks
+                sentences.append(sentence.model_copy(update=update) if update else sentence)
+            translated.append(
+                part.model_copy(update={"sentences": tuple(sentences)}) if sentences else part
+            )
+        reply = reply.model_copy(update={"parts": tuple(translated)})
         runtime.context.conversation = reply
         # The original validator independently rechecks source scope, exact retained
         # quotations, ownership, coverage and per-question citation capabilities.
