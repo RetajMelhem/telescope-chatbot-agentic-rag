@@ -255,6 +255,54 @@ def test_exact_repeated_heading_alt_label_formats_once_but_keeps_both_sources():
     assert any(s.locator.endswith("h2:nth-of-type(1)") for s in spans)
 
 
+def test_malformed_alternative_beside_its_clean_label_is_not_published_twice():
+    result = prepared(
+        "<main><div class='e-con'><h2>Islamic Insurance Company</h2>"
+        "<img alt='Islamic InsuranceCompany'></div></main>"
+    )
+    texts = " ".join(c.retrieval_text for c in result.chunks)
+    assert "InsuranceCompany" in texts or "Insurance Company" in texts
+    # The broken spelling is a rendering of the clean label the page publishes.
+    assert not any(
+        s.attribute == "alt" and s.original_text == "Islamic InsuranceCompany"
+        for c in result.chunks
+        for s in (*c.source_spans, *c.context_spans)
+    )
+
+
+def test_alternative_without_a_published_copy_keeps_its_own_label():
+    result = prepared(
+        "<main><div class='e-con'><h2>Approved insurers</h2><img alt='NatHealth'></div></main>"
+    )
+    assert any(
+        s.attribute == "alt" and s.original_text == "NatHealth"
+        for c in result.chunks
+        for s in (*c.source_spans, *c.context_spans)
+    )
+
+
+def test_converted_suffix_alternative_is_dropped_when_the_label_is_published():
+    result = prepared(
+        "<main><div class='e-con'><h2>Eye Clinics</h2><img alt='Eye clinic_converted'></div></main>"
+    )
+    assert not any(
+        s.attribute == "alt" and s.original_text == "Eye clinic_converted"
+        for c in result.chunks
+        for s in (*c.source_spans, *c.context_spans)
+    )
+
+
+def test_copyright_notice_is_not_published_as_clinic_content():
+    result = prepared(
+        "<main><div class='e-con'><p>Published opening hours.</p></div>"
+        "<footer><p>&copy; Copyright 2026. All rights reserved</p></footer></main>"
+    )
+    texts = " ".join(c.retrieval_text for c in result.chunks)
+    assert "Published opening hours." in texts
+    assert "All rights reserved" not in texts
+    assert any(item.code == "copyright_notice" for item in result.removed)
+
+
 def test_repeated_ordered_step_is_not_removed_as_duplicate():
     result = prepared(
         "<main><ol><li>Repeat measurement.</li><li>Repeat measurement.</li></ol></main>"

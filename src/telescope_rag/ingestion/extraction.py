@@ -94,6 +94,13 @@ _DECORATIVE_ALT = re.compile(
     r"|(?:image|rectangle|frame|group)[\s\d_-]*)",
     re.I,
 )
+_COPYRIGHT_NOTICE = re.compile(r"^\u00a9?\s*copyright\b.*\ball rights reserved\.?$", re.I)
+_CONVERTED_SUFFIX = re.compile(r"[_\s-]*converted\s*$", re.I)
+_CONTAINER_ANCESTOR_DEPTH = 4
+
+
+def _compact(value: str) -> str:
+    return re.sub(r"\s+", "", value)
 
 
 def normalize_text(value: str) -> str:
@@ -169,6 +176,7 @@ class _Extractor:
         self.units: list[ContentUnit] = []
         self.removed: list[AuditItem] = []
         self.gaps: list[AuditItem] = []
+        self._labels: frozenset[str] | None = None
         self.state = _State()
         self.in_footer = False
         self.pending: list[Segment] = []
@@ -312,6 +320,11 @@ class _Extractor:
                     AuditItem(
                         code="placeholder_content_quarantined", locator=segment.source.locator
                     )
+                )
+            elif _COPYRIGHT_NOTICE.match(segment.text):
+                # A copyright line publishes no clinic fact.
+                self.removed.append(
+                    AuditItem(code="copyright_notice", locator=segment.source.locator)
                 )
             else:
                 admitted.append(segment)
@@ -611,6 +624,13 @@ class _Extractor:
         if re.fullmatch(r"[^/\\]+\.(?:jpe?g|png|webp|gif|avif|svg)", text, re.I):
             self.audit(node, "image_asset_filename")
             return
+        if self._repeats_container_text(text, node):
+            # The same label is already present as clean text in the same
+            # container, so this alternative adds no published information.
+            # A missing space in the alternative ("InsuranceCompany") makes it a
+            # broken copy of that label, not a second source.
+            self.audit(node, "redundant_image_alternative")
+            return
         locator = self.locators[id(node)] + "::attr(alt)"
         segment = Segment(
             text=text,
@@ -625,6 +645,51 @@ class _Extractor:
         )
         self.flush()
         self.emit("section", [segment])
+
+    def _repeats_container_text(self, alt: str, node: Tag) -> bool:
+        """True when a surrounding container already carries this alternative.
+
+        An alternative that repeats a published label exactly is kept: the
+        established policy formats such a label once and retains both of its
+        source spans. Only a malformed copy is removed here. A missing space in
+        the alternative ("InsuranceCompany" beside "Islamic Insurance Company")
+        or a file-conversion suffix makes it a broken rendering of a label that
+        the page already publishes as clean text, so it adds no information and
+        would otherwise publish a wrong spelling.
+        """
+        published = self._published_labels()
+        if alt.casefold() in published:
+            return False
+        compact_alt = _compact(alt).casefold()
+        if len(compact_alt) < 3:
+            return False
+        base = _compact(_CONVERTED_SUFFIX.sub("", alt)).casefold()
+        ancestor = node.parent
+        for _ in range(_CONTAINER_ANCESTOR_DEPTH):
+            if ancestor is None:
+                break
+            container = _compact(normalize_text(ancestor.get_text(" ", strip=True))).casefold()
+            if container:
+                if compact_alt in container:
+                    return True
+                if len(base) >= 3 and base in container:
+                    return True
+            ancestor = ancestor.parent
+        page = _compact(normalize_text(self.soup.get_text(" ", strip=True))).casefold()
+        if compact_alt in page:
+            return True
+        return len(base) >= 3 and base in page
+
+    def _published_labels(self) -> frozenset[str]:
+        """The clean text labels the page publishes, used for duplicate checks."""
+        if self._labels is None:
+            labels = set()
+            for text in self.soup.find_all(string=True):
+                label = normalize_text(str(text)).casefold()
+                if label:
+                    labels.add(label)
+            self._labels = frozenset(labels)
+        return self._labels
 
     def css_table(self, node: Tag):
         self.flush()
