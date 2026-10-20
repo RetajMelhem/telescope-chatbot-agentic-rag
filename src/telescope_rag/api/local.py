@@ -1,7 +1,10 @@
 """Explicit localhost MVP composition over the pinned, reviewed website snapshot."""
 
+from __future__ import annotations
+
 import asyncio
 import json
+import os
 from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -70,7 +73,7 @@ def _profile_settings(source: Settings, qdrant_url: str, read_key: Path) -> Sett
         provider_max_retries=0,
         max_llm_calls=2,
         max_total_output_tokens=2 * OUTPUT_TOKENS,
-        retrieval_top_k_per_question=11,
+        retrieval_top_k_per_question=int(os.environ.get("LOCAL_RETRIEVAL_TOP_K", "11")),
         provider_timeout_seconds=60,
         request_timeout_seconds=150,
         log_level="WARNING",
