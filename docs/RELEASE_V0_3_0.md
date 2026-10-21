@@ -78,10 +78,19 @@ removes.
 - The published knowledge. Knowledge identity is unchanged at
   `a16414530c40e991c3b0b506d9b30d2bac3d57587d36aa39759cafaaa56faccb`, and the
   release reuses the v0.2.0 knowledge archive and native database snapshot.
+  The corpus is still **107 documents / 955 chunks / 834 distinct evidence
+  groups**, bilingual English and Arabic, with 4,096-dimensional vectors. The
+  live collection `telescope_public_018817ac10ec05ecad92adb9` still holds
+  **955 points** with 955 distinct chunk identifiers, is green, and has no
+  active alias.
 - The collection, its contents and the absence of any alias.
 - The chat model. `openai/gpt-6-luna` on the pinned provider route, zero
   retries.
 - The installer, the secrets handling and the read-only database key.
+
+The release assets are therefore the v0.2.0 knowledge archive and native
+database snapshot **byte for byte**, and the installer restores the same 955
+points it always did.
 
 ## Measured and not measured
 

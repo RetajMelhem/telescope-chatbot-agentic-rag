@@ -17,8 +17,8 @@ collection or the installation.
 Usage:
     python scripts/measure_answer_precision.py \
         --base-url http://127.0.0.1:8000 \
-        --label v0.2.0 \
-        --output artifacts/m7-precision-v2/answer-v0.2.0.json
+        --label v0.3.0 \
+        --output artifacts/m7-precision-v2/answer-v0.3.0.json
 """
 
 from __future__ import annotations

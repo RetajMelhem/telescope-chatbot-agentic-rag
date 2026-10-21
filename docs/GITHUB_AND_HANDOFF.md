@@ -59,6 +59,19 @@ installed v0.2.0 into an empty isolated Docker engine;
 all data/source checks, API endpoints, dashboard binding and authenticated
 collection reads passed without model calls. The real Windows launcher also
 passed code-only upgrade, rollback and restart checks with a custom dashboard port.
+
+The v0.3.0 release was then verified from its own public assets: the released
+API archive was downloaded from the release URL and loaded into Docker as the
+installer does, and it loaded into exactly the image id the public manifest
+records. The public `release.json` and `SHA256SUMS` were downloaded and are
+byte-identical to the local ones, and all four binary assets were re-downloaded
+and match the published checksums. `install-mvp.ps1 -Action Install -Version
+v0.3.0` then installed the published release end to end on this machine:
+`verify-files` and `verify-db` passed, the containers came up healthy, the
+installation record reads `v0.3.0`, the restored collection is green with 955
+points and no active alias, and a live question answered with citations. The
+installation made no model calls.
+
 Release source and archives passed known-key/selected-pattern scanning; that is bounded
 checking, not proof against every secret format. Keep inspecting staged changes
 and future history: an ignore rule cannot remove already committed content.

@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-21 (Asia/Amman).
 
-**v0.3.0 is published.** (2026-10-21)
+**v0.3.0 is published and installed.** (2026-10-21)
 
 The user authorized pushing. The measured build is cut and published as
 **v0.3.0** — a code-only release against the unchanged published knowledge.
@@ -13,8 +13,67 @@ and v0.2.0 stay published and installable.
 | | v0.2.0 | v0.3.0 |
 | --- | --- | --- |
 | knowledge identity | `a16414530c40e991…` | `a16414530c40e991…` (identical) |
-| API image | `sha256:36d81610c934` | new image, id recorded in the release manifest |
+| API image | `sha256:36d81610c934` | `sha256:5ce0fb60c9c3` |
+| source revision | `e161c06d1d1eb0a6` | `32aae754bf9b0807` |
 | corpus / collection / model | unchanged | unchanged |
+
+Published release id `419050780`, six public assets. The knowledge archive and
+the native database snapshot are the v0.2.0 files **byte for byte**: the
+knowledge identity is identical, so the capture verified their hashes and
+copied them forward instead of re-embedding.
+
+The knowledge inventory is unchanged and was re-verified against the live
+collection: **107 documents / 955 chunks / 834 distinct evidence groups**,
+English and Arabic, 4,096-dimensional vectors. Collection
+`telescope_public_018817ac10ec05ecad92adb9` holds **955 points** with 955
+distinct chunk identifiers, is green, and still has no active alias.
+
+Release verification, all passed:
+
+- The released API archive was downloaded from the public release URL and
+  loaded into Docker exactly as the installer does; it loaded into image id
+  `sha256:5ce0fb60c9c3dea2d9355f863470e13237b4e97abc8d4fd67ab38dc2278025c7`,
+  which is the id the public manifest records.
+- `release.json` and `SHA256SUMS` were downloaded from the public release and
+  are byte-identical to the local ones; all four binary assets were
+  re-downloaded and match the published checksums.
+- The image was started from that loaded archive and answered a question with
+  citations.
+- `install-mvp.ps1 -Action Install -Version v0.3.0` then installed the
+  **published** release end to end: `verify-files` and `verify-db` passed, the
+  containers were recreated healthy, the installation record now reads
+  `v0.3.0` with `api_image telescope-rag-mvp:v0.3.0`, the running container
+  uses image id `sha256:5ce0fb60c9c3`, the restored collection is green with
+  955 points and no alias, and a live question answered with two citations.
+  The installation made no model calls.
+
+The v0.2.0 release stays published and installable, and the v0.2.0 API image
+remains available locally as `telescope-rag-mvp:v0.2.0-release`, so the
+rollback is one retag and one restart.
+
+**The published, reinstalled build reproduces the measured precision.** A final
+twenty-question sweep was run against the installation that came from the
+GitHub release, with the same corrected metric:
+
+| Metric | v0.3.0 installed from the release |
+| --- | --- |
+| outright failures, no answer delivered | **0 / 20** |
+| corpus publishes the fact | 1.0000 |
+| cited evidence carries the fact | 0.8889 |
+| answer states the fact, literal wording | 0.6667 |
+| **answer states the fact, paraphrase-aware** | **1.0000** |
+| citation term coverage, domain vocabulary | 0.9508 |
+| citation number coverage | 1.0000 |
+| invalid citations | 0 |
+| price-abstain violations | 0 |
+
+Every one of the twenty requests returned HTTP 200. The one remaining
+precision gap is two of the eighteen scored questions, the LASIK pair in
+English and Arabic: the answer states the fact correctly in both, and in the
+paraphrase-aware measure both count as stated, but the cited evidence is the
+comparison-table rendering rather than the narrative definition, so the cited
+chunk does not literally carry the gold wording. The two price questions are
+the abstain cases and both abstained, which is the intended behaviour.
 
 **Answer-level precision is measured, the citation failure is fixed, and the
 improved build is running locally.** (2026-10-20)

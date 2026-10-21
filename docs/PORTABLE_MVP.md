@@ -38,6 +38,14 @@ admission/digests, tokenizer, hours and official link supplement before serving.
 It uses the project's `.env` key when present, otherwise asks for a hidden key.
 Existing `.env` and development database/containers are preserved.
 
+The knowledge the installer restores is the reviewed snapshot: **107 documents /
+955 chunks / 834 distinct evidence groups**, English and Arabic, with
+4,096-dimensional vectors. The knowledge identity is
+`a16414530c40e991c3b0b506d9b30d2bac3d57587d36aa39759cafaaa56faccb`, and it is
+identical in v0.2.0 and v0.3.0, so those two releases share their knowledge
+archive and native database snapshot and a code-only update needs no corpus
+change.
+
 Open [the chatbot](http://127.0.0.1:8000/) or [API docs](http://127.0.0.1:8000/docs).
 If that port is busy, add `-Port 8001`. Each new question may spend OpenRouter credit;
 installation and health checks make no model calls. Corpus vectors are restored,
