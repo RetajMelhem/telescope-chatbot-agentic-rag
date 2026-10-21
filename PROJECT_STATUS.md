@@ -1,6 +1,26 @@
 # Project status
 
-Last updated: 2026-10-21 (Asia/Amman).
+Last updated: 2026-10-22 (Asia/Amman).
+
+**Evaluation-only licensing.** (2026-10-22)
+Added the custom `LICENSE` permitting local, noncommercial learning,
+experimentation and evaluation, while reserving sale, public hosting,
+redistribution and operational deployment for prior written permission.
+The restriction explicitly includes free operational use by Telescope Medical
+Center or any other organization; local organizational evaluation remains
+permitted. Modified copies retain the same restrictions. Third-party rights,
+existing agreements, statutory exceptions and GitHub platform rights are
+preserved. README and portable instructions summarize the terms; Python
+package metadata and future API image builds carry the license notice.
+Validation: offline source/wheel builds passed; both archives include the
+complete license, and wheel metadata records the custom license expression.
+`uv lock --check --offline`, license-link checks, distribution sensitive-path
+checks and `git diff --check` passed. Docker license inclusion was checked
+statically; no image rebuild, application tests or model calls ran. The user
+authorized publishing this scoped source change. Existing published release
+assets/images and the running installation have not been changed. Next: any
+future API image/release must be rebuilt from this licensed source before
+claiming it embeds the new notice.
 
 **v0.3.0 is published and installed.** (2026-10-21)
 

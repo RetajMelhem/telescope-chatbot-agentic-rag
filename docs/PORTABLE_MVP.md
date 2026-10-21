@@ -1,5 +1,16 @@
 # Portable local MVP
 
+## Evaluation license
+
+The original project code and materials are provided under the
+[Telescope Evaluation-Only License](../LICENSE), for local, noncommercial
+learning and evaluation only. Selling, public hosting, production deployment
+and routine operational use by a clinic or company require prior written
+permission, even if the service is free. The same restrictions apply to
+modified versions. Third-party data, models, libraries and assets retain
+their own rights and terms. Contact **retajmelhem92004@gmail.com** for other
+permissions. See the full license for scope and exceptions.
+
 This distribution restores the existing reviewed knowledge and stored vectors.
 It does not crawl, parse, chunk or re-embed the corpus. It requires Windows,
 Docker Desktop with Linux amd64 containers, internet for OpenRouter, and your own

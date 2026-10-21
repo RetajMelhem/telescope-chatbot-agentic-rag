@@ -4,6 +4,27 @@ A local public-information RAG chatbot for Telescope Medical Center, using Pytho
 FastAPI, LangGraph, GPT-6 Luna through OpenRouter, Qwen3 Embedding 8B and Qdrant.
 It accepts English, Arabic and everyday Jordanian Arabic questions.
 
+## License and permitted use
+
+Copyright (c) 2026 Retaj Milhem. This project is available under the custom
+[Telescope Evaluation-Only License](LICENSE). It is source-available for local,
+noncommercial learning, experimentation and evaluation, including private
+modifications for those purposes. It is not an open-source license.
+
+**Selling, monetizing, publicly hosting or using the project in production or
+routine organizational operations requires prior written permission.** This
+includes use by Telescope Medical Center or any other clinic or company, even
+when no fee is charged. An organization may evaluate it locally, but may not
+use that evaluation to serve actual patients, customers or daily staff work.
+
+Retain the license and attribution in permitted copies and forks. Third-party
+libraries, models and website content retain their respective owners' rights
+and terms; [GitHub's public-repository viewing/forking rights](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service#5-license-grant-to-other-users)
+remain unchanged.
+For other permissions, contact **retajmelhem92004@gmail.com**. The full
+[LICENSE](LICENSE) controls; these permissions apply only to rights the author
+owns or is authorized to license and do not override existing agreements.
+
 ## Run the local MVP
 
 For another Windows computer, use the versioned [portable installation](docs/PORTABLE_MVP.md):

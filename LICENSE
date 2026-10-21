@@ -1,0 +1,99 @@
+Telescope Evaluation-Only License, Version 1.0
+
+Copyright (c) 2026 Retaj Milhem.
+All rights reserved except for the limited permissions below.
+
+1. Scope
+
+This license applies to the original project code, prompts, scripts,
+documentation and other original project materials provided with this notice
+(the "Software"), only to the extent that Retaj Milhem (the "Licensor") owns or
+is authorized to license those materials. The permissions below apply to
+recipients of the Software and do not restrict the Licensor's own use.
+
+2. Permitted evaluation
+
+You may view, download, copy, install, run and modify the Software solely for
+noncommercial learning, experimentation and evaluation in a local, nonproduction
+environment. Individuals and organizations may evaluate it under these same
+conditions. Evaluation may use public or synthetic examples but must not serve
+actual patients, customers or routine staff operations.
+
+Paying your own hardware or third-party API/provider costs solely for
+this permitted local evaluation does not by itself make that evaluation
+commercial. Such payments do not grant any additional rights to the Software.
+
+3. Uses requiring prior written permission
+
+Unless the Licensor grants separate written permission, you may not:
+
+- Sell, rent, sublicense or otherwise monetize the Software or modifications,
+  including as a paid product, subscription, API, hosted service or paid
+  implementation for another party.
+- Deploy or use the Software or modifications in production, in internal
+  business operations, or as part of services provided to patients, customers
+  or the public, whether or not a fee is charged.
+- Operate or integrate it into the website, systems or daily workflows of a
+  clinic, medical center, hospital, company or other organization. This
+  restriction includes Telescope Medical Center; being named or represented
+  in the demonstration does not grant the center operational usage rights.
+- Publicly host the Software for others to use, or redistribute or republish
+  its source, modified versions, application packages or container images,
+  except for GitHub rights preserved in section 5.
+- Remove or obscure the copyright, attribution or license notices.
+
+Calling an operational deployment a "trial", "pilot", "demo" or "free service"
+does not make it permitted evaluation. The same restrictions apply when only
+part of the Software is incorporated into another application.
+
+4. Notices and modifications
+
+Retain this complete license and the applicable copyright and attribution
+notices in all copies and permitted forks. Mark your modifications clearly.
+Modifying the Software does not remove these conditions or grant operational,
+commercial, distribution or sublicensing rights. All rights not expressly
+granted are reserved. This is a custom, source-available evaluation license,
+not an open-source license.
+
+5. GitHub and applicable law
+
+Nothing in this license limits rights that applicable law does not allow the
+Licensor to restrict, or rights already granted to GitHub or its users under
+GitHub's Terms of Service, including viewing and forking a public repository
+within GitHub. A fork does not grant additional commercial or operational
+rights under this license.
+
+6. Third-party materials and existing agreements
+
+Third-party libraries, models, tokenizers, website text, photographs, logos,
+datasets and other third-party materials retain their respective owners'
+rights and applicable licenses or terms. This license does not claim ownership
+of them, relicense them or grant rights beyond those the Licensor controls.
+Access to a bundled file or release asset does not itself establish permission
+to reuse third-party content.
+
+This license does not override existing third-party ownership, employment or
+training agreements, or permissions already granted under a separate agreement
+or license. It grants no trademark rights and implies no endorsement by a
+medical center or other named organization.
+
+7. Disclaimer and termination
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTIES OF ANY KIND, TO THE EXTENT
+PERMITTED BY APPLICABLE LAW. IT IS AN EVALUATION PROTOTYPE, NOT A MEDICAL DEVICE
+OR A SUBSTITUTE FOR PROFESSIONAL MEDICAL ADVICE. TO THE EXTENT PERMITTED BY
+APPLICABLE LAW, THE LICENSOR IS NOT LIABLE FOR CLAIMS OR DAMAGES ARISING FROM
+THE SOFTWARE OR ITS USE.
+
+The permissions granted by this license terminate automatically if you breach
+its conditions. You must then stop uses authorized only by this license.
+Termination does not remove statutory rights or independently granted rights
+preserved in sections 5 and 6.
+
+8. Permission requests
+
+For commercial use, operational deployment, redistribution or any other use
+outside the limited evaluation permission, obtain prior written permission:
+
+Retaj Milhem
+retajmelhem92004@gmail.com

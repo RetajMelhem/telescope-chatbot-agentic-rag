@@ -4,7 +4,7 @@ FROM python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903c
 COPY --from=uv /uv /usr/local/bin/uv
 ENV UV_PYTHON_DOWNLOADS=never UV_LINK_MODE=copy
 WORKDIR /app
-COPY pyproject.toml uv.lock README.md ./
+COPY pyproject.toml uv.lock README.md LICENSE ./
 RUN uv sync --locked --no-dev --no-install-project
 COPY src ./src
 RUN uv sync --locked --no-dev --no-editable
@@ -12,9 +12,11 @@ RUN uv sync --locked --no-dev --no-editable
 FROM python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89
 ARG VCS_REF=""
 LABEL org.opencontainers.image.revision=$VCS_REF
+LABEL org.opencontainers.image.licenses="LicenseRef-Telescope-Evaluation-Only-1.0"
 ENV PATH="/app/.venv/bin:$PATH" PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 TOKENIZERS_PARALLELISM=false
 WORKDIR /app
 COPY --from=build /app/.venv /app/.venv
+COPY --from=build /app/LICENSE /app/LICENSE
 RUN groupadd --gid 10001 telescope && useradd --uid 10001 --gid 10001 --no-create-home telescope
 USER 10001:10001
 EXPOSE 8000
