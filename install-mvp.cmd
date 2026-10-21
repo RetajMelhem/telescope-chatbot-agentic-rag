@@ -8,7 +8,7 @@ if not exist "%~dp0install-mvp.ps1" (
 )
 if not "%~1"=="" goto with_arguments
 
-"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-mvp.ps1" -Version v0.2.0
+"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-mvp.ps1" -Version v0.3.0
 set "launcherExitCode=%errorlevel%"
 echo.
 pause

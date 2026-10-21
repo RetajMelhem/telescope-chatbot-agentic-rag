@@ -48,11 +48,14 @@ See [portable installation](PORTABLE_MVP.md) for the minimal asset inventory.
 The supplied GitHub destination is
 [RetajMelhem/telescope-chatbot-agentic-rag](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag).
 The local `origin` remote is configured to its HTTPS Git URL. Main and the immutable
-`v0.1.0` and `v0.2.0` tags are pushed. The current
-[v0.2.0 release](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.2.0)
-contains the fixed API image, unchanged knowledge ZIP/native database snapshot/
-Qdrant image, manifest and checksums. The v0.1.0 release is preserved.
-A fresh public main clone installed v0.2.0 into an empty isolated Docker engine;
+`v0.1.0`, `v0.2.0` and `v0.3.0` tags are pushed. The current
+[v0.3.0 release](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.3.0)
+contains the retrieval and citation API image, the unchanged knowledge ZIP/native
+database snapshot/Qdrant image, manifest and checksums. The v0.1.0 and v0.2.0
+releases are preserved. v0.3.0 changes only the request path: the knowledge
+identity is identical to v0.2.0, so the two releases share their data assets
+and a code-only update needs no corpus change. A fresh public main clone
+installed v0.2.0 into an empty isolated Docker engine;
 all data/source checks, API endpoints, dashboard binding and authenticated
 collection reads passed without model calls. The real Windows launcher also
 passed code-only upgrade, rollback and restart checks with a custom dashboard port.

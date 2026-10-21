@@ -61,7 +61,7 @@ def create_app(
 
     app = FastAPI(
         title="Telescope clinic chatbot",
-        version="0.2.0",
+        version="0.3.0",
         description=(
             "Explicit nonproduction offline draft transport; "
             "semantic and live acceptance unverified."

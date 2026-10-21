@@ -14,12 +14,12 @@ need the new launcher copied into the extracted project folder; the existing
 v0.1.0 data and image assets remain compatible.
 
 ```powershell
-.\install-mvp.cmd -Version v0.2.0
+.\install-mvp.cmd -Version v0.3.0
 ```
 
 For the simplest installation, extract the complete project ZIP, start Docker
 Desktop and double-click [install-mvp.cmd](../install-mvp.cmd). With no arguments
-it installs v0.2.0 and keeps the window open afterward so you can read the result.
+it installs v0.3.0 and keeps the window open afterward so you can read the result.
 The launcher also accepts the existing installer's parameters, as shown above.
 
 The `.cmd` launcher starts the existing `install-mvp.ps1` with
@@ -119,7 +119,7 @@ retained for diagnosis rather than overwritten automatically.
 
 If Docker loses the installed database volume while the installation directory
 survives (for example, after a Docker reset or switching to an empty Docker context),
-rerun `.\install-mvp.cmd -Version v0.2.0` using the version you want installed.
+rerun `.\install-mvp.cmd -Version v0.3.0` using the version you want installed.
 The installer checks that the saved volume actually exists before reusing it.
 A missing volume is recreated from the hash-verified release snapshot and all
 stored points are checked before serving; intact volumes are reused. Existing
@@ -184,12 +184,15 @@ scoped changes first. Build the API with its actual source revision label:
 
 ```powershell
 $revision = git rev-parse HEAD
-docker build -f deploy/Dockerfile --label "org.opencontainers.image.revision=$revision" -t telescope-rag-mvp:v0.2.1 .
-& .\.tools\uv\bin\uv.exe run --locked python scripts/build_portable_release.py --version v0.2.1 --output artifacts/portable-v0.2.1 --reuse-data-release artifacts/portable-v0.2.0
+docker build -f deploy/Dockerfile --build-arg VCS_REF=$revision --label "org.opencontainers.image.revision=$revision" -t telescope-rag-mvp:v0.3.0 .
+& .\.tools\uv\bin\uv.exe run --locked python scripts/build_portable_release.py --version v0.3.0 --output artifacts/portable-v0.3.0 --reuse-data-release artifacts/portable-v0.2.0
 ```
 
-Use `--reuse-data-release` only when the knowledge identity is unchanged. Omit it
-for an approved data change to capture a new native snapshot. Capture refuses a
+Use `--reuse-data-release` only when the knowledge identity is unchanged. The
+directory it points at must hold the previous release's `release.json` together
+with the knowledge archive and the native snapshot that manifest names, so the
+capture can verify their hashes before copying them forward. Omit it for an
+approved data change to capture a new native snapshot. Capture refuses a
 dirty checkout, checks source/image binding and scans source, snapshots and nested
 image archives for known credentials and selected secret patterns. It then
 rechecks every source file and the full live point/configuration fingerprint.

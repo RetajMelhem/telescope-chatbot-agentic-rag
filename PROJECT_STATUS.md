@@ -1,6 +1,20 @@
 # Project status
 
-Last updated: 2026-10-20 (Asia/Amman).
+Last updated: 2026-10-21 (Asia/Amman).
+
+**v0.3.0 is published.** (2026-10-21)
+
+The user authorized pushing. The measured build is cut and published as
+**v0.3.0** — a code-only release against the unchanged published knowledge.
+[GitHub release](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.3.0).
+Main, the fix branch and the immutable annotated v0.3.0 tag are pushed; v0.1.0
+and v0.2.0 stay published and installable.
+
+| | v0.2.0 | v0.3.0 |
+| --- | --- | --- |
+| knowledge identity | `a16414530c40e991…` | `a16414530c40e991…` (identical) |
+| API image | `sha256:36d81610c934` | new image, id recorded in the release manifest |
+| corpus / collection / model | unchanged | unchanged |
 
 **Answer-level precision is measured, the citation failure is fixed, and the
 improved build is running locally.** (2026-10-20)
@@ -25,16 +39,30 @@ a citation outside it still fails closed and an unknown reference fails closed
 as an unknown identifier would.
 
 Measured over the 20 approved questions against the live corpus, comparing the
-bot that was running before this work with the deployed build:
+bot that was running before this work with the deployed build, with both builds
+measured with the identical corrected metric:
 
-| Metric | before | after |
+| Metric | v0.2.0 | v0.3.0 |
 | --- | --- | --- |
-| failures, no answer delivered | 1 | **0** |
+| **failures, no answer delivered** | 1 / 20 | **0 / 40** |
 | corpus publishes the fact | 1.0000 | 1.0000 |
-| cited evidence carries the fact | 0.7778 | **0.8333** |
-| answer states the fact, paraphrase-aware | 0.8333 | **0.8889** |
+| **cited evidence carries the fact** | 0.8889 | **0.9444** |
+| answer states the fact, literal wording | 0.6111 | **0.7222** |
+| **answer states the fact, paraphrase-aware** | 0.8889 | **0.9444** |
+| citation term coverage, domain vocabulary | 0.8763 | 0.8784 / 0.9709 |
+| citation number coverage | 1.0000 | 1.0000 |
 | invalid citations | 0 | 0 |
 | price-abstain violations | 0 | 0 |
+
+The v0.3.0 build produced no failure in any of its five runs. The v0.2.0 build
+failed one of its runs with `invalid_conversational_citation`, the
+transcription defect the short reference removes.
+
+The scorer had three defects of its own, all fixed and re-measured: Arabic
+punctuation broke the token regex, the gold match was case-sensitive, and a
+number like `9:00` was split into two numbers. The figures above use the
+corrected scorer; the earlier 0.7778/0.8333 pair was produced by the uncorrected
+one and is not comparable to it.
 
 The literal-wording column stays lower because the answers often paraphrase the
 published sentence, for example "open daily from 9:00 a.m. to midnight" against
@@ -81,17 +109,16 @@ candidate collection was deleted and the staging container and volume removed.
 The embedding cache, the query cache and every execution artifact are retained
 under gitignored paths.
 
-**Landed locally, with no push.** The API image was rebuilt from the current
-source under the existing tag and the installer recreated the container, so
-`install-mvp.ps1 -Action Start` keeps the improved build. The previous release
-image is preserved locally as `telescope-rag-mvp:v0.2.0-release`, so the
-change is reversible with one command and nothing was pushed, tagged or
-published. `install-mvp.ps1 -Action Install` would re-download the release
-image and revert the code; the corpus and the knowledge asset are untouched
+**Landed and published as v0.3.0.** (2026-10-20 landed, 2026-10-21 published)
+The API image was rebuilt from the current source under the existing tag and the
+installer recreated the container, so `install-mvp.ps1 -Action Start` keeps the
+improved build. The previous release image is preserved locally as
+`telescope-rag-mvp:v0.2.0-release`, so the change was reversible with one
+command before publication. The corpus and the knowledge asset are untouched
 either way.
 
 Full offline suite **2,462 passed**; Ruff lint and format clean. The key shows
-$0.6166 of the $1.00 limit remaining.
+$0.2450 of the $1.00 limit remaining after the final comparison runs.
 
 **Next:** decide whether to invest in a corrected corpus that keeps the
 recovered coverage without the heading-only fragmentation, re-measured against
@@ -164,13 +191,19 @@ validator rejects the whole request. The ids are 64-character hex strings the
 model must reproduce exactly. The repository has an explicit test asserting
 that such a citation fails closed, so the behaviour was not changed. The cause
 was previously recorded as unconfirmed; it is now reproducible and localised.
-Changing the writer's citation contract, for example to short aliases, needs
-its own prompt version and comparison run and is not done.
+The writer's citation contract was then changed to short references with their
+own prompt version and a comparison run: the writer receives a short reference
+for each eligible source, the reference is resolved back to the real chunk
+identifier before validation, a real identifier is still accepted, and either
+form must resolve inside that part's eligible evidence, so a citation outside
+it still fails closed and an unknown reference fails closed exactly as an
+unknown identifier would.
 
-**Next:** land the accepted retrieval change by rebuilding the API image
-against the unchanged v0.2.0 knowledge, which needs no corpus or knowledge
-release; and decide separately whether to invest in a corrected corpus that
-keeps the recovered coverage without the heading-only fragmentation.
+**Next:** decide separately whether to invest in a corrected corpus that keeps
+the recovered coverage without the heading-only fragmentation. The corpus is
+not the binding constraint for the questions measured so far, because the
+corpus publishes every required fact and the loss was in selection and in the
+writer.
 
 **v0.2.0 is published and verified** (2026-10-19):
 [GitHub release](https://github.com/RetajMelhem/telescope-chatbot-agentic-rag/releases/tag/v0.2.0).
